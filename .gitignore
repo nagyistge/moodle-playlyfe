@@ -1,0 +1,11 @@
+/*
+!/.gitignore
+!/vendor
+/vendor/*
+!/blocks
+/blocks/*
+!/blocks/playlyfe
+!/local
+/local/*
+!/local/playlyfe
+
