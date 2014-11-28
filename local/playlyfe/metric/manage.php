@@ -33,18 +33,18 @@ class metric_list_form extends moodleform {
 
 $html .= $OUTPUT->box_start('generalbox authsui');
 $table = new html_table();
-$table->head  = array('Name', 'ID', '', '');
+$table->head  = array('Name', 'ID', 'Description', '', '');
 $table->colclasses = array('leftalign', 'centeralign', 'rightalign');
 $table->data  = array();
 $table->attributes['class'] = 'admintable generaltable';
 $table->id = 'manage_metrics';
 
-$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name,type'));
+$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name,type,description'));
 foreach($metrics as $metric) {
   if($metric['type'] == 'point') {
     $edit = '<a href="edit.php?name='.$metric['name'].'&id='.$metric['id'].'">Edit</a>';
     $delete = '<a href="manage.php?id='.$metric['id'].'&delete=true'.'">Delete</a>';
-    $table->data[] = new html_table_row(array($metric['name'], $metric['id'], $edit, $delete));
+    $table->data[] = new html_table_row(array($metric['name'], $metric['id'], $metric['description'], $edit, $delete));
   }
 }
 $html .= html_writer::table($table);

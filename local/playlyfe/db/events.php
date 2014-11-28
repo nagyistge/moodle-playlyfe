@@ -2,10 +2,7 @@
 
 # moodle 2.5 events vs moodle 2.8 events
 #
-# course_created -> core\event\course_created
 # course_completed -> core\event\course_completed
-# course_deleted -> core\event\course_deleted
-# course_updated -> core\event\course_updated
 # groups_member_added -> core\event\group_member_added
 # groups_member_removed -> core\event\group_member_removed
 # role_assigned -> core\event\role_assigned
@@ -26,8 +23,6 @@
 if(true) {
   $event_names = array (
     'course_completed',
-    'course_deleted',
-    'course_updated',
     'groups_member_added',
     'groups_member_removed',
     'role_assigned',

@@ -13,21 +13,6 @@ $PAGE->set_cacheable(false);
 $PAGE->settingsnav->get('root')->get('playlyfe')->get('actions')->get('manage')->make_active();
 $PAGE->navigation->clear_cache();
 $html = '';
-$events = array (
-  'course_created',
-  'course_completed',
-  'course_deleted',
-  'course_updated',
-  'groups_member_added',
-  'groups_member_removed',
-  'role_assigned',
-  'role_unassigned',
-  'user_enrolled',
-  'user_logout',
-  'user_updated',
-  'assessable_submitted',
-  'quiz_attempt_submitted'
-);
 $pl = local_playlyfe_sdk::get_pl();
 
 $delete = optional_param('delete', null, PARAM_TEXT);
@@ -35,48 +20,65 @@ $id = optional_param('id', null, PARAM_TEXT);
 if($id and $delete) {
   $pl->delete('/design/versions/latest/actions/'.$id, array());;
 }
-$html .= $OUTPUT->box_start('generalbox authsui');
-$table = new html_table();
-$table->head  = array('Name', 'ID', 'Event', 'Metric/Set', 'Value', '', '');
-$table->colclasses = array('leftalign', 'centeralign', 'rightalign');
-$table->data  = array();
-$table->attributes['class'] = 'admintable generaltable';
-$table->id = 'manage_actions';
 
-$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name,type'));
-
-$event_mapping = json_decode(get_config('playlyfe', 'event_mapping'), true);
-foreach($event_mapping as $event_name => $value){
-  $key = array_search($event_name, $events);
-  if($key!==false){
-    unset($events[$key]);
+function operator($op){
+  switch($op) {
+    case 'eq': return 'Equal To';
+    case 'neq': return 'Not Equal To';
+    case 'lt': return 'Lesser Than';
+    case 'le': return 'Lesser Than And Equal To';
+    case 'gt': return 'Greatar Than';
+    case 'ge': return 'Greatar Than And Equal To';
   }
 }
-
-$select = new MoodleQuickForm_select('Select', 'Select', $events);
 
 $actions = $pl->get('/design/versions/latest/actions', array('fields' => 'id,name,rules'));
 
 foreach($actions as $action) {
-  $metric = $action['rules'][0]['rewards'][0]['metric']['id'];
-  $verb = $action['rules'][0]['rewards'][0]['verb'];
-  $value = $action['rules'][0]['rewards'][0]['value'];
-  $edit = '<a href="edit.php?name='.$action['name'].'&id='.$action['id'].'">Edit</a>';
-  $delete = '<a href="manage.php?id='.$action['id'].'&delete=true'.'">Delete</a>';
-  $added = false;
-  foreach($event_mapping as $event_name => $action_id){
-    if($action_id == $action['id']){
-      $table->data[] = new html_table_row(array($action['name'], $action['id'], $event_name, $metric, $value, $edit, $delete));
-      $added = true;
-      break;
+  $html .= $OUTPUT->box_start('generalbox authsui');
+  $html .= '<h3>'.$action['id'].'</h3>';
+  $html .= '<a href="edit.php?id='.$action['id'].'">Edit</a> | ';
+  $html .= '<a href="manage.php?id='.$action['id'].'&delete=true'.'">Delete</a>';
+  $table = new html_table();
+  $table->head  = array('Requires', 'Rewards');
+  $table->colclasses = array('leftalign', 'rightalign');
+  $table->data  = array();
+  $table->attributes['class'] = 'admintable generaltable';
+  $table->id = $action['id'];
+  foreach($action['rules'] as $rule) {
+    $table2 = new html_table();
+    $table2->head  = array('Metric', 'Verb', 'Value');
+    $table2->colclasses = array('leftalign', 'rightalign');
+    $table2->data  = array();
+    $table2->attributes['class'] = 'admintable generaltable';
+    foreach($rule['rewards'] as $reward) {
+      if($reward['metric']['type'] == 'point') {
+        $table2->data[] = new html_table_row(array($reward['metric']['id'], $reward['verb'], $reward['value']));
+      }
+      else {
+        $table3 = new html_table();
+        $table3->head  = array('Name', 'Count');
+        $table3->colclasses = array('leftalign', 'rightalign');
+        $table3->data  = array();
+        $table3->attributes['class'] = 'admintable generaltable';
+        foreach($reward['value'] as $name => $count){
+          $table3->data[] = new html_table_row(array($name, $count));
+        }
+        $table2->data[] = new html_table_row(array($reward['metric']['id'], $reward['verb'], html_writer::table($table3)));
+      }
     }
+    $requires = $rule['requires'];
+    $requires_text = '';
+    if(isset($requires['type']) and $requires['type'] == 'metric') {
+      $requires_text .= 'The player has Metric '.$requires['context']['id'];
+      $requires_text .= ' and its value should be '.operator($requires['context']['operator']);
+      $requires_text .= ' '.$requires['context']['value'];
+    }
+    $table->data[] = new html_table_row(array($requires_text, html_writer::table($table2)));
   }
-  if(!$added){
-    $table->data[] = new html_table_row(array($action['name'], $action['id'], $select->toHtml(), $metric, $value, $edit, $delete));
-  }
+  $html .= html_writer::table($table);
+  $html .= $OUTPUT->box_end();
 }
-$html .= html_writer::table($table);
-$html .= $OUTPUT->box_end();
 echo $OUTPUT->header();
 echo '<h1>Actions</h1>';
 echo $html;
@@ -85,4 +87,4 @@ echo $OUTPUT->footer();
 // if (!$DB->insert_record('block_simplehtml', $fromform)) {
 //     print_error('inserterror', 'block_simplehtml');
 // }
-print_object(get_config('playlyfe', 'event_mapping'));
+print_object(get_config('playlyfe', 'actions'));

@@ -13,6 +13,7 @@ $PAGE->set_cacheable(false);
 $PAGE->settingsnav->get('root')->get('playlyfe')->get('metrics')->make_active();
 $PAGE->navigation->clear_cache();
 $html = '';
+$pl = local_playlyfe_sdk::get_pl();
 
 class metric_edit_form extends moodleform {
 
@@ -24,6 +25,9 @@ class metric_edit_form extends moodleform {
         $mform->addElement('text', 'name', 'Metric Name');
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->setType('name', PARAM_RAW);
+        $mform->addElement('textarea', 'description', 'Description');
+        $mform->addRule('description', null, 'required', '' , 'client');
+        $mform->setType('description', PARAM_RAW);
         $this->add_action_buttons();
     }
 }
@@ -32,7 +36,6 @@ $form = new metric_edit_form();
 if($form->is_cancelled()) {
     redirect(new moodle_url('/local/playlyfe/metric/manage.php'));
 } else if ($data = $form->get_data()) {
-    $pl = local_playlyfe_sdk::get_pl();
     $metric = array(
       'name' => $data->name,
       'type' => 'point',
@@ -46,9 +49,9 @@ if($form->is_cancelled()) {
   }
 } else {
     $toform = array();
-    $toform['id'] = optional_param('id', null, PARAM_TEXT);;
-    $toform['name'] = optional_param('name', null, PARAM_TEXT);;
-    $form->set_data($toform);
+    $toform['id'] = required_param('id', PARAM_TEXT);
+    $metric = $pl->get('/design/versions/latest/metrics/'.$toform['id']);
+    $form->set_data($metric);
     echo $OUTPUT->header();
     $form->display();
     echo $OUTPUT->footer();

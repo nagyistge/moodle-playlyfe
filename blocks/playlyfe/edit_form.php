@@ -1,10 +1,14 @@
 <?php
-  #use Playlyfe\Sdk\Playlyfe;
 
   class block_playlyfe_edit_form extends block_edit_form {
 
       protected function specific_definition($mform) {
-
+          $pl = block_playlyfe_sdk::get_pl();
+          $leaderboards = $pl->get('/design/versions/latest/leaderboards', array('fields' => 'id'));
+          $leaderboardList = array();
+          foreach($leaderboards as $leaderboard){
+            array_push($leaderboardList, $leaderboard['id']);
+          }
           // Section header title according to language file.
           $mform->addElement('header', 'configheader', 'Set Block Details');
 
@@ -20,5 +24,8 @@
           $types = array('0' => 'Profile', '1' => 'Leaderboard', '2' => 'Players');
           $mform->addElement('select', 'config_type', 'Type', $types);
           $mform->setDefault('config_type', 0);
+
+          // $mform->addElement('header', 'configheader', 'If type is Leaderboard Select the leaderboard');
+          // $mform->addElement('select', 'config_id', 'Id', $leaderboards);
       }
   }

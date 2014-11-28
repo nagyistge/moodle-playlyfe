@@ -33,13 +33,23 @@ $table->id = 'manage_sets';
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name,type,constraints.items'));
 foreach($metrics as $metric) {
   if($metric['type'] == 'set') {
-    $edit = '<a href="edit.php?name='.$metric['name'].'&id='.$metric['id'].'">Edit</a>';
-    $delete = '<a href="manage.php?id='.$metric['id'].'&delete=true'.'">Delete</a>';
     $items = '';
     foreach($metric['constraints']['items'] as $item) {
       $items .= $item['name'].', ';
     }
-    $table->data[] = new html_table_row(array($metric['name'], $metric['id'], substr($items, 0, -2), $edit, $delete));
+    $items = substr($items, 0, -2);
+    $edit = '<a href="edit.php?name='.$metric['name'].'&id='.$metric['id'].'&items='.$items.'">Edit</a>';
+    $delete = '<a href="manage.php?id='.$metric['id'].'&delete=true'.'">Delete</a>';
+
+    $table3 = new html_table();
+    $table3->head  = array('Name', 'Description', 'Max');
+    $table3->colclasses = array('leftalign', 'rightalign');
+    $table3->data  = array();
+    $table3->attributes['class'] = 'admintable generaltable';
+    foreach($metric['constraints']['items']  as $item){
+      $table3->data[] = new html_table_row(array($item['name'], $item['description'], $item['max']));
+    }
+    $table->data[] = new html_table_row(array($metric['name'], $metric['id'],  html_writer::table($table3), $edit, $delete));
   }
 }
 $html .= html_writer::table($table);

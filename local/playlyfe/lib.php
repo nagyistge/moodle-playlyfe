@@ -2,16 +2,19 @@
   require_once('classes/sdk.php');
 
   function check_event($event, $event_name) {
-    #global $USER;
+    global $USER;
     #print_object($USER);
     #print_object($event);
-    $event_mapping = json_decode(get_config('playlyfe', 'event_mapping'), true);
-    #print_object($event_mapping);
-    if($event_mapping != null and array_key_exists($event_name, $event_mapping)) {
-      $pl = local_playlyfe_sdk::get_pl();
-      $data = array('player_id' => 'u'.$event->id);
+    $pl = local_playlyfe_sdk::get_pl();
+    $actions = $pl->get('/design/versions/latest/actions', array('fields' => 'id'));
+    $actionsList = array();
+    foreach($actions as $action){
+      array_push($actionsList, $action['id']);
+    }
+    if(in_array($actionsList, $event_name)) {
+      $data = array('player_id' => 'u'.$USER->id);
       try {
-        $pl->post('/runtime/actions/action1/play', $data, array('' => ''));
+        $pl->post('/runtime/actions/'.$event_name.'/play', $data, (object)array());
       }
       catch(Exception $e) {
         print_object($e);
@@ -29,18 +32,6 @@
 
   function user_deleted_handler($event) {
     check_event($event, 'user_deleted');
-  }
-
-  function course_created_handler($event) {
-    check_event($event, 'course_created');
-  }
-
-  function course_deleted_handler($event) {
-    check_event($event, 'course_deleted');
-  }
-
-  function course_updated_handler($event) {
-    check_event($event, 'course_updated');
   }
 
   function user_enrolled_handler($event) {
@@ -68,7 +59,9 @@
         $nodePlaylyfe = $sett->add('Gamification', null, null, null, 'playlyfe');
 
         $nodePlaylyfe->add('Client', new moodle_url('/local/playlyfe/client.php'), null, null, 'client', new pix_icon('t/edit', 'edit'));
-        $nodeLeaderboard = $nodePlaylyfe->add('Leaderboards', new moodle_url('/local/playlyfe/leaderboard.php'), null, null, 'leaderboards', new pix_icon('t/edit', 'edit'));
+        $nodeLeaderboard = $nodePlaylyfe->add('Leaderboards', null, null, null, 'leaderboards', null);
+        $nodeLeaderboard->add('Manage Leaderboards', new moodle_url('/local/playlyfe/leaderboard/manage.php'), null, null, 'manage', new pix_icon('t/edit', 'edit'));
+        $nodeLeaderboard->add('Add a new leaderboard', new moodle_url('/local/playlyfe/leaderboard/add.php'), null, null, 'add', new pix_icon('t/edit', 'edit'));
 
         $nodeAction = $nodePlaylyfe->add('Actions', null, null, null, 'actions', null);
         $nodeAction->add('Manage Actions', new moodle_url('/local/playlyfe/action/manage.php'), null, null, 'manage', new pix_icon('t/edit', 'edit'));

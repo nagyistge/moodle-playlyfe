@@ -25,6 +25,9 @@ class metric_add_form extends moodleform {
         $mform->addElement('text', 'name', 'Metric Name');
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->setType('name', PARAM_RAW);
+        $mform->addElement('textarea', 'description', 'Description');
+        $mform->addRule('description', null, 'required', '' , 'client');
+        $mform->setType('description', PARAM_RAW);
         $this->add_action_buttons();
     }
 }
@@ -65,6 +68,7 @@ if($form->is_cancelled()) {
       'name' => $data->name,
       'type' => 'point',
       'image' => 'default-point-metric',
+      'description' => $data->description,
       'constraints' => array(
         'default' => '0',
         'max' => 'Infinity',
