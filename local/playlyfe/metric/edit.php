@@ -15,44 +15,37 @@ $PAGE->navigation->clear_cache();
 $html = '';
 $pl = local_playlyfe_sdk::get_pl();
 
-class metric_edit_form extends moodleform {
-
-    function definition() {
-        $mform =& $this->_form;
-        $mform->addElement('header','displayinfo', 'Change Metric Name');
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_RAW);
-        $mform->addElement('text', 'name', 'Metric Name');
-        $mform->addRule('name', null, 'required', null, 'client');
-        $mform->setType('name', PARAM_RAW);
-        $mform->addElement('textarea', 'description', 'Description');
-        $mform->addRule('description', null, 'required', '' , 'client');
-        $mform->setType('description', PARAM_RAW);
-        $this->add_action_buttons();
-    }
-}
-
-$form = new metric_edit_form();
-if($form->is_cancelled()) {
-    redirect(new moodle_url('/local/playlyfe/metric/manage.php'));
-} else if ($data = $form->get_data()) {
-    $metric = array(
-      'name' => $data->name,
-      'type' => 'point',
-    );
+if (array_key_exists('id', $_POST)) {
+  $metric = array(
+    'name' => $_POST['name'],
+    'description' => $_POST['description'],
+    'type' => 'point'
+  );
   try {
-    $pl->patch('/design/versions/latest/metrics/'.$data->id, array(), $metric);
+    //if(!is_null($_FILES['uploadedfile']['name'])) {
+    //  $image = $pl->post('/design/images', array());
+    //  $metric['image'] = $image['id'];
+    //}
+    $pl->patch('/design/versions/latest/metrics/'.$_POST['id'], array(), $metric);
     redirect(new moodle_url('/local/playlyfe/metric/manage.php'));
   }
   catch(Exception $e) {
     print_object($e);
   }
 } else {
-    $toform = array();
-    $toform['id'] = required_param('id', PARAM_TEXT);
-    $metric = $pl->get('/design/versions/latest/metrics/'.$toform['id']);
-    $form->set_data($metric);
+    $id = required_param('id', PARAM_TEXT);
+    $metric = $pl->get('/design/versions/latest/metrics/'.$id, array());
+    $metric_name = $metric['name'];
     echo $OUTPUT->header();
-    $form->display();
+    $html .= "<h1> Editing Metric - $metric_name </h1>";
+    $html .= '<form enctype="multipart/form-data" action="edit.php" method="post">';
+    $html .= '<input type="hidden" name="MAX_FILE_SIZE" value="500000000" />'; //500kb is 500000
+    $html .= '<p>Metric Image: <input type="file" name="uploadedfile" /></p>';
+    $html .= '<p>Metric Name: <input type="text" name="name" value="'.$metric_name.'"/></p>';
+    $html .= '<input type="hidden" name="id" value="'.$id.'"/>';
+    $html .= '<p>Metric Description: <input type="text" name="description" value="'.$metric['description'].'"/></p>';
+    $html .= '<input type="submit" name="submit" value="Submit" />';
+    $html .= '</form>';
+    echo $html;
     echo $OUTPUT->footer();
 }

@@ -39,73 +39,84 @@ $form = new metric_add_form();
 //   $metric_id = optional_param('metric_id', null, PARAM_TEXT);
 //   $metric_name = optional_param('metric_name', null, PARAM_TEXT);
 //   $pl = local_playlyfe_sdk::get_pl();
-//   $data = array(
-//     'id' => $metric_id,
-//     'name' => $metric_name,
-//     'type' => 'point',
-//     'image' => 'default-point-metric',
-//     'constraints' => array(
-//       'default' => '0',
-//       'max' => 'Infinity',
-//       'min' => '0'
-//     )
-//   );
-//   try {
-//     $pl->post('/design/versions/latest/metrics', array(), $data);
-//     redirect(new moodle_url('/local/playlyfe/metric/manage.php'));
-//   }
-//   catch(Exception $e) {
-//     print_object($e);
-//   }
 // }
 
-if($form->is_cancelled()) {
-    redirect(new moodle_url('/local/playlyfe/metric/manage.php'));
-} else if ($data = $form->get_data()) {
+if (array_key_exists('id', $_POST)) {
+    // if (!isset($_FILES['uploadedfile']['error']) || is_array($_FILES['upfile']['error'])) {
+    //   throw new RuntimeException('Invalid parameters.');
+    // }
+    //
+    // Check $_FILES['uploadedfile']['error'] value.
+    // switch ($_FILES['uploadedfile']['error']) {
+    //     case UPLOAD_ERR_OK:
+    //         break;
+    //     case UPLOAD_ERR_NO_FILE:
+    //         throw new RuntimeException('No file sent.');
+    //     case UPLOAD_ERR_INI_SIZE:
+    //     case UPLOAD_ERR_FORM_SIZE:
+    //         throw new RuntimeException('Exceeded filesize limit.');
+    //     default:
+    //         throw new RuntimeException('Unknown errors.');
+    // }
+    // print_object($_POST);
+    // print_object($_FILES);
     $pl = local_playlyfe_sdk::get_pl();
     $metric = array(
-      'id' => $data->id,
-      'name' => $data->name,
+      'id' => $_POST['id'],
+      'name' => $_POST['name'],
       'type' => 'point',
       'image' => 'default-point-metric',
-      'description' => $data->description,
+      'description' => $_POST['description'],
       'constraints' => array(
         'default' => '0',
         'max' => 'Infinity',
         'min' => '0'
       )
     );
+    $leaderboard = array(
+      'id' => $_POST['id'],
+      'name' => $_POST['name'],
+      'type' => 'regular',
+      'description' => '',
+      'entity_type' => 'players',
+      'scope' => array(
+        'type' => 'custom'
+      ),
+      'metric' => array(
+        'id' => $_POST['id'],
+        'type' => 'point'
+      )
+    );
   try {
+  //  if(!is_null($_FILES['uploadedfile']['name'])) {
+      // echo 'IST NULL';
+   //   $image = $pl->post('/design/images', array());
+   //   $metric['image'] = $image['id'];
+   // }
     $pl->post('/design/versions/latest/metrics', array(), $metric);
+    $pl->post('/design/versions/latest/leaderboards', array(), $leaderboard);
     redirect(new moodle_url('/local/playlyfe/metric/manage.php'));
   }
   catch(Exception $e) {
     print_object($e);
   }
 } else {
+    if (array_key_exists('id', $_GET)) {
+      $metric = $pl->get('/design/versions/latest/metrics/'.$_GET['id'], array());
+    }
     echo $OUTPUT->header();
-    $form->display();
+    $html .= '<h1> Create a new Metric </h1>';
+    $html .= '<form enctype="multipart/form-data" action="add.php" method="post">';
+    $html .= '<input type="hidden" name="MAX_FILE_SIZE" value="500000000" />'; //500kb is 500000
+    $html .= '<p>Metric Image: <input type="file" name="uploadedfile" /></p>';
+    $html .= '<p>Metric Name: <input type="text" name="name" required/></p>';
+    $html .= '<p>Metric Id: <input type="text" name="id" required/></p>';
+    $html .= '<p>Metric Description: <input type="text" name="description" required/></p>';
+    $html .= '<input type="submit" name="submit" value="Submit" />';
+    $html .= '</form>';
+    echo $html;
     echo $OUTPUT->footer();
 }
-// else {
-//   echo $OUTPUT->header();
-//   $form->display();
-//   $html .= '<form action="add.php" method="post">';
-//   $html .= '<p>Metric Name: <input type="text" name="metric_name" /></p>';
-//   $html .= '<p>Metric Id: <input type="text" name="metric_id" /></p>';
-//   $html .= '<input type="submit" name="submit" value="Submit" />';
-//   $html .= '</form>';
-//   echo $html;
-//   echo $OUTPUT->footer();
-// }
-  #require_once($CFG->dirroot.'/local/playlyfe/judgelib.php');
-  // $settings = new admin_settingpage('playlyfe', 'Playlyfe');
-  // $settings->add(new admin_setting_heading('header', 'Client','Please provide your white label client details here'));
-  // $settings->add(new admin_setting_configtext('playlyfe/client_id', 'Client ID', '', PARAM_RAW));
-  // $settings->add(new admin_setting_configtext('playlyfe/client_secret', 'Client Secret', '', PARAM_RAW));
-  // $settings->add(new admin_setting_configtext('playlyfe/access_token', 'Access Token', '', PARAM_RAW));
-  // echo $settings->output_html();
-
 // <div id="admin-client_id" class="form-item clearfix">
 //   <div class="form-label">
 //     <label for="id_s_playlyfe_client_id">Client ID</label>

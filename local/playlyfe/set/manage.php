@@ -22,38 +22,32 @@ if($id and $delete) {
   $pl->delete('/design/versions/latest/metrics/'.$id, array());
 }
 
-$html .= $OUTPUT->box_start('generalbox authsui');
 $table = new html_table();
-$table->head  = array('Name', 'ID', 'Badges', '', '');
-$table->colclasses = array('leftalign', 'leftalign', 'centeralign', 'rightalign');
+$table->head  = array('Image', 'ID', 'Name',  'Description', 'Badges', '', '');
+$table->colclasses = array('centeralign', 'leftalign', 'leftalign', 'centeralign', 'rightalign');
 $table->data  = array();
 $table->attributes['class'] = 'admintable generaltable';
 $table->id = 'manage_sets';
 
-$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name,type,constraints.items'));
+$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name,type,description,constraints.items'));
 foreach($metrics as $metric) {
   if($metric['type'] == 'set') {
-    $items = '';
-    foreach($metric['constraints']['items'] as $item) {
-      $items .= $item['name'].', ';
-    }
-    $items = substr($items, 0, -2);
-    $edit = '<a href="edit.php?name='.$metric['name'].'&id='.$metric['id'].'&items='.$items.'">Edit</a>';
+    $edit = '<a href="edit.php?id='.$metric['id'].'">Edit</a>';
     $delete = '<a href="manage.php?id='.$metric['id'].'&delete=true'.'">Delete</a>';
-
+    $set_image = '<img src="../image.php?metric='.$metric['id'].'"></img>';
     $table3 = new html_table();
-    $table3->head  = array('Name', 'Description', 'Max');
-    $table3->colclasses = array('leftalign', 'rightalign');
+    $table3->head  = array('Image', 'Name', 'Description', 'Max');
+    $table3->colclasses = array('centeralign', 'leftalign', 'rightalign');
     $table3->data  = array();
     $table3->attributes['class'] = 'admintable generaltable';
-    foreach($metric['constraints']['items']  as $item){
-      $table3->data[] = new html_table_row(array($item['name'], $item['description'], $item['max']));
+    foreach($metric['constraints']['items'] as $item){
+      $item_image = '<img src="image.php?metric='.$metric['id'].'&item='.$item['name'].'"></img>';
+      $table3->data[] = new html_table_row(array($item_image, $item['name'], $item['description'], $item['max']));
     }
-    $table->data[] = new html_table_row(array($metric['name'], $metric['id'],  html_writer::table($table3), $edit, $delete));
+    $table->data[] = new html_table_row(array($set_image, $metric['id'], $metric['name'], $metric['description'], html_writer::table($table3), $edit, $delete));
   }
 }
 $html .= html_writer::table($table);
-$html .= $OUTPUT->box_end();
 echo $OUTPUT->header();
 echo '<h1>Sets</h1>';
 echo $html;

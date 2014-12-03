@@ -1,7 +1,5 @@
 <?php
 require(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
-require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->libdir . '/formslib.php');
 require(dirname(dirname(__FILE__)).'/classes/sdk.php');
 $PAGE->set_context(null);
 $PAGE->set_pagelayout('admin');
@@ -16,49 +14,44 @@ $PAGE->requires->jquery();
 $html = '';
 $pl = local_playlyfe_sdk::get_pl();
 
-class metric_add_form extends moodleform {
-
-    function definition() {
-        $mform =& $this->_form;
-        $mform->addElement('header','displayinfo', 'Create a Set');
-        $mform->addElement('text', 'id', 'Set ID');
-        $mform->addRule('id', null, 'required', null, 'client');
-        $mform->setType('id', PARAM_RAW);
-        $mform->addElement('text', 'name', 'Set Name');
-        $mform->addRule('name', null, 'required', null, 'client');
-        $mform->setType('name', PARAM_RAW);
-        $this->add_action_buttons();
-    }
-}
-
-$form = new metric_add_form();
-if($form->is_cancelled()) {
-    redirect(new moodle_url('/local/playlyfe/set/manage.php'));
-} else if ($data = $form->get_data()) {
+if (array_key_exists('id', $_POST)) {
     $items_names = $_POST['items_names'];
     $items_desc = $_POST['items_desc'];
     $items_max = $_POST['items_max'];
+    $items_hidden = $_POST['items_hidden'];
     $items = array();
     for ($i = 0; $i < count($items_names); $i++) {
+      if($items_hidden[$i] == 'on'){
+        $hidden = true;
+      }
+      else {
+        $hidden = false;
+      }
       array_push($items, array(
         'name' => $items_names[$i],
         'max' => $items_max[$i],
-        'image' => '',
-        'description' => $items_desc[$i]
+        'image' => 'default-item',
+        'description' => $items_desc[$i],
+        'hidden' => $hidden
       ));
     }
     $set = array(
-      'id' => $data->id,
-      'name' => $data->name,
+      'id' => $_POST['id'],
+      'name' => $_POST['name'],
       'type' => 'set',
       'image' => 'default-set-metric',
+      'description' => $_POST['description'],
       'constraints' => array(
         'items' => $items,
         'max_items' => 'Infinity'
       )
     );
-    print_object($set);
     try {
+      //print_object($_FILES);
+      //  if(!is_null($_FILES['uploadedfile']['name'])) {
+      //   $image = $pl->post('/design/images', array());
+      //   $set['image'] = $image['id'];
+      // }
       $pl->post('/design/versions/latest/metrics', array(), $set);
       redirect(new moodle_url('/local/playlyfe/set/manage.php'));
     }
@@ -67,8 +60,18 @@ if($form->is_cancelled()) {
     }
 } else {
     echo $OUTPUT->header();
-    $form->display();
-    echo '<button id="add">Add Badges</button>';
+    $html .= '<h1> Create a new Set </h1>';
+    $html .= '<form id="mform1" enctype="multipart/form-data" action="add.php" method="post">';
+    $html .= '<input type="hidden" name="MAX_FILE_SIZE" value="500000000" />'; //500kb is 500000
+    $html .= '<p>Metric Image: <input type="file" name="uploadedfile" /></p>';
+    $html .= '<p>Metric Name: <input type="text" name="name" required/></p>';
+    $html .= '<p>Metric Id: <input type="text" name="id" required/></p>';
+    $html .= '<p>Metric Description: <input type="text" name="description" required/></p>';
+    $html .= '<input type="submit" name="submit" value="Submit" />';
+    $html .= '</form>';
+    $html .= '<button id="add">Add Items</button>';
+    echo $html;
+    echo $OUTPUT->footer();
 }
 ?>
 <script>
@@ -79,18 +82,17 @@ if($form->is_cancelled()) {
       var index = 0;
       $('#add').click(function() {
         $('#mform1').append(
-          '<div id="item'+index+'">'
+          '<div class="box generalbox authsui" id="item'+index+'">'
           +'Badge '+(index+1)+'<button onclick=remove('+index+')>delete</button>'
           +'<p>Name: <input name="items_names['+index+']" type="text" required /></p>'
           +'<p>Description: <input name="items_desc['+index+']" type="text" required /></p>'
-          +'<p>Max: <input name="items_max['+index+']" type="number" value="1" required /></p></div>'
+          +'<p>Max: <input name="items_max['+index+']" type="number" value="1" required /></p>'
+          +'<input type="hidden" name="MAX_FILE_SIZE" value="500000000" />'
+          +'<p>Badge Image: <input type="file" name="itemfile'+index+'" /></p>'
+          +'<p>Hidden: <input name="items_hidden['+index+']" type="checkbox" checked /></p></div>'
         );
         index++;
       });
     });
 </script>
-<?php
-  echo '';
-  echo $OUTPUT->footer();
-  echo '';
 

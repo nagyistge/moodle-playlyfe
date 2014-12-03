@@ -20,21 +20,12 @@ $delete = optional_param('delete', null, PARAM_TEXT);
 $id = optional_param('id', null, PARAM_TEXT);
 if($id and $delete) {
   $pl->delete('/design/versions/latest/metrics/'.$id, array());
+  $pl->delete('/design/versions/latest/leaderboards/'.$id, array());
 }
 
-class metric_list_form extends moodleform {
-
-    function definition() {
-
-        $mform =& $this->_form;
-        $mform->addElement('header','displayinfo', 'Metrics');
-    }
-}
-
-$html .= $OUTPUT->box_start('generalbox authsui');
 $table = new html_table();
-$table->head  = array('Name', 'ID', 'Description', '', '');
-$table->colclasses = array('leftalign', 'centeralign', 'rightalign');
+$table->head  = array('Image', 'ID', 'Name', 'Description', '', '');
+$table->colclasses = array('leftalign', 'centeralign', 'rightalign', 'rightalign', 'rightalign');
 $table->data  = array();
 $table->attributes['class'] = 'admintable generaltable';
 $table->id = 'manage_metrics';
@@ -42,13 +33,22 @@ $table->id = 'manage_metrics';
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name,type,description'));
 foreach($metrics as $metric) {
   if($metric['type'] == 'point') {
-    $edit = '<a href="edit.php?name='.$metric['name'].'&id='.$metric['id'].'">Edit</a>';
+    $edit = '<a href="edit.php?id='.$metric['id'].'">Edit</a>';
     $delete = '<a href="manage.php?id='.$metric['id'].'&delete=true'.'">Delete</a>';
-    $table->data[] = new html_table_row(array($metric['name'], $metric['id'], $metric['description'], $edit, $delete));
+    $item_image = '<img src="../image.php?metric='.$metric['id'].'"></img>';
+    $table->data[] = new html_table_row(array($item_image, $metric['id'], $metric['name'], $metric['description'], $edit, $delete));
+    $pl->post('/admin/leaderboards/'.$metric['id'].'/course1', array());
+    $pl->post('/runtime/actions/aaa/play', array('player_id' => 'u2'), array(
+      'scopes' => array(
+        array(
+          'entity_id' => 'u2',
+          'id' => 'erer/course1'
+        )
+      )
+    ));
   }
 }
 $html .= html_writer::table($table);
-$html .= $OUTPUT->box_end();
 echo $OUTPUT->header();
 echo '<h1>Metrics</h1>';
 echo $html;
