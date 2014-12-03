@@ -16,24 +16,19 @@
 # assessable_submitted -> mod_assign\event\assessable_submitted
 # quiz_attempt_submitted -> mod_quiz\event\attempt_submitted
 # workshop_viewed -> mod_workshop\event\course_module_viewed
-#
 
-#global $CFG;
-#$CFG->version < 2009011900
-if(true) {
-  $event_names = array (
-    'course_completed',
-    'groups_member_added',
-    'groups_member_removed',
-    'role_assigned',
-    'role_unassigned',
-    'user_enrolled',
-    'user_logout',
-    'user_updated',
-    'assessable_submitted',
-    'quiz_attempt_submitted'
-  );
-}
+$event_names = array (
+  'course_completed',
+  'groups_member_added',
+  'groups_member_removed',
+  'role_assigned',
+  'role_unassigned',
+  'user_enrolled',
+  'user_logout',
+  'user_updated',
+  'assessable_submitted',
+  'quiz_attempt_submitted'
+);
 
 $event_handlers = array();
 foreach($event_names as $event_name) {

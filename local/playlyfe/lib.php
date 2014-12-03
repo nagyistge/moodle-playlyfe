@@ -4,14 +4,14 @@
   function check_event($event, $event_name) {
     global $USER;
     #print_object($USER);
-    #print_object($event);
+    print_object($event);
     $pl = local_playlyfe_sdk::get_pl();
     $actions = $pl->get('/design/versions/latest/actions', array('fields' => 'id'));
     $actionsList = array();
     foreach($actions as $action){
       array_push($actionsList, $action['id']);
     }
-    if(in_array($actionsList, $event_name)) {
+    if(in_array($event_name, $actionsList)) {
       $data = array('player_id' => 'u'.$USER->id);
       try {
         $pl->post('/runtime/actions/'.$event_name.'/play', $data, (object)array());
@@ -59,6 +59,10 @@
         $nodePlaylyfe = $sett->add('Gamification', null, null, null, 'playlyfe');
 
         $nodePlaylyfe->add('Client', new moodle_url('/local/playlyfe/client.php'), null, null, 'client', new pix_icon('t/edit', 'edit'));
+        $nodePlaylyfe->add('Publish', new moodle_url('/local/playlyfe/publish.php'), null, null, 'publish', new pix_icon('t/edit', 'edit'));
+
+        $nodePlaylyfe->add('Course', new moodle_url('/local/playlyfe/course.php'), null, null, 'course', new pix_icon('t/edit', 'edit'));
+
         $nodeLeaderboard = $nodePlaylyfe->add('Leaderboards', null, null, null, 'leaderboards', null);
         $nodeLeaderboard->add('Manage Leaderboards', new moodle_url('/local/playlyfe/leaderboard/manage.php'), null, null, 'manage', new pix_icon('t/edit', 'edit'));
         $nodeLeaderboard->add('Add a new leaderboard', new moodle_url('/local/playlyfe/leaderboard/add.php'), null, null, 'add', new pix_icon('t/edit', 'edit'));
@@ -75,8 +79,7 @@
         $nodeSet->add('Manage sets', new moodle_url('/local/playlyfe/set/manage.php'), null, null, 'manage', new pix_icon('t/edit', 'edit'));
         $nodeSet->add('Add a new set', new moodle_url('/local/playlyfe/set/add.php'), null, null, 'add', new pix_icon('t/edit', 'edit'));
       }
-      #print_object($sett->get_children_key_list());
-      #new pix_icon('t/addcontact', $strfoo)
+      // new pix_icon('t/addcontact', $strfoo)
       // global $CFG, $PAGE;
       // // Only add this settings item on non-site course pages.
       // if (!$PAGE->course or $PAGE->course->id == 1) {
@@ -105,6 +108,6 @@
       // }
   }
 
-  // function local_playlyfe_extends_navigation($navigation) {
-  //   $nodeFoo = $navigation->add('Foo', new moodle_url('/local/playlyfe/'));
-  // }
+  function local_playlyfe_extends_navigation($navigation) {
+    $nodeProfile = $navigation->add('Playlyfe Profile', new moodle_url('/local/playlyfe/profile.php'));
+  }

@@ -9,12 +9,12 @@ $PAGE->set_url('/client.php');
 $PAGE->set_title($SITE->shortname);
 $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
-$PAGE->settingsnav->get('root')->get('playlyfe')->get('client')->make_active();
 $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
 $PAGE->navigation->clear_cache();
- if (!has_capability('moodle/site:config', context_system::instance())) {
+if (!has_capability('moodle/site:config', context_system::instance())) {
   print_error('accessdenied', 'admin');
 }
+$PAGE->settingsnav->get('root')->get('playlyfe')->get('client')->make_active();
 
 class client_form extends moodleform {
 
@@ -39,6 +39,7 @@ if($form->is_cancelled()) {
 } else if ($data = $form->get_data()) {
   set_config('client_id', $data->id, 'playlyfe');
   set_config('client_secret', $data->secret, 'playlyfe');
+  set_config('access_token', null, 'playlyfe');
   redirect(new moodle_url('/local/playlyfe/client.php'));
 } else {
   $toform = array();
