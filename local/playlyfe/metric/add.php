@@ -88,11 +88,9 @@ if (array_key_exists('id', $_POST)) {
       )
     );
   try {
-  //  if(!is_null($_FILES['uploadedfile']['name'])) {
-      // echo 'IST NULL';
-   //   $image = $pl->post('/design/images', array());
-   //   $metric['image'] = $image['id'];
-   // }
+    if (strlen($_FILES['uploadedfile']['name']) > 0) {
+       $metric['image'] = $pl->upload_image($_FILES['uploadedfile']['tmp_name']);
+    }
     $pl->post('/design/versions/latest/metrics', array(), $metric);
     $pl->post('/design/versions/latest/leaderboards', array(), $leaderboard);
     redirect(new moodle_url('/local/playlyfe/metric/manage.php'));

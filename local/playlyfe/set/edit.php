@@ -10,6 +10,7 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->settingsnav->get('root')->get('playlyfe')->get('sets')->make_active();
 $PAGE->navigation->clear_cache();
+$PAGE->requires->jquery();
 $html = '';
 $pl = local_playlyfe_sdk::get_pl();
 
@@ -26,10 +27,16 @@ if (array_key_exists('id', $_POST)) {
       else {
         $hidden = false;
       }
+      if (strlen($_FILES['itemfile'.$i]['name']) > 0) {
+        $item_image = $pl->upload_image($_FILES['itemfile'.$i]['tmp_name']);
+      }
+      else {
+        $item_image = 'default-item';
+      }
       array_push($items, array(
         'name' => $items_names[$i],
         'max' => $items_max[$i],
-        'image' => 'default-item',
+        'image' => $item_image,
         'description' => $items_desc[$i],
         'hidden' => $hidden
       ));
@@ -45,11 +52,9 @@ if (array_key_exists('id', $_POST)) {
       )
     );
   try {
-      //print_object($_FILES);
-      //  if(!is_null($_FILES['uploadedfile']['name'])) {
-      //   $image = $pl->post('/design/images', array());
-      //   $set['image'] = $image['id'];
-      // }
+    if (strlen($_FILES['uploadedfile']['name']) > 0) {
+      $set['image'] = $pl->upload_image($_FILES['uploadedfile']['tmp_name']);
+    }
     $pl->patch('/design/versions/latest/metrics/'.$_POST['id'], array(), $set);
     redirect(new moodle_url('/local/playlyfe/set/manage.php'));
    }
@@ -82,6 +87,7 @@ if (array_key_exists('id', $_POST)) {
       $html .= $OUTPUT->box_end();
       $index++;
     }
+    $html .= '<div id="extra"></div>';
     $html .= '<input type="submit" name="submit" value="Submit" />';
     $html .= '</form>';
     $html .= '<button id="add">Add Items</button>';
@@ -96,7 +102,7 @@ if (array_key_exists('id', $_POST)) {
     $(function() {
       var index = 0;
       $('#add').click(function() {
-        $('#mform1').append(
+        $('#extra').append(
           '<div id="item'+index+'">'
           +'Badge '+(index+1)+'<button onclick=remove('+index+')>delete</button>'
           +'<p>Name: <input name="items_names['+index+']" type="text" required /></p>'

@@ -29,19 +29,19 @@ $table->data  = array();
 $table->attributes['class'] = 'admintable generaltable';
 $table->id = 'manage_sets';
 
-$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name,type,description,constraints.items'));
+$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name,type,description,image,constraints.items'));
 foreach($metrics as $metric) {
   if($metric['type'] == 'set') {
     $edit = '<a href="edit.php?id='.$metric['id'].'">Edit</a>';
     $delete = '<a href="manage.php?id='.$metric['id'].'&delete=true'.'">Delete</a>';
-    $set_image = '<img src="../image.php?metric='.$metric['id'].'"></img>';
+    $set_image = '<img src="../image.php?image_id='.$metric['image'].'"></img>';
     $table3 = new html_table();
     $table3->head  = array('Image', 'Name', 'Description', 'Max');
     $table3->colclasses = array('centeralign', 'leftalign', 'rightalign');
     $table3->data  = array();
     $table3->attributes['class'] = 'admintable generaltable';
     foreach($metric['constraints']['items'] as $item){
-      $item_image = '<img src="image.php?metric='.$metric['id'].'&item='.$item['name'].'"></img>';
+      $item_image = '<img src="../image.php?image_id='.$item['image'].'"></img>';
       $table3->data[] = new html_table_row(array($item_image, $item['name'], $item['description'], $item['max']));
     }
     $table->data[] = new html_table_row(array($set_image, $metric['id'], $metric['name'], $metric['description'], html_writer::table($table3), $edit, $delete));

@@ -30,12 +30,12 @@ $table->data  = array();
 $table->attributes['class'] = 'admintable generaltable';
 $table->id = 'manage_metrics';
 
-$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name,type,description'));
+$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name,type,description,image'));
 foreach($metrics as $metric) {
   if($metric['type'] == 'point') {
     $edit = '<a href="edit.php?id='.$metric['id'].'">Edit</a>';
     $delete = '<a href="manage.php?id='.$metric['id'].'&delete=true'.'">Delete</a>';
-    $item_image = '<img src="../image.php?metric='.$metric['id'].'"></img>';
+    $item_image = '<img src="../image.php?image_id='.$metric['image'].'"></img>';
     $table->data[] = new html_table_row(array($item_image, $metric['id'], $metric['name'], $metric['description'], $edit, $delete));
     $pl->post('/admin/leaderboards/'.$metric['id'].'/course1', array());
     $pl->post('/runtime/actions/aaa/play', array('player_id' => 'u2'), array(

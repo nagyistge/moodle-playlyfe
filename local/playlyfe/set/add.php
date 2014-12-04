@@ -27,10 +27,16 @@ if (array_key_exists('id', $_POST)) {
       else {
         $hidden = false;
       }
+      if (strlen($_FILES['itemfile'.$i]['name']) > 0) {
+        $item_image = $pl->upload_image($_FILES['itemfile'.$i]['tmp_name']);
+      }
+      else {
+        $item_image = 'default-item';
+      }
       array_push($items, array(
         'name' => $items_names[$i],
         'max' => $items_max[$i],
-        'image' => 'default-item',
+        'image' => $item_image,
         'description' => $items_desc[$i],
         'hidden' => $hidden
       ));
@@ -47,11 +53,9 @@ if (array_key_exists('id', $_POST)) {
       )
     );
     try {
-      //print_object($_FILES);
-      //  if(!is_null($_FILES['uploadedfile']['name'])) {
-      //   $image = $pl->post('/design/images', array());
-      //   $set['image'] = $image['id'];
-      // }
+      if (strlen($_FILES['uploadedfile']['name']) > 0) {
+        $set['image'] = $pl->upload_image($_FILES['uploadedfile']['tmp_name']);
+      }
       $pl->post('/design/versions/latest/metrics', array(), $set);
       redirect(new moodle_url('/local/playlyfe/set/manage.php'));
     }
@@ -67,7 +71,8 @@ if (array_key_exists('id', $_POST)) {
     $html .= '<p>Metric Name: <input type="text" name="name" required/></p>';
     $html .= '<p>Metric Id: <input type="text" name="id" required/></p>';
     $html .= '<p>Metric Description: <input type="text" name="description" required/></p>';
-    $html .= '<input type="submit" name="submit" value="Submit" />';
+    $html .= '<div id="extra"></div>';
+    $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
     $html .= '</form>';
     $html .= '<button id="add">Add Items</button>';
     echo $html;
@@ -81,7 +86,7 @@ if (array_key_exists('id', $_POST)) {
     $(function() {
       var index = 0;
       $('#add').click(function() {
-        $('#mform1').append(
+        $('#extra').append(
           '<div class="box generalbox authsui" id="item'+index+'">'
           +'Badge '+(index+1)+'<button onclick=remove('+index+')>delete</button>'
           +'<p>Name: <input name="items_names['+index+']" type="text" required /></p>'

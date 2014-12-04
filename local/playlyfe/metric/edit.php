@@ -15,6 +15,8 @@ $PAGE->navigation->clear_cache();
 $html = '';
 $pl = local_playlyfe_sdk::get_pl();
 
+define("UPLOAD_DIR", "/images/");
+
 if (array_key_exists('id', $_POST)) {
   $metric = array(
     'name' => $_POST['name'],
@@ -22,10 +24,10 @@ if (array_key_exists('id', $_POST)) {
     'type' => 'point'
   );
   try {
-    //if(!is_null($_FILES['uploadedfile']['name'])) {
-    //  $image = $pl->post('/design/images', array());
-    //  $metric['image'] = $image['id'];
-    //}
+    if (strlen($_FILES['uploadedfile']['name']) > 0) {
+      $myFile = $_FILES['uploadedfile']['tmp_name'];
+      $metric['image'] = $pl->upload_image($myFile);
+    }
     $pl->patch('/design/versions/latest/metrics/'.$_POST['id'], array(), $metric);
     redirect(new moodle_url('/local/playlyfe/metric/manage.php'));
   }
