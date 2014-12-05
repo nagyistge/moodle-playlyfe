@@ -19,13 +19,8 @@
 
 $event_names = array (
   'course_completed',
-  'groups_member_added',
-  'groups_member_removed',
-  'role_assigned',
-  'role_unassigned',
   'user_enrolled',
   'user_logout',
-  'user_updated',
   'assessable_submitted',
   'quiz_attempt_submitted'
 );

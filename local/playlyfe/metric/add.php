@@ -14,52 +14,7 @@ $PAGE->settingsnav->get('root')->get('playlyfe')->get('metrics')->get('add')->ma
 $PAGE->navigation->clear_cache();
 $html = '';
 
-class metric_add_form extends moodleform {
-
-    function definition() {
-        $mform =& $this->_form;
-        $mform->addElement('header','displayinfo', 'Create a Metric');
-        $mform->addElement('text', 'id', 'Metric ID');
-        $mform->addRule('id', null, 'required', null, 'client');
-        $mform->setType('id', PARAM_RAW);
-        $mform->addElement('text', 'name', 'Metric Name');
-        $mform->addRule('name', null, 'required', null, 'client');
-        $mform->setType('name', PARAM_RAW);
-        $mform->addElement('textarea', 'description', 'Description');
-        $mform->addRule('description', null, 'required', '' , 'client');
-        $mform->setType('description', PARAM_RAW);
-        $this->add_action_buttons();
-    }
-}
-
-$form = new metric_add_form();
-
-// $submit = optional_param('submit', null, PARAM_TEXT);
-// if($submit == 'Submit') {
-//   $metric_id = optional_param('metric_id', null, PARAM_TEXT);
-//   $metric_name = optional_param('metric_name', null, PARAM_TEXT);
-//   $pl = local_playlyfe_sdk::get_pl();
-// }
-
 if (array_key_exists('id', $_POST)) {
-    // if (!isset($_FILES['uploadedfile']['error']) || is_array($_FILES['upfile']['error'])) {
-    //   throw new RuntimeException('Invalid parameters.');
-    // }
-    //
-    // Check $_FILES['uploadedfile']['error'] value.
-    // switch ($_FILES['uploadedfile']['error']) {
-    //     case UPLOAD_ERR_OK:
-    //         break;
-    //     case UPLOAD_ERR_NO_FILE:
-    //         throw new RuntimeException('No file sent.');
-    //     case UPLOAD_ERR_INI_SIZE:
-    //     case UPLOAD_ERR_FORM_SIZE:
-    //         throw new RuntimeException('Exceeded filesize limit.');
-    //     default:
-    //         throw new RuntimeException('Unknown errors.');
-    // }
-    // print_object($_POST);
-    // print_object($_FILES);
     $pl = local_playlyfe_sdk::get_pl();
     $metric = array(
       'id' => $_POST['id'],
@@ -115,11 +70,3 @@ if (array_key_exists('id', $_POST)) {
     echo $html;
     echo $OUTPUT->footer();
 }
-// <div id="admin-client_id" class="form-item clearfix">
-//   <div class="form-label">
-//     <label for="id_s_playlyfe_client_id">Client ID</label>
-//     <span class="form-shortname">playlyfe | client_id</span>
-//   </div>
-//   <div class="form-setting"><div class="form-text defaultsnext"><input type="text" value="raw" name="s_playlyfe_client_id" id="id_s_playlyfe_client_id" size="30"></div><div class="form-defaultinfo">Default: raw</div></div>
-//   <div class="form-description"></div>
-// </div>
