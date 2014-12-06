@@ -19,27 +19,43 @@ $pl = local_playlyfe_sdk::get_pl();
 $html = '';
 
 $action = $pl->get('/design/versions/latest/actions/course_completed');
+$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
 
 if (array_key_exists('id', $_POST)) {
   $id = $_POST['id'];
   $i = 0;
-  $course = array('id' => $id, 'leaderboard' => null);
   $rewards = array();
   if(array_key_exists('metrics', $_POST)) {
     foreach($_POST['metrics'] as $metric) {
+      $type = 'point';
+      foreach($metrics as $pl_metric) {
+        if($pl_metric['id'] == $metric) {
+          $type = $pl_metric['type'];
+          break;
+        }
+      }
+      $verb = $_POST['verbs'][$i];
+      if(array_key_exists($i, $_POST['badges'])) {
+        $value = array();
+        $value[$_POST['badges'][$i]] = $_POST['values'][$i];
+      }
+      else {
+        $value = $_POST['values'][$i];
+      }
       $reward = array(
         'metric' => array(
           'id' => $metric,
-          'type' => 'point'
+          'type' => $type
         ),
-        'verb' => $_POST['verbs'][$i],
-        'value' => $_POST['values'][$i]
+        'verb' => $verb,
+        'value' => $value
       );
       $i++;
       array_push($rewards, $reward);
     }
   }
   unset($action['id']);
+  unset($action['_errors']);
   $action['requires'] = (object)array();
   $has_course = false;
   $new_rules = array();
@@ -71,7 +87,6 @@ if (array_key_exists('id', $_POST)) {
   if(array_key_exists('leaderboard_metric', $_POST)) {
     $leaderboard_metric = $_POST['leaderboard_metric'];
     set_config('course'.$id, $leaderboard_metric, 'playlyfe');
-    $course['leaderboard'] = $leaderboard_metric;
     $pl->post('/admin/leaderboards/'.$leaderboard_metric.'/course'.$id, array());
     $pl->post('/runtime/actions/course_completed/play', array('player_id' => 'u2'), array(
       'scopes' => array(
@@ -89,11 +104,18 @@ if (array_key_exists('id', $_POST)) {
   redirect(new moodle_url('/local/playlyfe/course.php'));
 } else {
   $id = required_param('id', PARAM_TEXT);
-
   $course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
+  $modinfo = get_fast_modinfo($course);
+  $modnames = get_module_types_names();
+  $modnamesplural = get_module_types_names(true);
+  $modnamesused = $modinfo->get_used_module_names();
+  $mods = $modinfo->get_cms();
+  $sections = $modinfo->get_section_info_all();
+  //print_object($modnamesused);
+  //print_object($sections);
+
   $name = $course->fullname;
   $rewards = array();
-
   foreach($action['rules'] as $rule) {
     if ($rule['requires']['context']['rhs'] == '"'.$id.'"') {
       $rewards = $rule['rewards'];
@@ -103,7 +125,6 @@ if (array_key_exists('id', $_POST)) {
     'leaderboard' => get_config('playlyfe', 'course'.$id),
     'rewards' => $rewards
   );
-  $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
   echo $OUTPUT->header();
   $html .= "<h1> Edit Course - $name </h1>";
   $html .= '<form id="mform1" action="set_course.php" method="post">';
@@ -138,12 +159,26 @@ if (array_key_exists('id', $_POST)) {
 }
 ?>
 <script>
-  function selectBadges(metrics, index) {
+  function selectItem(metric, index, reward) {
+    var html = '<select style="margin-right: 20px;float: left;" id="badges_'+index+'" name="badges['+index+']">';
+    //html += '<span style="float: left">Badge:  </span>';
+    for(var j=0; j < metric.constraints.items.length; j++) {
+      var item = metric.constraints.items[j].name;
+      if(reward !== undefined && metric.id === reward.metric.id) {
+        html += '<option selected="selected">'+item+'</option>';
+      }
+      else {
+        html += '<option>'+item+'</option>';
+      }
+    }
+    html += '</select>';
+    return html;
   }
+
   function selectMetric(metrics, index, reward) {
     var html = '<select id="metrics_'+index+'" name="metrics['+index+']">';
     for(var i=0; i<metrics.length; i++){
-      if(reward !== undefined && metrics[i].id === reward.metric) {
+      if(reward !== undefined && metrics[i].id === reward.metric.id) {
         html += '<option selected="selected">'+metrics[i].id+'</option>';
       }
       else {
@@ -174,13 +209,17 @@ if (array_key_exists('id', $_POST)) {
     html += '<td>'+selectMetric(metrics, index, reward)+'</td>';
     html += '<td>'+selectVerb(index, reward)+'</td>';
     //var close_button = '';
-    close_button = '<a id="close'+index+'">remove</a>';
+    close_button = '<a style="float:right" id="close'+index+'">remove</a>';
     $('#close'+index).click(function(){
       console.log('remove');
       $('#row'+i).remove();
     });
     if(reward !== undefined) {
-      html += '<td><div id="col'+index+'"><input name="values['+index+']" type="number" value="'+reward.value+'" required />'+close_button+'</div></td>';
+      var value = reward.value;
+      if(reward.metric.type === 'set') {
+        value = reward.value[Object.keys(reward.value)[0]];
+      }
+      html += '<td><div id="col'+index+'"><input name="values['+index+']" type="number" value="'+value+'" required />'+close_button+'</div></td>';
     }
     else {
       html += '<td><div id="col'+index+'"><input name="values['+index+']" type="number" value="1" required />'+close_button+'</div></td>';
@@ -205,6 +244,33 @@ if (array_key_exists('id', $_POST)) {
     return html;
   }
 
+  function addSet(metrics, i, reward) {
+    (function(i) {
+      if(reward !== undefined && reward.metric.type === 'set') {
+        for(var k=0; k<metrics.length; k++) {
+          if (metrics[k].id === reward.metric.id) {
+            $('#col'+i).prepend(selectItem(metrics[k], i, reward));
+            break;
+          }
+        }
+      }
+      $('#metrics_'+i).change(function(event) {
+        var my_index = i;
+        var value = $(this).find("option:selected").val();
+        console.log('CHANGED', my_index);
+        //$('#row'+i).remove();
+        for(var k=0; k<metrics.length; k++) {
+          if (metrics[k].id === value) {
+            $('#badges_'+my_index).remove();
+            if(metrics[k].type === 'set') {
+              $('#col'+my_index).prepend(selectItem(metrics[k], my_index));
+            }
+          }
+       }
+      });
+    })(i);
+  }
+
   $(function() {
     var index = 0;
     var metrics = JSON.parse($('#metrics').html());
@@ -225,25 +291,7 @@ if (array_key_exists('id', $_POST)) {
     if(rewards !== null) {
       for(var i=0; i<rewards.length; i++) {
         $('#treward tbody').append(addReward(metrics, i, rewards[i]));
-        (function(i) {
-          $('#metrics_'+i).change(function(event) {
-            var my_index = i;
-            var value = $(this).find("option:selected").val();
-            console.log('CHANGED', my_index);
-            //$('#row'+i).remove();
-            $('#col'+my_index).append('');
-          });
-        })(i);
-          for(var i =0; i<metrics.length;i++) {
-            if (metrics[i].id === value) {
-              if(metrics[i].type === 'set') {
-                //
-              }
-              else {
-                //('set_'+my_index).remove();
-              }
-            }
-          }
+        addSet(metrics, i, rewards[i]);
         index++;
       }
     }
@@ -257,6 +305,7 @@ if (array_key_exists('id', $_POST)) {
     });
     $('#add').click(function() {
       $('#treward tbody').append(addReward(metrics, index));
+      addSet(metrics, index);
       index++;
     });
   });

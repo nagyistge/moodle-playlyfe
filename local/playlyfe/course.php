@@ -27,28 +27,11 @@ $table->attributes['class'] = 'admintable generaltable';
 $table->id = 'manage_courses';
 
 $courses = $DB->get_records('course', array());
-$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name'));
-$metricsList = array();
-foreach($metrics as $metric){
-  array_push($metricsList, $metric['id']);
-}
-
 foreach($courses as $course) {
   $course_link = '<a href="set_course.php?id='.$course->id.'">'.$course->fullname.'</a>';
   $table->data[] = new html_table_row(array($course->id, $course_link));
 }
 $html .= html_writer::table($table);
-$course = $DB->get_record('course', array('id' => '14'), '*', MUST_EXIST);
-$modinfo = get_fast_modinfo($course);
-$modnames = get_module_types_names();
-$modnamesplural = get_module_types_names(true);
-$modnamesused = $modinfo->get_used_module_names();
-$mods = $modinfo->get_cms();
-$sections = $modinfo->get_section_info_all();
-
-print_object($modnamesused);
-// print_object($sections);
-
 echo $OUTPUT->header();
 echo '<h1> Courses </h1>';
 echo $html;
