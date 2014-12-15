@@ -1,7 +1,6 @@
 <?php
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->libdir . '/formslib.php');
+require_once($CFG->libdir.'/eventslib.php');
 require_once('classes/sdk.php');
 $PAGE->set_context(null);
 $PAGE->set_pagelayout('admin');
@@ -18,8 +17,8 @@ global $CFG, $USER;
 $pl = local_playlyfe_sdk::get_pl();
 
 $profile = $pl->get('/runtime/player', array('player_id' => 'u'.$USER->id, 'detailed' => 'true'));
-$html .= '<h2>Alias: '.$profile['alias'].'</h2>';
-$html = $html.'<h2>Scores</h2>';
+$html .= '<h1>Alias: '.$profile['alias'].'</h1>';
+$html = $html.'<h1>Scores</h1>';
 if(count($profile['scores']) == 0){
   $html .= '</ul> You Have no scores';
 }
@@ -27,13 +26,13 @@ else {
   foreach($profile['scores'] as $score) {
     $score_id = $score['metric']['id'];
     $score_type = $score['metric']['type'];
+    $html .= '<h3><img src="image_def.php?metric='.$score_id.'"></img>';
     if($score_type == 'point') {
       $score_value = $score['value'];
-      $html .= "<h3>$score_id $score_value</h3>";
+      $html .= "$score_id <h2>$score_value</h2>";
     }
     else if($score_type == 'set') {
-      $html .= '<img src="image.php?metric='.$score_id.'"></img>';
-      $html .= "<h3>$score_id</h3>";
+      $html .= "$score_id</h3>";
       $table = new html_table();
       $table->head  = array('Image', 'Name', 'Description');
       $table->colclasses = array('leftalign', 'leftalign');
@@ -50,7 +49,7 @@ else {
 
       foreach($score['value'] as $value) {
         $item_name = $value['name'];
-        $item_image = '<img src="image.php?metric='.$score_id.'&item='.$item_name.'"></img>';
+        $item_image = '<img src="image_def.php?metric='.$score_id.'&item='.$item_name.'"></img>';
         if($value['count'] == 0){
           $table->data[] = new html_table_row(array($item_image, $item_name, $value['description']));
         }
@@ -78,5 +77,9 @@ echo '</div>';
 echo '</div>';
 echo '</div>';
 echo $html;
-//echo '<img src="image.php?metric=Badges&item=Good></img>';
 echo $OUTPUT->footer();
+// $event_data = new stdClass();
+// $event_data->id = 14;
+// $event_data->course = 14;
+// $event_data->userid = 14;
+// events_trigger('course_completed', $event_data);

@@ -22,7 +22,8 @@ $event_names = array (
   'user_enrolled',
   'user_logout',
   'assessable_submitted',
-  'quiz_attempt_submitted'
+  'quiz_attempt_submitted',
+  'activity_completion_changed'
 );
 
 $event_handlers = array();

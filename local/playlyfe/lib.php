@@ -9,23 +9,40 @@
     'quiz_attempt_submitted'
   );
 
-  function check_event($event, $event_name) {
+  function course_completed_handler($event) {
     global $USER;
     print_object($event);
-    if(in_array($event_name, $event_names)) {
-      $data = array('player_id' => 'u'.$USER->id);
-      try {
-        $pl = local_playlyfe_sdk::get_pl();
-        $pl->post('/runtime/actions/'.$event_name.'/play', $data, (object)array());
+    $id = $event->id;
+    try {
+      $pl = local_playlyfe_sdk::get_pl();
+      $action = $pl->get('/design/versions/latest/actions/course_completed');
+      foreach($action['rules'] as $rule) {
+        if ($rule['requires']['context']['rhs'] == '"'.$id.'"') {
+          $leaderboard_metric = get_config('playlyfe', 'course'.$id);
+          $pl->post('/runtime/actions/course_completed/play', array('player_id' => 'u2'), array(
+            'scopes' => array(
+              array(
+                'id' => $leaderboard_metric.'/'.'course'.$id,
+                'entity_id' => 'u'.$USER->id
+              )
+            ),
+            'variables' => array(
+              'course_id' => ''.$id
+            )
+          ));
+          //redirect(new moodle_url('/local/playlyfe/feedback.php?id='.$id));
+        }
       }
-      catch(Exception $e) {
-        print_object($e);
-      }
+    }
+    catch(Exception $e) {
+      print_object($e);
     }
   }
 
-  function course_completed_handler($event) {
-    check_event($event, 'course_completed');
+  function activity_completion_changed_handler($event) {
+    global $USER;
+    print_object($event);
+    $id = $event->id;
   }
 
   function user_logout_handler($event) {
@@ -72,5 +89,17 @@
   }
 
   function local_playlyfe_extends_navigation($navigation) {
+    global $CFG, $PAGE, $USER;
+    $PAGE->requires->jquery();
+    $PAGE->requires->jquery_plugin('ui');
+    $PAGE->requires->jquery_plugin('ui-css');
+    // $PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/playlyfe/page.js'));
+    echo '<div id="dialog" title="Basic dialog">';
+    echo '<div id="dialog-text"></div></div>';
+    $pl = local_playlyfe_sdk::get_pl();
+    $notifications = $pl->get('/runtime/notifications', array('player_id' => 'u'.$USER->id));
+    print_object($notifications);
+    echo 'HELLO';
     $nodeProfile = $navigation->add('Playlyfe Profile', new moodle_url('/local/playlyfe/profile.php'));
+    $nodeNotifications = $navigation->add('Notifications', new moodle_url('/local/playlyfe/notification.php'));
   }

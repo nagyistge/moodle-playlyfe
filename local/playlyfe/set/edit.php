@@ -27,24 +27,20 @@ if (array_key_exists('id', $_POST)) {
       else {
         $hidden = false;
       }
-      if (strlen($_FILES['itemfile'.$i]['name']) > 0) {
-        $item_image = $pl->upload_image($_FILES['itemfile'.$i]['tmp_name']);
-      }
-      else {
-        $item_image = 'default-item';
-      }
-      array_push($items, array(
+      $item = array(
         'name' => $items_names[$i],
         'max' => $items_max[$i],
-        'image' => $item_image,
         'description' => $items_desc[$i],
         'hidden' => $hidden
-      ));
+      );
+      if (strlen($_FILES['itemfile'.$i]['name']) > 0) {
+        $item['image'] = $pl->upload_image($_FILES['itemfile'.$i]['tmp_name']);
+      }
+      array_push($items, $item);
     }
     $set = array(
       'name' => $_POST['name'],
       'type' => 'set',
-      'image' => 'default-set-metric',
       'description' => $_POST['description'],
       'constraints' => array(
         'items' => $items,

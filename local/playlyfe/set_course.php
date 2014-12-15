@@ -88,17 +88,6 @@ if (array_key_exists('id', $_POST)) {
     $leaderboard_metric = $_POST['leaderboard_metric'];
     set_config('course'.$id, $leaderboard_metric, 'playlyfe');
     $pl->post('/admin/leaderboards/'.$leaderboard_metric.'/course'.$id, array());
-    $pl->post('/runtime/actions/course_completed/play', array('player_id' => 'u2'), array(
-      'scopes' => array(
-        array(
-          'id' => $leaderboard_metric.'/'.'course'.$id,
-          'entity_id' => 'u'.$USER->id
-        )
-      ),
-      'variables' => array(
-        'course_id' => $id
-      )
-    ));
   }
   $course['rewards'] = $rewards;
   redirect(new moodle_url('/local/playlyfe/course.php'));
@@ -129,8 +118,8 @@ if (array_key_exists('id', $_POST)) {
   $html .= "<h1> Edit Course - $name </h1>";
   $html .= '<form id="mform1" action="set_course.php" method="post">';
   $html .= '<input name="id" type="hidden" value="'.$id.'"/>';
-  $html .= '<div id="leaderboard" class="box generalbox authsui">';
   $html .= '<h2> Enable Leaderboard </h2>';
+  $html .= '<div id="leaderboard">';
   $html .= '<input id="leaderboard_enable" name="leadeboard" type="checkbox" />';
   $html .= '</div>';
   $html .= "<h2> Rewards on Course Completion </h2>";
@@ -208,12 +197,7 @@ if (array_key_exists('id', $_POST)) {
     var html = '<tr id="row'+index+'" class="r'+index+' centeralign">';
     html += '<td>'+selectMetric(metrics, index, reward)+'</td>';
     html += '<td>'+selectVerb(index, reward)+'</td>';
-    //var close_button = '';
     close_button = '<a style="float:right" id="close'+index+'">remove</a>';
-    $('#close'+index).click(function(){
-      console.log('remove');
-      $('#row'+i).remove();
-    });
     if(reward !== undefined) {
       var value = reward.value;
       if(reward.metric.type === 'set') {
@@ -255,15 +239,12 @@ if (array_key_exists('id', $_POST)) {
         }
       }
       $('#metrics_'+i).change(function(event) {
-        var my_index = i;
         var value = $(this).find("option:selected").val();
-        console.log('CHANGED', my_index);
-        //$('#row'+i).remove();
         for(var k=0; k<metrics.length; k++) {
           if (metrics[k].id === value) {
-            $('#badges_'+my_index).remove();
+            $('#badges_'+i).remove();
             if(metrics[k].type === 'set') {
-              $('#col'+my_index).prepend(selectItem(metrics[k], my_index));
+              $('#col'+i).prepend(selectItem(metrics[k], i));
             }
           }
        }
@@ -292,6 +273,11 @@ if (array_key_exists('id', $_POST)) {
       for(var i=0; i<rewards.length; i++) {
         $('#treward tbody').append(addReward(metrics, i, rewards[i]));
         addSet(metrics, i, rewards[i]);
+        (function(i) {
+          $('#close'+i).click(function() {
+            $('#row'+i).remove();
+          });
+        })(i);
         index++;
       }
     }
@@ -306,6 +292,11 @@ if (array_key_exists('id', $_POST)) {
     $('#add').click(function() {
       $('#treward tbody').append(addReward(metrics, index));
       addSet(metrics, index);
+      (function(i) {
+        $('#close'+i).click(function() {
+          $('#row'+i).remove();
+        });
+      })(index);
       index++;
     });
   });
