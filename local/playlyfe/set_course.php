@@ -35,7 +35,7 @@ if (array_key_exists('id', $_POST)) {
         }
       }
       $verb = $_POST['verbs'][$i];
-      if(array_key_exists($i, $_POST['badges'])) {
+      if(isset($_POST['badges']) and array_key_exists($i, $_POST['badges'])) {
         $value = array();
         $value[$_POST['badges'][$i]] = $_POST['values'][$i];
       }
@@ -60,7 +60,7 @@ if (array_key_exists('id', $_POST)) {
   $has_course = false;
   $new_rules = array();
   foreach($action['rules'] as $rule) {
-    if ($rule['requires']['context']['rhs'] == '"'.$id.'"') {
+    if ($rule['requires']['context']['rhs'] == $id) {
       $has_course = true;
       $rule['rewards'] = $rewards;
     }
@@ -77,13 +77,19 @@ if (array_key_exists('id', $_POST)) {
         'context' => array(
           'lhs' => '$vars.course_id',
           'operator' => 'eq',
-          'rhs' => '"'.$id.'"'
+          'rhs' => $id
         )
       ),
       'rewards' => $rewards
     ));
   }
-  $pl->patch('/design/versions/latest/actions/course_completed', array(), $action);
+  //print_object($action);
+  try {
+    $pl->patch('/design/versions/latest/actions/course_completed', array(), $action);
+  }
+  catch(Exception $e) {
+    print_object($e);
+  }
   if(array_key_exists('leaderboard_metric', $_POST)) {
     $leaderboard_metric = $_POST['leaderboard_metric'];
     set_config('course'.$id, $leaderboard_metric, 'playlyfe');
@@ -94,12 +100,12 @@ if (array_key_exists('id', $_POST)) {
 } else {
   $id = required_param('id', PARAM_TEXT);
   $course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
-  $modinfo = get_fast_modinfo($course);
-  $modnames = get_module_types_names();
-  $modnamesplural = get_module_types_names(true);
-  $modnamesused = $modinfo->get_used_module_names();
-  $mods = $modinfo->get_cms();
-  $sections = $modinfo->get_section_info_all();
+  // $modinfo = get_fast_modinfo($course);
+  // $modnames = get_module_types_names();
+  // $modnamesplural = get_module_types_names(true);
+  // $modnamesused = $modinfo->get_used_module_names();
+  // $mods = $modinfo->get_cms();
+  // $sections = $modinfo->get_section_info_all();
   //print_object($modnamesused);
   //print_object($sections);
 

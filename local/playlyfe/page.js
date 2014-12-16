@@ -1,5 +1,20 @@
-console.log('Hello from ALl Pages');
 $(function() {
-  $("#dialog-text").html("You gained Badges");
-  $("#dialog").dialog();
+  $("#plDialog").dialog({
+    dialogClass: "no-close",
+    closeOnEscape: false,
+    //draggable: false,
+    //resizable: false,
+    height: "auto",
+    width: "auto",
+    modal: true,
+    //position: { my: "center", at: "center", of: "body" }
+    buttons: [
+      {
+        text: "OK",
+        click: function() {
+          $( this ).dialog( "close" );
+        }
+      }
+    ]
+  });
 });

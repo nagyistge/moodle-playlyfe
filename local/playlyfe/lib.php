@@ -1,36 +1,31 @@
 <?php
+  require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
   require_once('classes/sdk.php');
-
-  $event_names = array(
-    'course_completed',
-    'user_enrolled',
-    'user_logout',
-    'assessable_submitted',
-    'quiz_attempt_submitted'
-  );
 
   function course_completed_handler($event) {
     global $USER;
-    print_object($event);
     $id = $event->id;
     try {
       $pl = local_playlyfe_sdk::get_pl();
       $action = $pl->get('/design/versions/latest/actions/course_completed');
       foreach($action['rules'] as $rule) {
-        if ($rule['requires']['context']['rhs'] == '"'.$id.'"') {
+        if ($rule['requires']['context']['rhs'] == $id) {
+          $data = array();
+          $data['variables'] = array(
+            'course_id' => $id
+          );
           $leaderboard_metric = get_config('playlyfe', 'course'.$id);
-          $pl->post('/runtime/actions/course_completed/play', array('player_id' => 'u2'), array(
-            'scopes' => array(
+          if(!is_null($leaderboard_metric)) {
+            $data['scopes'] = array(
               array(
                 'id' => $leaderboard_metric.'/'.'course'.$id,
                 'entity_id' => 'u'.$USER->id
               )
-            ),
-            'variables' => array(
-              'course_id' => ''.$id
-            )
-          ));
-          //redirect(new moodle_url('/local/playlyfe/feedback.php?id='.$id));
+            );
+          }
+          $response = $pl->post('/runtime/actions/course_completed/play', array('player_id' => 'u2'), $data);
+          set_config('u'.$USER->id.'_buffer', json_encode($response['events']), 'playlyfe');
+          break;
         }
       }
     }
@@ -66,9 +61,12 @@
       $data = array('alias' => 'Anon', 'id' => 'u'.$user_id);
     }
     $pl->post('/admin/players', array(), $data);
+    set_config('u'.$user_id.'_buffer', null, 'playlyfe');
   }
 
   function local_playlyfe_extends_settings_navigation(settings_navigation $settingsnav, $context) {
+    global $USER;
+    if(is_siteadmin($USER)) {
       $sett = $settingsnav->get('root');
       if($sett != null) {
         $nodePlaylyfe = $sett->add('Gamification', null, null, null, 'playlyfe');
@@ -86,20 +84,85 @@
         $nodeSet->add('Manage sets', new moodle_url('/local/playlyfe/set/manage.php'), null, null, 'manage', new pix_icon('t/edit', 'edit'));
         $nodeSet->add('Add a new set', new moodle_url('/local/playlyfe/set/add.php'), null, null, 'add', new pix_icon('t/edit', 'edit'));
       }
+    }
   }
 
   function local_playlyfe_extends_navigation($navigation) {
-    global $CFG, $PAGE, $USER;
-    $PAGE->requires->jquery();
-    $PAGE->requires->jquery_plugin('ui');
-    $PAGE->requires->jquery_plugin('ui-css');
-    // $PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/playlyfe/page.js'));
-    echo '<div id="dialog" title="Basic dialog">';
-    echo '<div id="dialog-text"></div></div>';
-    $pl = local_playlyfe_sdk::get_pl();
-    $notifications = $pl->get('/runtime/notifications', array('player_id' => 'u'.$USER->id));
-    print_object($notifications);
-    echo 'HELLO';
-    $nodeProfile = $navigation->add('Playlyfe Profile', new moodle_url('/local/playlyfe/profile.php'));
-    $nodeNotifications = $navigation->add('Notifications', new moodle_url('/local/playlyfe/notification.php'));
+    if (isloggedin() and !isguestuser()) {
+      global $CFG, $PAGE, $USER, $DB, $OUTPUT;
+      //complete_course(14);
+      $buffer = json_decode(get_config('playlyfe', 'u'.$USER->id.'_buffer'), true);
+      if(!is_null($buffer)) {
+        $PAGE->requires->jquery();
+        $PAGE->requires->jquery_plugin('ui');
+        $PAGE->requires->jquery_plugin('ui-css');
+        $PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/playlyfe/page.js'));
+        $course_id = $buffer['local'][0]['action']['vars']['course_id'];
+        $course = $DB->get_record('course', array('id' => $course_id), '*', MUST_EXIST);
+        $title = 'Completed Course '.$course->shortname;
+        $html = '<div id="plDialog" title="'.$title.'">';
+        $html .= '<h3>You have Gained</h3>';
+        $count = 1;
+        foreach($buffer['local'][0]['changes'] as $change) {
+          $html .= '<p>'.display_reward($count, $change).'</p>';
+          $count++;
+        }
+        $leaderboard_metric = get_config('playlyfe', 'course'.$course_id);
+        if(!is_null($leaderboard_metric)) {
+          //print_object($leaderboard_metric);
+          $pl = local_playlyfe_sdk::get_pl();
+          $leaderboard = $pl->get('/runtime/leaderboards/'.$leaderboard_metric, array('player_id' => 'u'.$USER->id, 'cycle' => 'alltime', 'scope_id' => 'course'.$course_id));
+          $html .= '<h3> Leaderboards </h3>';
+          $html .= '<ul>';
+          foreach($leaderboard['data'] as $player) {
+            $score = $player['score'];
+            $id = $player['player']['id'];
+            $alias = $player['player']['alias'] or 'Null';
+            $rank = $player['rank'];
+            $list = explode('u', $id);
+            $user = $DB->get_record('user', array('id' => $list[1]));
+            $html .= "<li class='list-group-item'>";
+            $html .= $OUTPUT->user_picture($user, array('size'=>50));
+            $html .= "<b>$rank $alias $score</b></li>";
+          }
+        }
+        $html .= '</div>';
+        echo $html;
+        set_config('u'.$USER->id.'_buffer', null, 'playlyfe');
+      }
+      $nodeProfile = $navigation->add('Playlyfe Profile', new moodle_url('/local/playlyfe/profile.php'));
+      $nodeNotifications = $navigation->add('Notifications', new moodle_url('/local/playlyfe/notification.php'));
+    }
+  }
+
+  function display_reward($count, $change) {
+    $text = $count.'.';
+    $metric= $change['metric'];
+    $delta = $change['delta'];
+    $text .= '<img src="image_def.php?metric='.$metric['id'].'&size=large"></img>';
+    if ($metric['type'] == 'point') {
+      $value = $delta['new'] - $delta['old'];
+    }
+    else {
+      foreach($delta as $key => $value) {
+        $value = ($value['new'] - $value['old']).' x '.$key;
+        $value .= '     <img src="image_def.php?metric='.$metric['id'].'&size=medium&item='.$key.'"></img>    ';
+      }
+    }
+    $text .= 'You have gained '.$value.' '.$metric['name'];
+    return $text;
+  }
+  /*
+   For testing events
+  */
+  function complete_course($id, $user_id = 0) {
+    global $USER;
+    if($user_id == 0) {
+      $user_id = $USER->id;
+    }
+    $event_data = new stdClass();
+    $event_data->id = $id;
+    $event_data->course = $id;
+    $event_data->userid = $user_id;
+    events_trigger('course_completed', $event_data);
   }

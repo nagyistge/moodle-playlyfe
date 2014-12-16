@@ -2,6 +2,7 @@
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir . '/formslib.php');
+require_once('classes/sdk.php');
 $PAGE->set_context(null);
 $PAGE->set_pagelayout('admin');
 require_login();
@@ -31,7 +32,6 @@ class client_form extends moodleform {
         $this->add_action_buttons();
     }
 }
-
 $form = new client_form();
 
 if($form->is_cancelled()) {
@@ -40,7 +40,31 @@ if($form->is_cancelled()) {
   set_config('client_id', $data->id, 'playlyfe');
   set_config('client_secret', $data->secret, 'playlyfe');
   set_config('access_token', null, 'playlyfe');
-  redirect(new moodle_url('/local/playlyfe/client.php'));
+  $pl = local_playlyfe_sdk::get_pl();
+  try {
+    $pl->post('/design/versions/latest/actions', array(), array(
+      'id' => 'course_completed',
+      'name' => 'course_completed',
+      'rules' => array(),
+      'requires' => (object)array(),
+      'variables' => array(
+        array(
+          'name' => 'course_id',
+          'type' => 'int',
+          'required' => true
+        )
+      )
+    ));
+    redirect(new moodle_url('/local/playlyfe/client.php'));
+  }
+  catch(Exception $e) {
+    if($e->name == 'action_exists') {
+      redirect(new moodle_url('/local/playlyfe/client.php'));
+    }
+    else {
+      print_object($e);
+    }
+  }
 } else {
   $toform = array();
   $toform['id'] = get_config('playlyfe', 'client_id');
