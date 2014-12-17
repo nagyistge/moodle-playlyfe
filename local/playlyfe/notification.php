@@ -13,6 +13,7 @@ $html = '<h1> Your Notifications </h1>';
 
 $pl = local_playlyfe_sdk::get_pl();
 $notifications = $pl->get('/runtime/notifications', array('player_id' => 'u'.$USER->id));
+$notifications['data'] = array_reverse($notifications['data']);
 $count = 1;
 $ids = array();
 
@@ -37,7 +38,6 @@ function display_change($change, $course_name) {
   $count++;
   return $text;
 }
-//print_object($notifications);
 foreach($notifications['data'] as $notification) {
   if ($notification['seen'] == false) {
     array_push($ids, $notification['id']);

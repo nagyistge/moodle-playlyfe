@@ -22,7 +22,6 @@ $event_names = array (
   'user_enrolled',
   'user_logout',
   'assessable_submitted',
-  'quiz_attempt_submitted',
   'activity_completion_changed'
 );
 
@@ -34,5 +33,17 @@ foreach($event_names as $event_name) {
     'schedule'         => 'instant'
   );
 }
+
+$event_handlers['quiz_attempt_started'] = array(
+  'handlerfile'      => '/local/playlyfe/lib.php',
+  'handlerfunction'  => 'pl_quiz_attempt_started_handler',
+  'schedule'         => 'instant'
+);
+
+$event_handlers['quiz_attempt_submitted'] = array(
+  'handlerfile'      => '/local/playlyfe/lib.php',
+  'handlerfunction'  => 'pl_quiz_attempt_submitted_handler',
+  'schedule'         => 'instant'
+);
 
 $handlers = $event_handlers;

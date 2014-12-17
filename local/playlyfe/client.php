@@ -55,6 +55,19 @@ if($form->is_cancelled()) {
         )
       )
     ));
+    $pl->post('/design/versions/latest/actions', array(), array(
+      'id' => 'quiz_completed',
+      'name' => 'quiz_completed',
+      'rules' => array(),
+      'requires' => (object)array(),
+      'variables' => array(
+        array(
+          'name' => 'quiz_id',
+          'type' => 'int',
+          'required' => true
+        )
+      )
+    ));
     redirect(new moodle_url('/local/playlyfe/client.php'));
   }
   catch(Exception $e) {
