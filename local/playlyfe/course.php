@@ -5,8 +5,8 @@ require_login();
 if (!has_capability('moodle/site:config', context_system::instance())) {
   print_error('accessdenied', 'admin');
 }
-$courseid = required_param('id', PARAM_INT);
-$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+$id = required_param('id', PARAM_INT);
+$course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
 $context = context_course::instance($course->id);
 $PAGE->set_course($course);
 $PAGE->set_context($context);
@@ -18,31 +18,33 @@ $PAGE->set_cacheable(false);
 $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
 $PAGE->navigation->clear_cache();
 $PAGE->requires->jquery();
-$PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/playlyfe/reward.js'));
-$PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/playlyfe/course.js'));
-$action = $pl->get('/design/versions/latest/actions/course_completed');
-$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
-global $USER, $DB;
-$pl = local_playlyfe_sdk::get_pl();
+$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/reward.js'));
+$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/course.js'));
 $html = '';
-
+$action = $pl->get('/design/versions/latest/actions/course_completed');
+$action2 = $pl->get('/design/versions/latest/actions/course_bonus');
+$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
 
 if (array_key_exists('id', $_POST)) {
-  $action = patch_action($action, $metrics, $_POST, 'quiz_id');
+  $id = $_POST['id'];
+  $id_bonus = $id.'_bonus';
+  $action = patch_action('course_id', $action, $id, $_POST['metrics'][$id], $_POST['values'][$id]);
+  if(array_key_exists($id_bonus, $_POST['metrics'])) {
+    $action2 = patch_action('course_id', $action2, $id, $_POST['metrics'][$id_bonus], $_POST['values'][$id_bonus]);
+  }
   try {
     $pl->patch('/design/versions/latest/actions/course_completed', array(), $action);
+    if(array_key_exists($id_bonus, $_POST['metrics'])) {
+      $pl->patch('/design/versions/latest/actions/course_bonus', array(), $action2);
+    }
+    set_leaderboards($_POST, $metrics, array($course), 'course'.$id.'_leaderboard');
+    redirect(new moodle_url('/local/playlyfe/course.php', array('id' => $id)));
   }
   catch(Exception $e) {
     print_object($e);
   }
-  if(array_key_exists('leaderboard_metric', $_POST)) {
-    $leaderboard_metric = $_POST['leaderboard_metric'];
-    set_config('course'.$id, $leaderboard_metric, 'playlyfe');
-    $pl->post('/admin/leaderboards/'.$leaderboard_metric.'/course'.$id, array());
-  }
-  redirect(new moodle_url('/local/playlyfe/course.php', array('id' => $id)));
 } else {
-  $course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
+  $leaderboards = array_merge(get_leaderboards('all_leaderboards'), get_leaderboards('course'.$id.'_leaderboard'));
   $modinfo = get_fast_modinfo($course);
   $modnames = get_module_types_names();
   $modnamesused = $modinfo->get_used_module_names();
@@ -56,6 +58,7 @@ if (array_key_exists('id', $_POST)) {
     }
   }
   $data = array(
+    'id' => $id,
     'metrics' => $metrics,
     'leaderboard' => get_config('playlyfe', 'course'.$id),
     'rewards' => $rewards
@@ -64,25 +67,29 @@ if (array_key_exists('id', $_POST)) {
   $html .= "<h1> $name </h1>";
   $html .= '<form id="mform1" action="course.php" method="post">';
   $html .= '<input name="id" type="hidden" value="'.$id.'"/>';
-  $html .= '<h2> Enable Leaderboard </h2>';
-  $html .= '<div id="leaderboard">';
-  $html .= '<input id="leaderboard_enable" name="leadeboard" type="checkbox" />';
-  $html .= '</div>';
+  $html .= '<h2> Leaderboards for this Course </h2>';
+  $html .= '<div>';
+  foreach ($metrics as $metric) {
+    if($metric['type'] === 'point') {
+      if(in_array($metric['id'], $leaderboards)) {
+      $html .= '<input type="checkbox" value="'.$metric['id'].'" name="leaderboards[]" checked />'.$metric['id'].'<br>';
+      }
+      else {
+        $html .= '<input type="checkbox" value="'.$metric['id'].'" name="leaderboards[]" />'.$metric['id'].'<br>';
+      }
+    }
+  }
+  $html .= '</div><br>';
   $html .= "<h2> Rewards on Course Completion </h2>";
-  $html .= '<table id="reward" class="admintable generaltable">';
-  $html .= '<thead>';
-  $html .= '<tr>';
-  $html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
-  $html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Value</th>';
-  $html .= '</tr>';
-  $html .= '</thead>';
-  $html .= '<tbody>';
-  $html .= '</tbody>';
-  $html .= '</table>';
-  $html .= '<p><button type="button" id="add">Add Reward</button></p>';
+  $html .= create_reward_table($id, $id, $metrics, $action);
+  $criteria = $DB->get_record('course_completion_criteria', array('course' => $id, 'criteriatype' => 2));
+  // 2 for timeend criteria
+  if($criteria->timeend > 0) {
+    $html .= '<h2> Bonus for Early Completion Before '.date("D, d M Y H:i:s", $criteria->timeend).'</h2>';
+    $html .= create_reward_table($id.'_bonus', $id, $metrics, $action2);
+  }
   $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
   $html .= '</form>';
   echo $html;
-  $PAGE->requires->js_init_call('setup', array($data));
   echo $OUTPUT->footer();
 }

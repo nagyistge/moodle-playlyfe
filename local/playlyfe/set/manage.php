@@ -14,8 +14,6 @@ $PAGE->settingsnav->get('root')->get('playlyfe')->get('sets')->get('manage')->ma
 $PAGE->navigation->clear_cache();
 $html = '';
 
-$pl = local_playlyfe_sdk::get_pl();
-
 $delete = optional_param('delete', null, PARAM_TEXT);
 $id = optional_param('id', null, PARAM_TEXT);
 if($id and $delete) {

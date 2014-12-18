@@ -1,5 +1,5 @@
-function selectMetric(metrics, index, reward) {
-  var html = '<select id="metrics_'+index+'" name="metrics[]">';
+function selectMetric(id, metrics, index, reward) {
+  var html = '<select name="metrics['+id+'][]">';
   for(var i=0; i<metrics.length; i++){
     var metric = metrics[i];
     if(metric.type === 'set') {
@@ -28,36 +28,52 @@ function selectMetric(metrics, index, reward) {
   return html;
 }
 
-function addReward(metrics, index, reward) {
-  var html = '<tr id="row'+index+'" class="r'+index+' centeralign">';
-  html += '<td>'+selectMetric(metrics, index, reward)+'</td>';
-  close_button = '<a style="float:right" id="close'+index+'">remove</a>';
+function addReward(id, metrics, index, reward) {
+  id = id || '';
+  var html = '<tr id="row_'+id+index+'" class="r'+index+' centeralign">';
+  html += '<td>'+selectMetric(id, metrics, index, reward)+'</td>';
+  close_button = '<a style="float:right" id="close_'+id+index+'">remove</a>';
   if(reward !== undefined) {
     var value = reward.value;
     if(reward.metric.type === 'set') {
       value = reward.value[Object.keys(reward.value)[0]];
     }
-    html += '<td><div id="col'+index+'"><input name="values[]" type="number" value="'+value+'" required />'+close_button+'</div></td>';
+    html += '<td><div id="col_'+index+'"><input name="values['+id+'][]" type="number" value="'+value+'" required />'+close_button+'</div></td>';
   }
   else {
-    html += '<td><div id="col'+index+'"><input name="values[]" type="number" value="1" required />'+close_button+'</div></td>';
+    html += '<td><div id="col'+index+'"><input name="values['+id+'][]" type="number" value="1" required />'+close_button+'</div></td>';
   }
   html += '</tr>';
   return html;
 }
 
-function selectLeaderboard(metrics, leaderboard) {
-  var html = '<div id="leaderboard_metric"><b>Leaderboard for the Metric:</b><select name="leaderboard_metric">';
-  for(var i=0; i<metrics.length; i++){
-    if(metrics[i].type === 'point') {
-      if(leaderboard !== null && metrics[i].id === leaderboard) {
-        html += '<option selected="selected">'+metrics[i].id+'</option>';
-      }
-      else {
-        html += '<option>'+metrics[i].id+'</option>';
-      }
-    }
+function init_table(version, data) {
+  var id = data.id;
+  var metrics = data.metrics;
+  var rewards = data.rewards;
+  for(var index = 0;index<rewards.length; index++) {
+    $('#treward_'+id+' tbody').append(addReward(id, metrics, index, rewards[index]));
+    (function(i) {
+      $('#close_'+id+i).click(function() {
+        $('#row_'+id+i).remove();
+      });
+    })(index);
   }
-  html += '</select></div>';
-  return html;
+}
+
+function add_handler(version, data) {
+  var id = data.id;
+  var metrics = data.metrics;
+  (function () {
+    var index = 0;
+    $('#add_'+id).click(function() {
+      $('#treward_'+id+' tbody').append(addReward(id, metrics, index));
+      (function(i) {
+        $('#close_'+id+i).click(function() {
+          $('#row_'+id+i).remove();
+        });
+      })(index);
+      index++;
+    });
+  })();
 }

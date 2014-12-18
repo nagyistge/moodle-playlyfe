@@ -12,7 +12,6 @@ $PAGE->settingsnav->get('root')->get('playlyfe')->get('sets')->get('add')->make_
 $PAGE->navigation->clear_cache();
 $PAGE->requires->jquery();
 $html = '';
-$pl = local_playlyfe_sdk::get_pl();
 
 if (array_key_exists('id', $_POST)) {
     $items_names = $_POST['items_names'];

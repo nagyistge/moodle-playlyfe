@@ -10,8 +10,6 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->navigation->clear_cache();
 $html = '<h1> Your Notifications </h1>';
-
-$pl = local_playlyfe_sdk::get_pl();
 $notifications = $pl->get('/runtime/notifications', array('player_id' => 'u'.$USER->id));
 $notifications['data'] = array_reverse($notifications['data']);
 $count = 1;

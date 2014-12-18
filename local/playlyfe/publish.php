@@ -15,7 +15,6 @@ if (!has_capability('moodle/site:config', context_system::instance())) {
   print_error('accessdenied', 'admin');
 }
 $PAGE->settingsnav->get('root')->get('playlyfe')->get('publish')->make_active();
-$pl = local_playlyfe_sdk::get_pl();
 $html = '';
 $action_names = array(
   'course_completed',

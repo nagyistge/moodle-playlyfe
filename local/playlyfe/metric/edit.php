@@ -13,7 +13,6 @@ $PAGE->set_cacheable(false);
 $PAGE->settingsnav->get('root')->get('playlyfe')->get('metrics')->make_active();
 $PAGE->navigation->clear_cache();
 $html = '';
-$pl = local_playlyfe_sdk::get_pl();
 
 define("UPLOAD_DIR", "/images/");
 

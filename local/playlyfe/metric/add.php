@@ -15,7 +15,6 @@ $PAGE->navigation->clear_cache();
 $html = '';
 
 if (array_key_exists('id', $_POST)) {
-    $pl = local_playlyfe_sdk::get_pl();
     $metric = array(
       'id' => $_POST['id'],
       'name' => $_POST['name'],

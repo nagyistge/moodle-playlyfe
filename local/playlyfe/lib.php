@@ -12,9 +12,9 @@
 
   function course_completed_handler($event) {
     global $USER;
+    global $pl;
     $id = $event->id;
     try {
-      $pl = local_playlyfe_sdk::get_pl();
       $action = $pl->get('/design/versions/latest/actions/course_completed');
       foreach($action['rules'] as $rule) {
         if ($rule['requires']['context']['rhs'] == $id) {
@@ -56,7 +56,7 @@
 
 
   function user_created_handler($event) {
-    $pl = local_playlyfe_sdk::get_pl();
+    global $pl;
     if (true) {  //for moodle 2.5
       $data = array('id' => 'u'.$event->id, 'alias' => $event->username, 'email' => $event->email);
     }
@@ -79,6 +79,8 @@
         $nodePlaylyfe->add('Client', new moodle_url('/local/playlyfe/client.php'), null, null, 'client', new pix_icon('t/edit', 'edit'));
         $nodePlaylyfe->add('Publish', new moodle_url('/local/playlyfe/publish.php'), null, null, 'publish', new pix_icon('t/edit', 'edit'));
 
+        $nodePlaylyfe->add('Courses', new moodle_url('/local/playlyfe/courses.php'), null, null, 'courses', new pix_icon('t/edit', 'edit'));
+
         $nodeMetric = $nodePlaylyfe->add('Metrics', null, null, null, 'metrics');
         $nodeMetric->add('Manage Metrics', new moodle_url('/local/playlyfe/metric/manage.php'), null, null, 'manage', new pix_icon('t/edit', 'edit'));
         $nodeMetric->add('Add a new metric', new moodle_url('/local/playlyfe/metric/add.php'), null, null, 'add', new pix_icon('t/edit', 'edit'));
@@ -89,10 +91,12 @@
       }
       if ($context->contextlevel == 50) { //CONTEXT_COURSE
         if (has_capability('moodle/site:config', $context)) {
-          $coursesett = $settingsnav->get('courseadmin');
-          $coursesett->add('Gamification', new moodle_url('/local/playlyfe/course.php', array('id' => $PAGE->course->id)), null, null, 'course', new pix_icon('t/edit', 'edit'));
+          if ($node = $coursesett = $settingsnav->get('courseadmin') ) {
+            $node->add('Gamification', new moodle_url('/local/playlyfe/course.php', array('id' => $PAGE->course->id)), null, null, 'course', new pix_icon('t/edit', 'edit'));
+          }
         }
-          // completion notify        //require_login($course, false);
+        // completion notify
+        //require_login($course, false);
         // If the user is allowed to edit this course, he's allowed to edit list of repository instances
         //require_capability('moodle/course:update',  $context);
       }
@@ -110,6 +114,7 @@
   }
 
   function local_playlyfe_extends_navigation($navigation) {
+    global $pl;
     if (isloggedin() and !isguestuser()) {
       global $CFG, $PAGE, $USER, $DB, $OUTPUT;
       //complete_course(14);
@@ -132,7 +137,6 @@
         $leaderboard_metric = get_config('playlyfe', 'course'.$course_id);
         if(!is_null($leaderboard_metric)) {
           //print_object($leaderboard_metric);
-          $pl = local_playlyfe_sdk::get_pl();
           $leaderboard = $pl->get('/runtime/leaderboards/'.$leaderboard_metric, array('player_id' => 'u'.$USER->id, 'cycle' => 'alltime', 'scope_id' => 'course'.$course_id));
           $html .= '<h3> Leaderboards </h3>';
           $html .= '<ul>';

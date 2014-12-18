@@ -834,8 +834,6 @@ function get_coursemodule($module, $recordid, $courseid) {
     }
 }
 
-$pl = local_playlyfe_sdk::get_pl();
-
 $profile = $pl->get('/runtime/player', array('player_id' => 'u'.$USER->id, 'detailed' => 'true'));
 $html .= '<h1>Alias: '.$profile['alias'].'</h1>';
 $html = $html.'<h1>Scores</h1>';

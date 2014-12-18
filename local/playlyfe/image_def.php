@@ -3,7 +3,6 @@ require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once('classes/sdk.php');
 require_login();
 global $USER;
-$pl = local_playlyfe_sdk::get_pl();
 $route = optional_param('route', '/definitions/metrics/', PARAM_TEXT);
 $size = optional_param('size', 'medium', PARAM_TEXT);
 $metric = optional_param('metric', '', PARAM_TEXT);
