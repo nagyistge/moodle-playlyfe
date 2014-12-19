@@ -2,58 +2,30 @@
   require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
   require_once('classes/sdk.php');
 
-  function pl_quiz_attempt_started_handler($event) {
-    print_object($event);
-  }
-
-  function pl_quiz_attempt_submitted_handler($event) {
-    print_object($event);
-  }
-
   function course_completed_handler($event) {
     global $USER;
-    global $pl;
     $id = $event->id;
-    try {
-      $action = $pl->get('/design/versions/latest/actions/course_completed');
-      foreach($action['rules'] as $rule) {
-        if ($rule['requires']['context']['rhs'] == $id) {
-          $data = array();
-          $data['variables'] = array(
-            'course_id' => $id
-          );
-          $leaderboard_metric = get_config('playlyfe', 'course'.$id);
-          if(!is_null($leaderboard_metric)) {
-            $data['scopes'] = array(
-              array(
-                'id' => $leaderboard_metric.'/'.'course'.$id,
-                'entity_id' => 'u'.$USER->id
-              )
-            );
-          }
-          $response = $pl->post('/runtime/actions/course_completed/play', array('player_id' => 'u2'), $data);
-          set_config('u'.$USER->id.'_buffer', json_encode($response['events']), 'playlyfe');
-          break;
-        }
+    $scopes = array();
+    $leaderboard_metrics = get_leaderboards('course'.$id.'_leaderboard');
+    if($leaderboard_metrics) {
+      foreach($leaderboard_metrics as $leaderboard_metric) {
+         array_push($scopes, array(
+          'id' => $leaderboard_metric.'/'.'course'.$id,
+          'entity_id' => 'u'.$USER->id
+        ));
       }
     }
-    catch(Exception $e) {
-      print_object($e);
-    }
+    // print_object($leaderboard_metrics);
+    // print_object($scopes);
+    execute_rule('course_'.$id.'_completed', $scopes);
+    execute_rule('course_'.$id.'_bonus', $scopes);
   }
 
   function activity_completion_changed_handler($event) {
-    global $USER;
     print_object($event);
     $id = $event->id;
+    execute_rule($id);
   }
-
-  function user_logout_handler($event) {
-  }
-
-  function user_enrolled_handler($event) {
-  }
-
 
   function user_created_handler($event) {
     global $pl;
@@ -67,6 +39,60 @@
     }
     $pl->post('/admin/players', array(), $data);
     set_config('u'.$user_id.'_buffer', null, 'playlyfe');
+  }
+
+  function user_logout_handler($event) {
+  }
+
+  function user_enrolled_handler($event) {
+  }
+
+  function pl_quiz_attempt_started_handler($event) {
+    print_object($event);
+  }
+
+  function pl_quiz_attempt_submitted_handler($event) {
+    print_object($event);
+    //execute_rule('quiz_'.$event->quizid.'_submitted');
+    //execute_rule('quiz_'.$event->quizid.'_bonus');
+  }
+
+  function forum_discussion_created_handler($event) {
+    execute_rule('forum_'.$event->forum.'_discussion_created');
+  }
+
+  function forum_post_created_handler($event) {
+    execute_rule('forum_'.$event->forum.'_post_created');
+  }
+
+  function forum_viewed_handler($event) {
+    execute_rule('forum_'.$event->f.'_viewed');
+  }
+
+  function execute_rule($id, $scopes = array()) {
+    global $USER;
+    $pl = get_pl();
+    # Maybe optimize this check if the rule actually exists
+    try {
+      $response = $pl->post('/admin/rules/'.$id, array(), array(
+        'data' => array(
+          array(
+            'variables' => (object)array(),
+            'player_ids' => array('u'.$USER->id),
+            'scopes' => $scopes
+          )
+        )
+      ));
+      add_to_buffer($response[0][0]['events']);
+    }
+    catch(Exception $e) {
+      if($e->name == 'rule_not_found') {
+        return;
+      }
+      else {
+        print_object($e);
+      }
+    }
   }
 
   function local_playlyfe_extends_settings_navigation(settings_navigation $settingsnav, $context) {
@@ -107,6 +133,12 @@
           $quizsett = $settingsnav->get('modulesettings');
           $quizsett->add('Gamification', new moodle_url('/local/playlyfe/quiz.php', array('cmid' => $PAGE->cm->id)), null, null, 'quiz', new pix_icon('t/edit', 'edit'));
         }
+        if($PAGE->activityname == 'forum') {
+          $coursesett = $settingsnav->get('courseadmin');
+          $coursesett->add('Gamification', new moodle_url('/local/playlyfe/course.php', array('id' => $PAGE->course->id)), null, null, 'course', new pix_icon('t/edit', 'edit'));
+          $forumsett = $settingsnav->get('modulesettings');
+          $forumsett->add('Gamification', new moodle_url('/local/playlyfe/forum.php', array('cmid' => $PAGE->cm->id)), null, null, 'forum', new pix_icon('t/edit', 'edit'));
+        }
       }
       //if (has_capability('moodle/course:manageactivities', $this->page->cm->context)) {
       //}
@@ -117,44 +149,55 @@
     global $pl;
     if (isloggedin() and !isguestuser()) {
       global $CFG, $PAGE, $USER, $DB, $OUTPUT;
-      //complete_course(14);
-      $buffer = json_decode(get_config('playlyfe', 'u'.$USER->id.'_buffer'), true);
-      if(!is_null($buffer)) {
+      $buffer = get_buffer();
+      $dialog_counter = 0;
+      $html = '';
+      if(count($buffer) > 0) {
         $PAGE->requires->jquery();
         $PAGE->requires->jquery_plugin('ui');
         $PAGE->requires->jquery_plugin('ui-css');
-        $PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/playlyfe/page.js'));
-        $course_id = $buffer['local'][0]['action']['vars']['course_id'];
-        $course = $DB->get_record('course', array('id' => $course_id), '*', MUST_EXIST);
-        $title = 'Completed Course '.$course->shortname;
-        $html = '<div id="plDialog" title="'.$title.'">';
-        $html .= '<h3>You have Gained</h3>';
-        $count = 1;
-        foreach($buffer['local'][0]['changes'] as $change) {
-          $html .= '<p>'.display_reward($count, $change).'</p>';
-          $count++;
-        }
-        $leaderboard_metric = get_config('playlyfe', 'course'.$course_id);
-        if(!is_null($leaderboard_metric)) {
-          //print_object($leaderboard_metric);
-          $leaderboard = $pl->get('/runtime/leaderboards/'.$leaderboard_metric, array('player_id' => 'u'.$USER->id, 'cycle' => 'alltime', 'scope_id' => 'course'.$course_id));
-          $html .= '<h3> Leaderboards </h3>';
-          $html .= '<ul>';
-          foreach($leaderboard['data'] as $player) {
-            $score = $player['score'];
-            $id = $player['player']['id'];
-            $alias = $player['player']['alias'] or 'Null';
-            $rank = $player['rank'];
-            $list = explode('u', $id);
-            $user = $DB->get_record('user', array('id' => $list[1]));
-            $html .= "<li class='list-group-item'>";
-            $html .= $OUTPUT->user_picture($user, array('size'=>50));
-            $html .= "<b>$rank $alias $score</b></li>";
+        $PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/playlyfe/reward.js'));
+        foreach($buffer as $events) {
+          if(count($events) > 0 and array_key_exists('changes', $events['local'][0])) {
+            $event = $events['local'][0];
+            if($event['event'] == 'custom_rule') {
+              $html = '<div id="dialog_'.$dialog_counter.'" title="'.$event['rule']['name'].'" style="display: none">';
+              // $event['rule']['vars']
+              // $course_id = $buffer['local'][0]['action']['vars']['course_id'];
+              // $course = $DB->get_record('course', array('id' => $course_id), '*', MUST_EXIST);
+              $html .= '<h3>You have Gained</h3>';
+              $count = 1;
+              foreach($event['changes'] as $change) {
+                $html .= '<p>'.display_reward($count, $change).'</p>';
+                $count++;
+              }
+              $html .= '</div>';
+              $dialog_counter++;
+            }
           }
         }
-        $html .= '</div>';
+        $PAGE->requires->js_init_call('show_rewards', array('count' => $dialog_counter-1));
+        //
+        // $leaderboard_metric = get_config('playlyfe', 'course'.$course_id);
+        // if(!is_null($leaderboard_metric)) {
+        //   print_object($leaderboard_metric);
+        //   $leaderboard = $pl->get('/runtime/leaderboards/'.$leaderboard_metric, array('player_id' => 'u'.$USER->id, 'cycle' => 'alltime', 'scope_id' => 'course'.$course_id));
+        //   $html .= '<h3> Leaderboards </h3>';
+        //   $html .= '<ul>';
+        //   foreach($leaderboard['data'] as $player) {
+        //     $score = $player['score'];
+        //     $id = $player['player']['id'];
+        //     $alias = $player['player']['alias'] or 'Null';
+        //     $rank = $player['rank'];
+        //     $list = explode('u', $id);
+        //     $user = $DB->get_record('user', array('id' => $list[1]));
+        //     $html .= "<li class='list-group-item'>";
+        //     $html .= $OUTPUT->user_picture($user, array('size'=>50));
+        //     $html .= "<b>$rank $alias $score</b></li>";
+        //   }
+        // }
         echo $html;
-        set_config('u'.$USER->id.'_buffer', null, 'playlyfe');
+        set_buffer(array());
       }
       $nodeProfile = $navigation->add('Playlyfe Profile', new moodle_url('/local/playlyfe/profile.php'));
       $nodeNotifications = $navigation->add('Notifications', new moodle_url('/local/playlyfe/notification.php'));

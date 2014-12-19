@@ -1,6 +1,6 @@
 <?php
 
-# moodle 2.5 events vs moodle 2.8 events
+# moodle 2.5 events vs moodle 2.6 events
 #
 # course_completed -> core\event\course_completed
 # groups_member_added -> core\event\group_member_added
@@ -17,33 +17,70 @@
 # quiz_attempt_submitted -> mod_quiz\event\attempt_submitted
 # workshop_viewed -> mod_workshop\event\course_module_viewed
 
-$event_names = array (
-  'course_completed',
-  'user_enrolled',
-  'user_logout',
-  'assessable_submitted',
-  'activity_completion_changed'
-);
-
-$event_handlers = array();
-foreach($event_names as $event_name) {
-  $event_handlers[$event_name] = array(
+$handlers = array(
+  'user_created' => array(
     'handlerfile'      => '/local/playlyfe/lib.php',
-    'handlerfunction'  => $event_name.'_handler',
+    'handlerfunction'  => 'user_created_handler',
     'schedule'         => 'instant'
-  );
-}
+  ),
 
-$event_handlers['quiz_attempt_started'] = array(
-  'handlerfile'      => '/local/playlyfe/lib.php',
-  'handlerfunction'  => 'pl_quiz_attempt_started_handler',
-  'schedule'         => 'instant'
+  'user_deleted' => array(
+    'handlerfile'      => '/local/playlyfe/lib.php',
+    'handlerfunction'  => 'user_deleted_handler',
+    'schedule'         => 'instant'
+  ),
+
+  'course_completed' => array(
+    'handlerfile'      => '/local/playlyfe/lib.php',
+    'handlerfunction'  => 'course_completed_handler',
+    'schedule'         => 'instant'
+  ),
+
+  'activity_completion_changed' => array(
+    'handlerfile'      => '/local/playlyfe/lib.php',
+    'handlerfunction'  => 'activity_completion_changed_handler',
+    'schedule'         => 'instant'
+  ),
+
+  'user_enrolled' => array(
+    'handlerfile'      => '/local/playlyfe/lib.php',
+    'handlerfunction'  => 'user_enrolled_handler',
+    'schedule'         => 'instant'
+  ),
+
+  'user_logout' => array(
+    'handlerfile'      => '/local/playlyfe/lib.php',
+    'handlerfunction'  => 'user_logout_handler',
+    'schedule'         => 'instant'
+  ),
+
+  'quiz_attempt_started' => array(
+    'handlerfile'      => '/local/playlyfe/lib.php',
+    'handlerfunction'  => 'pl_quiz_attempt_started_handler',
+    'schedule'         => 'instant'
+  ),
+
+  'quiz_attempt_submitted' => array(
+    'handlerfile'      => '/local/playlyfe/lib.php',
+    'handlerfunction'  => 'pl_quiz_attempt_submitted_handler',
+    'schedule'         => 'instant'
+  ),
+
+  'forum_discussion_created' => array(
+    'handlerfile'      => '/local/playlyfe/lib.php',
+    'handlerfunction'  => 'forum_discussion_created_handler',
+    'schedule'         => 'instant'
+  ),
+
+  'forum_post_created' => array(
+    'handlerfile'      => '/local/playlyfe/lib.php',
+    'handlerfunction'  => 'forum_post_created_handler',
+    'schedule'         => 'instant'
+  ),
+
+  'forum_viewed' => array(
+    'handlerfile'      => '/local/playlyfe/lib.php',
+    'handlerfunction'  => 'forum_viewed_handler',
+    'schedule'         => 'instant'
+  )
 );
-
-$event_handlers['quiz_attempt_submitted'] = array(
-  'handlerfile'      => '/local/playlyfe/lib.php',
-  'handlerfunction'  => 'pl_quiz_attempt_submitted_handler',
-  'schedule'         => 'instant'
-);
-
-$handlers = $event_handlers;

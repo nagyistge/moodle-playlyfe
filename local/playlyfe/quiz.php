@@ -13,7 +13,7 @@ $PAGE->set_course($course);
 $PAGE->set_cm($cm);
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('admin');
-$PAGE->set_url('/local/playlyfe/course.php');
+$PAGE->set_url('/local/playlyfe/quiz.php');
 $PAGE->set_title($SITE->shortname);
 $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
@@ -21,40 +21,31 @@ $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
 $PAGE->navigation->clear_cache();
 $PAGE->requires->jquery();
 $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/reward.js'));
-$action = $pl->get('/design/versions/latest/actions/quiz_completed');
-$action2 = $pl->get('/design/versions/latest/actions/quiz_bonus');
+$submit_rule = get_rule($quiz->id, 'submitted');
+$bonus_rule = get_rule($quiz->id, 'bonus');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
 $html = '';
 
-if (array_key_exists('id', $_POST)) {
-  $id = $_POST['id'];
-  $id_bonus = $id.'_bonus';
-  $action = patch_action('quiz_id', $action, $id, $_POST['metrics'][$id], $_POST['values'][$id]);
-  if(array_key_exists($id_bonus, $_POST['metrics'])) {
-    $action2 = patch_action('quiz_id', $action2, $id, $_POST['metrics'][$id_bonus], $_POST['values'][$id_bonus]);
+if (array_key_exists('submit', $_POST)) {
+  $cid = $submit_rule['id'];
+  $bid = $bonus_rule['id'];
+  if(array_key_exists($cid, $_POST['metrics'])) {
+    patch_rule($submit_rule, $_POST['metrics'][$cid], $_POST['values'][$cid]);
   }
-  try {
-    $pl->patch('/design/versions/latest/actions/quiz_completed', array(), $action);
-    if(array_key_exists($id_bonus, $_POST['metrics'])) {
-      $pl->patch('/design/versions/latest/actions/quiz_bonus', array(), $action2);
-    }
-    redirect(new moodle_url('/local/playlyfe/quiz.php', array('cmid' => $id)));
+  if(array_key_exists($bid, $_POST['metrics'])) {
+    patch_rule($bonus_rule, $_POST['metrics'][$bid], $_POST['values'][$bid]);
   }
-  catch(Exception $e) {
-    print_object($e);
-  }
+  redirect(new moodle_url('/local/playlyfe/quiz.php', array('cmid' => $cmid)));
 } else {
   $name = $cm->name;
   echo $OUTPUT->header();
   $html .= "<h1> $name </h1>";
-  $html .= '<form id="mform1" action="quiz.php" method="post">';
-  $html .= '<input name="id" type="hidden" value="'.$cmid.'"/>';
-  $html .= '<input name="cmid" type="hidden" value="'.$cmid.'"/>';
+  $html .= '<form action="quiz.php?cmid='.$cmid.'" method="post">';
   $html .= "<h2> Rewards on Quiz Completion </h2>";
-  $html .= create_reward_table($cmid, $cmid, $metrics, $action);
-  if($quiz->timeclose > 0 or $quiz->timelimit >0) {
+  $html .= create_rule_table($submit_rule, $metrics);
+  if($quiz->timeclose > 0 or $quiz->timelimit > 0) {
     $html .= '<h2> Bonus for Early Completion Before '.date("D, d M Y H:i:s", $quiz->timeclose).'</h2>';
-    $html .= create_reward_table($cmid.'_bonus', $cmid, $metrics, $action2);
+    $html .= create_rule_table($bonus_rule, $metrics);
   }
   $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
   $html .= '</form>';

@@ -19,54 +19,34 @@ $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
 $PAGE->navigation->clear_cache();
 $PAGE->requires->jquery();
 $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/reward.js'));
-$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/course.js'));
-$html = '';
-$action = $pl->get('/design/versions/latest/actions/course_completed');
-$action2 = $pl->get('/design/versions/latest/actions/course_bonus');
+$completed_rule = get_rule($id, 'completed');
+$bonus_rule = get_rule($id, 'bonus');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
+$html = '';
 
-if (array_key_exists('id', $_POST)) {
-  $id = $_POST['id'];
-  $id_bonus = $id.'_bonus';
-  $action = patch_action('course_id', $action, $id, $_POST['metrics'][$id], $_POST['values'][$id]);
-  if(array_key_exists($id_bonus, $_POST['metrics'])) {
-    $action2 = patch_action('course_id', $action2, $id, $_POST['metrics'][$id_bonus], $_POST['values'][$id_bonus]);
+if (array_key_exists('submit', $_POST)) {
+  $cid = $completed_rule['id'];
+  $bid = $bonus_rule['id'];
+  if(array_key_exists($cid, $_POST['metrics'])) {
+    patch_rule($completed_rule, $_POST['metrics'][$cid], $_POST['values'][$cid]);
   }
-  try {
-    $pl->patch('/design/versions/latest/actions/course_completed', array(), $action);
-    if(array_key_exists($id_bonus, $_POST['metrics'])) {
-      $pl->patch('/design/versions/latest/actions/course_bonus', array(), $action2);
-    }
-    set_leaderboards($_POST, $metrics, array($course), 'course'.$id.'_leaderboard');
-    redirect(new moodle_url('/local/playlyfe/course.php', array('id' => $id)));
+  if(array_key_exists($bid, $_POST['metrics'])) {
+    patch_rule($bonus_rule, $_POST['metrics'][$bid], $_POST['values'][$bid]);
   }
-  catch(Exception $e) {
-    print_object($e);
-  }
+  set_leaderboards($_POST, $metrics, array($course), 'course'.$id.'_leaderboard');
+  redirect(new moodle_url('/local/playlyfe/course.php', array('id' => $id)));
 } else {
   $leaderboards = array_merge(get_leaderboards('all_leaderboards'), get_leaderboards('course'.$id.'_leaderboard'));
-  $modinfo = get_fast_modinfo($course);
-  $modnames = get_module_types_names();
-  $modnamesused = $modinfo->get_used_module_names();
-  $mods = $modinfo->get_cms();
-  $sections = $modinfo->get_section_info_all();
-  $name = $course->fullname;
-  $rewards = array();
-  foreach($action['rules'] as $rule) {
-    if ($rule['requires']['context']['rhs'] == $id) {
-      $rewards = $rule['rewards'];
-    }
-  }
-  $data = array(
-    'id' => $id,
-    'metrics' => $metrics,
-    'leaderboard' => get_config('playlyfe', 'course'.$id),
-    'rewards' => $rewards
-  );
+  // $modinfo = get_fast_modinfo($course);
+  // $modnames = get_module_types_names();
+  // $modnamesused = $modinfo->get_used_module_names();
+  // $mods = $modinfo->get_cms();
+  // $sections = $modinfo->get_section_info_all();
+  // $name = $course->fullname;
   echo $OUTPUT->header();
+  $name = $course->shortname;
   $html .= "<h1> $name </h1>";
-  $html .= '<form id="mform1" action="course.php" method="post">';
-  $html .= '<input name="id" type="hidden" value="'.$id.'"/>';
+  $html .= '<form action="course.php?id='.$id.'" method="post">';
   $html .= '<h2> Leaderboards for this Course </h2>';
   $html .= '<div>';
   foreach ($metrics as $metric) {
@@ -81,15 +61,16 @@ if (array_key_exists('id', $_POST)) {
   }
   $html .= '</div><br>';
   $html .= "<h2> Rewards on Course Completion </h2>";
-  $html .= create_reward_table($id, $id, $metrics, $action);
+  $html .= create_rule_table($completed_rule, $metrics);
   $criteria = $DB->get_record('course_completion_criteria', array('course' => $id, 'criteriatype' => 2));
   // 2 for timeend criteria
-  if($criteria->timeend > 0) {
+  if($criteria and $criteria->timeend > 0) {
     $html .= '<h2> Bonus for Early Completion Before '.date("D, d M Y H:i:s", $criteria->timeend).'</h2>';
-    $html .= create_reward_table($id.'_bonus', $id, $metrics, $action2);
+    $html .= create_rule_table($bonus_rule, $metrics);
   }
   $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
   $html .= '</form>';
   echo $html;
+  complete_course(15);
   echo $OUTPUT->footer();
 }

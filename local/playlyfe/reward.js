@@ -77,3 +77,28 @@ function add_handler(version, data) {
     });
   })();
 }
+
+function show_rewards(version, data) {
+  console.log(data);
+  $("#dialog_"+data).dialog({
+    dialogClass: "no-close",
+    closeOnEscape: false,
+    //draggable: false,
+    //resizable: false,
+    height: "auto",
+    width: "auto",
+    modal: true,
+    //position: { my: "center", at: "center", of: "body" }
+    buttons: [
+      {
+        text: "OK",
+        click: function() {
+          $(this).dialog("close");
+          if(data >= 0) {
+            show_rewards('', --data);
+          }
+        }
+      }
+    ]
+  });
+}

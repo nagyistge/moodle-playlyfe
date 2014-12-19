@@ -8,5 +8,8 @@
 !/local
 /local/*
 !/local/playlyfe
-
+!/mod
+!/mod/forum/post.php
+!/mod/forum/view.php
+/mod/*
 

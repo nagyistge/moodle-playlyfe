@@ -26,6 +26,26 @@ $pl = new Playlyfe(array(
   }
 ));
 
+function get_pl() {
+  global $client_id, $client_secret;
+  return new Playlyfe(array(
+    'client_id' => $client_id,
+    'client_secret' => $client_secret,
+    'type' => 'client',
+    'store' => function($token) {
+      set_config('access_token', $token['access_token'], 'playlyfe');
+      set_config('expires_at', $token['expires_at'], 'playlyfe');
+    },
+    'load' => function() {
+      $access_token = array(
+        'access_token' => get_config('playlyfe', 'access_token'),
+        'expires_at' => get_config('playlyfe', 'expires_at')
+      );
+      return $access_token;
+    }
+  ));
+}
+
 function create_rules($var_name, &$rules, $id, $metrics, $values) {
   $i = 0;
   $rule = array(
@@ -107,15 +127,24 @@ function patch_action($var_name, $action, $id, $metrics, $values) {
   }
   $action['rules'] = $new_rules;
   if(!$has_course) {
-    array_push($action['rules'], array(
-      'requires' => array(
+    // if(is_array($var_name)) {
+    //   $requires = array();
+    //   foreach($var_name as $key => $value) {
+    //     $requires[$key] = $value;
+    //   }
+    // }
+    // else {
+      $requires = array(
         'type' => 'var',
         'context' => array(
           'lhs' => '$vars.'.$var_name,
           'operator' => 'eq',
           'rhs' => (string)$id
         )
-      ),
+      );
+    // }
+    array_push($action['rules'], array(
+      'requires' => $requires,
       'rewards' => $rewards
     ));
   }
@@ -161,7 +190,6 @@ function set_leaderboards($post, $metrics, $courses, $key) {
   }
 }
 
-
 function get_leaderboards($key) {
   $leaderboards = json_decode(get_config('playlyfe', $key));
   if(!is_array($leaderboards)) {
@@ -197,3 +225,134 @@ function create_reward_table($id, $var_id, $metrics, $action) {
   $PAGE->requires->js_init_call('add_handler', array($data));
   return $html;
 }
+
+function create_reward($metrics, $values) {
+  $i = 0;
+  $rewards = array();
+  foreach($metrics as $metric) {
+    $metric_id = $metric;
+    $type = 'point';
+    $value = $values[$i];
+    $split_value = explode(':', $metric);
+    if(count($split_value) > 1) {
+      $metric_id = $split_value[0];
+      $type = 'set';
+      $value = array();
+      $value[$split_value[1]] = $values[$i];
+    }
+    $reward = array(
+      'metric' => array(
+        'id' => $metric_id,
+        'type' => $type
+      ),
+      'verb' => 'add',
+      'value' => $value
+    );
+    $i++;
+    array_push($rewards, $reward);
+  }
+  return $rewards;
+}
+
+function create_rule_table($rule, $metrics) {
+  global $PAGE;
+  $id = $rule['id'];
+  $html = '<table id="treward_'.$id.'" class="generaltable">'; //admintable
+  $html .= '<thead>';
+  $html .= '<tr>';
+  $html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
+  $html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Value</th>';
+  $html .= '</tr>';
+  $html .= '</thead>';
+  $html .= '<tbody>';
+  $html .= '</tbody>';
+  $html .= '</table>';
+  $html .= '<p><button type="button" id="add_'.$id.'">Add Reward</button></p>';
+  if(count($rule['rules']) > 0) {
+    $rewards = $rule['rules'][0]['rewards'];
+  } else {
+    $rewards = array();
+  }
+  $data = array(
+    'id' => $id,
+    'metrics' => $metrics,
+    'rewards' => $rewards
+  );
+  $PAGE->requires->js_init_call('init_table', array($data));
+  $PAGE->requires->js_init_call('add_handler', array($data));
+  return $html;
+}
+
+function get_rule($id, $event) {
+  global $pl, $PAGE;
+  if ($PAGE->context->contextlevel == 50) { //CONTEXT_COURSE
+    $context = 'course';
+  }
+  if ($PAGE->context->contextlevel == 70) { //CONTEXT_MODULE
+    $context = $PAGE->activityname;
+  }
+  try {
+    return $pl->get('/design/versions/latest/rules/'.$context.'_'.$id.'_'.$event);
+  }
+  catch(Exception $e) {
+    if($e->name == 'rule_not_found') {
+      $rule = array(
+        'id' => $context.'_'.$id.'_'.$event,
+        'name' => $context.'_'.$id.'_'.$event,
+        'type' => 'custom',
+        'rules' => array()
+      );
+      try {
+        return $pl->post('/design/versions/latest/rules', array(), $rule);
+      }
+      catch(Exception $e) {
+        print_object($e);
+      }
+    }
+    else {
+      print_object($e);
+    }
+  }
+}
+
+function patch_rule($rule, $metrics, $values) {
+  global $pl;
+  $id = $rule['id'];
+  unset($rule['id']);
+  unset($rule['name']);
+  $rule['rules'] = array(
+    array(
+      'rewards' => create_reward($metrics, $values),
+      'requires' => (object)array()
+    )
+  );
+  try {
+    return $pl->patch('/design/versions/latest/rules/'.$id, array(), $rule);
+  }
+  catch(Exception $e) {
+    print_object($e);
+  }
+}
+
+function get_buffer() {
+  global $USER;
+  return json_decode(get_config('playlyfe', 'u'.$USER->id.'_buffer'), true);
+}
+
+function set_buffer($data) {
+  global $USER;
+  set_config('u'.$USER->id.'_buffer', json_encode($data), 'playlyfe');
+}
+
+function add_to_buffer($events) {
+  global $USER;
+  $buffer = get_buffer();
+  array_push($buffer, $events);
+  set_buffer($buffer);
+}
+// Activity Stream in a Course Level, Team Activity within course
+// Course Progress
+// Skill Level
+// Commenting
+// Forums
+// Grades

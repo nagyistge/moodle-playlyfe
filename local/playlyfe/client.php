@@ -61,9 +61,74 @@ if($form->is_cancelled()) {
     }
   ));
   try {
+    // $pl->post('/design/versions/latest/actions', array(), array(
+    //   'id' => 'course_completed',
+    //   'name' => 'course_completed',
+    //   'rules' => array(),
+    //   'requires' => (object)array(),
+    //   'variables' => array(
+    //     array(
+    //       'name' => 'course_id',
+    //       'type' => 'int',
+    //       'required' => true
+    //     )
+    //   )
+    // ));
+    // $pl->post('/design/versions/latest/actions', array(), array(
+    //   'id' => 'course_group_completed',
+    //   'name' => 'course_group_completed',
+    //   'rules' => array(),
+    //   'requires' => (object)array(),
+    //   'variables' => array(
+    //     array(
+    //       'name' => 'course_group_id',
+    //       'type' => 'int',
+    //       'required' => true
+    //     )
+    //   )
+    // ));
+    // $pl->post('/design/versions/latest/actions', array(), array(
+    //   'id' => 'course_bonus',
+    //   'name' => 'course_bonus',
+    //   'rules' => array(),
+    //   'requires' => (object)array(),
+    //   'variables' => array(
+    //     array(
+    //       'name' => 'course_id',
+    //       'type' => 'int',
+    //       'required' => true
+    //     )
+    //   )
+    // ));
+    // $pl->post('/design/versions/latest/actions', array(), array(
+    //   'id' => 'quiz_completed',
+    //   'name' => 'quiz_completed',
+    //   'rules' => array(),
+    //   'requires' => (object)array(),
+    //   'variables' => array(
+    //     array(
+    //       'name' => 'quiz_id',
+    //       'type' => 'int',
+    //       'required' => true
+    //     )
+    //   )
+    // ));
+    // $pl->post('/design/versions/latest/actions', array(), array(
+    //   'id' => 'quiz_bonus',
+    //   'name' => 'quiz_bonus',
+    //   'rules' => array(),
+    //   'requires' => (object)array(),
+    //   'variables' => array(
+    //     array(
+    //       'name' => 'quiz_id',
+    //       'type' => 'int',
+    //       'required' => true
+    //     )
+    //   )
+    // ));
     $pl->post('/design/versions/latest/actions', array(), array(
-      'id' => 'course_completed',
-      'name' => 'course_completed',
+      'id' => 'forum',
+      'name' => 'forum',
       'rules' => array(),
       'requires' => (object)array(),
       'variables' => array(
@@ -71,56 +136,14 @@ if($form->is_cancelled()) {
           'name' => 'course_id',
           'type' => 'int',
           'required' => true
-        )
-      )
-    ));
-    $pl->post('/design/versions/latest/actions', array(), array(
-      'id' => 'course_group_completed',
-      'name' => 'course_group_completed',
-      'rules' => array(),
-      'requires' => (object)array(),
-      'variables' => array(
+        ),
         array(
-          'name' => 'course_group_id',
+          'name' => 'forum_id',
           'type' => 'int',
           'required' => true
-        )
-      )
-    ));
-    $pl->post('/design/versions/latest/actions', array(), array(
-      'id' => 'quiz_completed',
-      'name' => 'quiz_completed',
-      'rules' => array(),
-      'requires' => (object)array(),
-      'variables' => array(
+        ),
         array(
-          'name' => 'quiz_id',
-          'type' => 'int',
-          'required' => true
-        )
-      )
-    ));
-    $pl->post('/design/versions/latest/actions', array(), array(
-      'id' => 'quiz_bonus',
-      'name' => 'quiz_bonus',
-      'rules' => array(),
-      'requires' => (object)array(),
-      'variables' => array(
-        array(
-          'name' => 'quiz_id',
-          'type' => 'int',
-          'required' => true
-        )
-      )
-    ));
-    $pl->post('/design/versions/latest/actions', array(), array(
-      'id' => 'course_bonus',
-      'name' => 'course_bonus',
-      'rules' => array(),
-      'requires' => (object)array(),
-      'variables' => array(
-        array(
-          'name' => 'course_id',
+          'name' => 'event',
           'type' => 'int',
           'required' => true
         )
