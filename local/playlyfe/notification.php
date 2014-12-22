@@ -32,7 +32,7 @@ function display_change($change, $course_name) {
       $value .= '     <img src="image_def.php?metric='.$metric['id'].'&size=medium&item='.$key.'"></img>    ';
     }
   }
-  $text .= 'You have gained '.$value.' '.$metric['name'].' by completing course - '.$course_name;
+  $text .= 'You have gained '.$value.' '.$metric['name'].' '.$course_name;
   $count++;
   return $text;
 }
@@ -40,19 +40,10 @@ foreach($notifications['data'] as $notification) {
   if ($notification['seen'] == false) {
     array_push($ids, $notification['id']);
   }
-  if ($notification['event'] == 'action') {
-    if ($notification['action']['id'] == 'course_completed') {
-      if(isset($notification['action']['vars']['course_id'])) {
-        $course_id = $notification['action']['vars']['course_id'];
-        $course = $DB->get_record('course', array('id' => $course_id), '*', MUST_EXIST);
-        $title = $course->shortname;
-      }
-      else {
-        $title = '';
-      }
-      foreach($notification['changes'] as $change) {
-        $html .= '<p>'.display_change($change, $title).' on '.date(strtotime($notification['timestamp'])).'</p>';
-      }
+  if ($notification['event'] == 'custom_rule') {
+    foreach($notification['changes'] as $change) {
+      $title = $notification['rule']['name'];
+      $html .= '<p>'.display_change($change, $title).' on '.date(strtotime($notification['timestamp'])).'</p>';
     }
   }
 }

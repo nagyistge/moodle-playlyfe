@@ -9,22 +9,28 @@ $client_secret = get_config('playlyfe', 'client_secret');
   throw new Exception('Please set your client_id and client_secret in the Playlyfe Plugin Settings Page');
 }
 
-$pl = new Playlyfe(array(
-  'client_id' => $client_id,
-  'client_secret' => $client_secret,
-  'type' => 'client',
-  'store' => function($token) {
-    set_config('access_token', $token['access_token'], 'playlyfe');
-    set_config('expires_at', $token['expires_at'], 'playlyfe');
-  },
-  'load' => function() {
-    $access_token = array(
-      'access_token' => get_config('playlyfe', 'access_token'),
-      'expires_at' => get_config('playlyfe', 'expires_at')
-    );
-    return $access_token;
-  }
-));
+try {
+  $pl = new Playlyfe(array(
+    'client_id' => $client_id,
+    'client_secret' => $client_secret,
+    'type' => 'client',
+    'store' => function($token) {
+      set_config('access_token', $token['access_token'], 'playlyfe');
+      set_config('expires_at', $token['expires_at'], 'playlyfe');
+    },
+    'load' => function() {
+      $access_token = array(
+        'access_token' => get_config('playlyfe', 'access_token'),
+        'expires_at' => get_config('playlyfe', 'expires_at')
+      );
+      return $access_token;
+    }
+  ));
+}
+catch(Exception $e) {
+  echo 'Please Check your Client ID and Client Secret. They seem to be incorrect. And make sure you are using a Whitelabel Client';
+}
+
 
 function get_pl() {
   global $client_id, $client_secret;
@@ -191,11 +197,23 @@ function set_leaderboards($post, $metrics, $courses, $key) {
 }
 
 function get_leaderboards($key) {
-  $leaderboards = json_decode(get_config('playlyfe', $key));
-  if(!is_array($leaderboards)) {
-    $leaderboards = array();
+  $data = json_decode(get_config('playlyfe', $key));
+  if(!is_array($data)) {
+    $data = array();
   }
-  return $leaderboards;
+  return $data;
+}
+
+function get($key) {
+  $data = json_decode(get_config('playlyfe', $key), true);
+  if(!is_array($data)) {
+    $data = array();
+  }
+  return $data;
+}
+
+function set($key, $value = array()) {
+  set_config($key, json_encode($value), 'playlyfe');
 }
 
 function create_reward_table($id, $var_id, $metrics, $action) {
@@ -254,6 +272,26 @@ function create_reward($metrics, $values) {
   return $rewards;
 }
 
+
+function create_course_group($course_group_rule, $courses, $metrics) {
+  global $pl, $PAGE;
+  $html = '<h2> Courses </h2>';
+  $html .= '<div>';
+  foreach ($courses as $course) {
+    if($course['enable_completion']) {
+      if(in_array($metric['id'], $leaderboards)) {
+        $html .= '<input type="checkbox" value="'.$course->id.'" name="courses[][]" checked />'.$course->shortname.'<br>';
+      }
+      else {
+        $html .= '<input type="checkbox" value="'.$course->id.'" name="courses[][]" />'.$course->shortname.'<br>';
+      }
+    }
+  }
+  $html .= '</div><br>';
+  $html .= "<h2> Rewards on Course Completion </h2>";
+  $html .= create_rule_table($course_completed_rule , $metrics);
+}
+
 function create_rule_table($rule, $metrics) {
   global $PAGE;
   $id = $rule['id'];
@@ -283,7 +321,7 @@ function create_rule_table($rule, $metrics) {
   return $html;
 }
 
-function get_rule($id, $event) {
+function get_rule($id, $event, $context = '') {
   global $pl, $PAGE;
   if ($PAGE->context->contextlevel == 50) { //CONTEXT_COURSE
     $context = 'course';

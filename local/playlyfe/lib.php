@@ -3,16 +3,20 @@
   require_once('classes/sdk.php');
 
   function course_completed_handler($event) {
-    global $USER;
+    global $USER, $DB;
     $id = $event->id;
     $scopes = array();
-    $leaderboard_metrics = get_leaderboards('course'.$id.'_leaderboard');
-    if($leaderboard_metrics) {
-      foreach($leaderboard_metrics as $leaderboard_metric) {
-         array_push($scopes, array(
-          'id' => $leaderboard_metric.'/'.'course'.$id,
-          'entity_id' => 'u'.$USER->id
-        ));
+    array_push($scopes, array(
+      'id' => 'course'.$id,
+      'entity_id' => 'u'.$USER->id
+    ));
+    // array_push($scopes, array(
+    //   'id' => 'werwe/course'.$id,
+    //   'entity_id' => 'u'.$USER->id
+    // ));
+    $coures_completed = $DB->get_records('course_completions', array('userid' => $USER->id));
+    if(count($coures_completed) > 0) {
+      foreach($coures_completed as $completed) {
       }
     }
     // print_object($leaderboard_metrics);
@@ -106,6 +110,8 @@
         $nodePlaylyfe->add('Publish', new moodle_url('/local/playlyfe/publish.php'), null, null, 'publish', new pix_icon('t/edit', 'edit'));
 
         $nodePlaylyfe->add('Courses', new moodle_url('/local/playlyfe/courses.php'), null, null, 'courses', new pix_icon('t/edit', 'edit'));
+
+        $nodePlaylyfe->add('Courses Completion', new moodle_url('/local/playlyfe/course_group.php'), null, null, 'courses_group', new pix_icon('t/edit', 'edit'));
 
         $nodeMetric = $nodePlaylyfe->add('Metrics', null, null, null, 'metrics');
         $nodeMetric->add('Manage Metrics', new moodle_url('/local/playlyfe/metric/manage.php'), null, null, 'manage', new pix_icon('t/edit', 'edit'));

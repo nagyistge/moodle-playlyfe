@@ -102,3 +102,35 @@ function show_rewards(version, data) {
     ]
   });
 }
+
+function show_course_group(version, data) {
+  add_course_group(version, data);
+  $('#add').click(function() {
+    add_course_group(version, data);
+  });
+}
+
+var groups_count = 0;
+function add_course_group(version, data) {
+  groups_count++;
+  var courses = data.courses;
+  var metrics = data.metrics;
+  html = '<div class="box generalbox authsui"><h1>'+groups_count+'</h1>';
+  for(var i = 0; i < courses.length; i++) {
+    var course = courses[i];
+    html += '<input type="checkbox" value="'+course.id+'" name="courses['+groups_count+'][]" />'+course.name+'<br>';
+  }
+  html += '<table id="treward_'+groups_count+'" class="generaltable">';
+  html += '<thead>';
+  html += '<tr>';
+  html += '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
+  html += '<th class="header c1 lastcol centeralign" style="" scope="col">Value</th>';
+  html += '</tr>';
+  html += '</thead>';
+  html += '<tbody>';
+  html += '</tbody>';
+  html += '</table>';
+  html += '<p><button type="button" id="add_'+groups_count+'">Add Reward</button></p></div>';
+  $('#course_group').append(html);
+  add_handler('', { id: groups_count, metrics: metrics });
+}

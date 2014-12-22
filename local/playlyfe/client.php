@@ -60,111 +60,11 @@ if($form->is_cancelled()) {
       return $access_token;
     }
   ));
-  try {
-    // $pl->post('/design/versions/latest/actions', array(), array(
-    //   'id' => 'course_completed',
-    //   'name' => 'course_completed',
-    //   'rules' => array(),
-    //   'requires' => (object)array(),
-    //   'variables' => array(
-    //     array(
-    //       'name' => 'course_id',
-    //       'type' => 'int',
-    //       'required' => true
-    //     )
-    //   )
-    // ));
-    // $pl->post('/design/versions/latest/actions', array(), array(
-    //   'id' => 'course_group_completed',
-    //   'name' => 'course_group_completed',
-    //   'rules' => array(),
-    //   'requires' => (object)array(),
-    //   'variables' => array(
-    //     array(
-    //       'name' => 'course_group_id',
-    //       'type' => 'int',
-    //       'required' => true
-    //     )
-    //   )
-    // ));
-    // $pl->post('/design/versions/latest/actions', array(), array(
-    //   'id' => 'course_bonus',
-    //   'name' => 'course_bonus',
-    //   'rules' => array(),
-    //   'requires' => (object)array(),
-    //   'variables' => array(
-    //     array(
-    //       'name' => 'course_id',
-    //       'type' => 'int',
-    //       'required' => true
-    //     )
-    //   )
-    // ));
-    // $pl->post('/design/versions/latest/actions', array(), array(
-    //   'id' => 'quiz_completed',
-    //   'name' => 'quiz_completed',
-    //   'rules' => array(),
-    //   'requires' => (object)array(),
-    //   'variables' => array(
-    //     array(
-    //       'name' => 'quiz_id',
-    //       'type' => 'int',
-    //       'required' => true
-    //     )
-    //   )
-    // ));
-    // $pl->post('/design/versions/latest/actions', array(), array(
-    //   'id' => 'quiz_bonus',
-    //   'name' => 'quiz_bonus',
-    //   'rules' => array(),
-    //   'requires' => (object)array(),
-    //   'variables' => array(
-    //     array(
-    //       'name' => 'quiz_id',
-    //       'type' => 'int',
-    //       'required' => true
-    //     )
-    //   )
-    // ));
-    $pl->post('/design/versions/latest/actions', array(), array(
-      'id' => 'forum',
-      'name' => 'forum',
-      'rules' => array(),
-      'requires' => (object)array(),
-      'variables' => array(
-        array(
-          'name' => 'course_id',
-          'type' => 'int',
-          'required' => true
-        ),
-        array(
-          'name' => 'forum_id',
-          'type' => 'int',
-          'required' => true
-        ),
-        array(
-          'name' => 'event',
-          'type' => 'int',
-          'required' => true
-        )
-      )
-    ));
-    redirect(new moodle_url('/local/playlyfe/client.php'));
-  }
-  catch(Exception $e) {
-    if($e->name == 'action_exists') {
-      redirect(new moodle_url('/local/playlyfe/client.php'));
-    }
-    else {
-      print_object($e);
-    }
-  }
-} else {
-  $toform = array();
-  $toform['id'] = get_config('playlyfe', 'client_id');
-  $toform['secret'] = get_config('playlyfe', 'client_secret');
-  $form->set_data($toform);
-  echo $OUTPUT->header();
-  $form->display();
-  echo $OUTPUT->footer();
 }
+$toform = array();
+$toform['id'] = get_config('playlyfe', 'client_id');
+$toform['secret'] = get_config('playlyfe', 'client_secret');
+$form->set_data($toform);
+echo $OUTPUT->header();
+$form->display();
+echo $OUTPUT->footer();

@@ -19,18 +19,40 @@ $html = '';
 if (array_key_exists('submit', $_POST)) {
   try {
     $pl->post('/design/versions/latest/simulate');
+    redirect(new moodle_url('/'));
   }
   catch(Exception $e) {
     print_object($e);
   }
 }
-$issues = $pl->get('/design/issues');
+$issues = $pl->get('/design/issues', array('type' => 'metric'));
+$unresolved_issues = array();
+foreach ($issues as $value) {
+  if (!$value['is_resolved']) {
+    array_push($unresolved_issues, $value);
+  }
+}
+if(count($unresolved_issues) > 0) {
+  $html .= '<h1> You have Issues in your Game Design Please Fix Them?  Now! </h1>';
+  $table = new html_table();
+  $table->head = array('Reason', 'Metric', 'Apply Fix');
+  $table->colclasses = array('leftalign', 'leftalign', 'centeralign');
+  $table->data = array();
+  $table->attributes['class'] = 'admintable generaltable';
+  $table->id = 'manage_sets';
+  foreach ($issues as $unresolved_issues) {
+    $fix = '<a href="fix.php?id='.$value['id'].'">Fix</a>';
+    $table->data[] = new html_table_row(array($value['code'], $value['vars']['metric_design']['name'], $fix));
+  }
+  $html .= html_writer::table($table);
+}
+else {
+  $html .= '<h1> All Clear and Set to Go. Are you Sure you Want to publish all your changes? </h1>';
+  $html .= '<form action="publish.php" method="post">';
+  $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
+  $html .= '</form>';
+}
+
 echo $OUTPUT->header();
-$html .= '<h1> Are you Sure you Want to publish all your changes? </h1>';
-$html .= '<form action="publish.php" method="post">';
-//foreach($issues as $issue)
-$html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
-$html .= '</form>';
-print_object($issues);
 echo $html;
 echo $OUTPUT->footer();
