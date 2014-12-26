@@ -19,9 +19,8 @@ $PAGE->requires->jquery();
 $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/reward.js'));
 $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/courses.js'));
 $html = '';
-$action = $pl->get('/design/versions/latest/actions/course_completed');
-$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
-$courses = $DB->get_records('course', array());
+// $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
+// $courses = $DB->get_records('course', array());
 
 if (array_key_exists('submit', $_POST)) {
   $rules = array();
@@ -45,7 +44,6 @@ if (array_key_exists('submit', $_POST)) {
   $data = array(
     'metrics' => $metrics
   );
-  echo $OUTPUT->header();
   $html .= '<h1> Courses </h1>';
   $html .= '<h2> Select Leaderboards For All Courses </h2>';
   $html .= 'Please Select The Metrics For the leaderboards which you would like across all courses<br>';
@@ -69,7 +67,9 @@ if (array_key_exists('submit', $_POST)) {
   }
   $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
   $html .= '</form>';
-  echo $html;
+
   $PAGE->requires->js_init_call('setup', array($data));
+  echo $OUTPUT->header();
+  echo $html;
   echo $OUTPUT->footer();
 }

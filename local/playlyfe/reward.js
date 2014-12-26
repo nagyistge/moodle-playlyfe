@@ -79,8 +79,27 @@ function add_handler(version, data) {
 }
 
 function show_rewards(version, data) {
-  console.log(data);
-  $("#dialog_"+data).dialog({
+  var event = data.pop()
+  show_dailog(event, data);
+    //position: { my: "center", at: "center", of: "body" }
+  //   buttons: [
+  //     {
+  //       text: "OK",
+  //       click: function() {
+  //         // $("#dialog").dialog({
+  //         //   dialogClass: "no-close",
+  //         //   closeOnEscape: false,
+  //         //   title: 'gello'
+  //         // });
+  //         // $("#dialog").html('<h3>You have Gained</h3>'+render_reward(item));
+  //       }
+  //     }
+  //   ]
+  // });
+}
+
+function show_dailog(event, data) {
+  $("#dialog").dialog({
     dialogClass: "no-close",
     closeOnEscape: false,
     //draggable: false,
@@ -88,19 +107,44 @@ function show_rewards(version, data) {
     height: "auto",
     width: "auto",
     modal: true,
-    //position: { my: "center", at: "center", of: "body" }
+    title: event.rule.name,
     buttons: [
       {
-        text: "OK",
+        text: "Next",
         click: function() {
-          $(this).dialog("close");
-          if(data >= 0) {
-            show_rewards('', --data);
+          if(data.length === 0) {
+            $( this ).dialog("close");
+          }
+          else {
+            show_rewards('', data);
           }
         }
       }
     ]
   });
+  var html = '';
+  for(var i=0; i<event.changes.length; i++) {
+    html = render_reward(event.changes[i]);
+  }
+  $("#dialog").html('<h3>You have Gained</h3>'+html);
+}
+
+function render_reward(event) {
+  console.log(event);
+  metric= event.metric;
+  delta = event.delta;
+  html = '<img src="image_def.php?metric='+metric.id+'&size=large"></img>';
+  if (metric.type === 'point') {
+    value = delta['new'] - delta.old;
+  }
+  // else {
+  //   for(key in delta) {
+  //     value = delta['new'] - $value['old']).' x '.$key;
+  //     value += '     <img src="image_def.php?metric='.$metric['id'].'&size=medium&item='.$key.'"></img>    ';
+  //   }
+  // }
+  html += 'You have gained '+value+' '+metric.name;
+  return html;
 }
 
 function show_course_group(version, data) {
@@ -133,4 +177,36 @@ function add_course_group(version, data) {
   html += '<p><button type="button" id="add_'+groups_count+'">Add Reward</button></p></div>';
   $('#course_group').append(html);
   add_handler('', { id: groups_count, metrics: metrics });
+}
+
+
+var index = 0;
+
+function init_set(version, new_index) {
+  $('#add').click(function() {
+    add_item();
+  });
+  if(new_index !== null && typeof new_index !== 'undefined') {
+    index = new_index;
+  }
+}
+
+function add_item() {
+  $('#extra').append(
+    '<div id="item_'+index+'" class="generalbox authsui">'
+    +'Badge '+(index+1)+'<button type="button" id="remove_'+index+'">delete</button>'
+    +'<p>Name: <input name="items_names['+index+']" type="text" required /></p>'
+    +'<p>Description: <input name="items_desc['+index+']" type="text" required /></p>'
+    +'<p>Max: <input name="items_max['+index+']" type="number" value="1" required /></p>'
+    +'<input type="hidden" name="MAX_FILE_SIZE" value="500000000" />'
+    +'<p>Badge Image: <input type="file" name="itemfile'+index+'" /></p>'
+    +'<p>Hidden: <input name="items_hidden['+index+']" type="checkbox" checked /></p></div>'
+  );
+  (function(i) {
+    $('#remove_'+i).click(function() {
+      $('#item_'+i).remove();
+      index--;
+    });
+  })(index);
+  index++;
 }

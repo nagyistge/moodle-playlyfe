@@ -321,13 +321,16 @@ function create_rule_table($rule, $metrics) {
   return $html;
 }
 
-function get_rule($id, $event, $context = '') {
+function get_rule($id, $event, $context = '', $name) {
   global $pl, $PAGE;
   if ($PAGE->context->contextlevel == 50) { //CONTEXT_COURSE
     $context = 'course';
   }
   if ($PAGE->context->contextlevel == 70) { //CONTEXT_MODULE
     $context = $PAGE->activityname;
+  }
+  if(!$name) {
+    $name = $context.'_'.$id.'_'.$event;
   }
   try {
     return $pl->get('/design/versions/latest/rules/'.$context.'_'.$id.'_'.$event);
@@ -336,7 +339,7 @@ function get_rule($id, $event, $context = '') {
     if($e->name == 'rule_not_found') {
       $rule = array(
         'id' => $context.'_'.$id.'_'.$event,
-        'name' => $context.'_'.$id.'_'.$event,
+        'name' => $name,
         'type' => 'custom',
         'rules' => array()
       );
@@ -372,21 +375,18 @@ function patch_rule($rule, $metrics, $values) {
   }
 }
 
-function get_buffer() {
-  global $USER;
-  return json_decode(get_config('playlyfe', 'u'.$USER->id.'_buffer'), true);
+function get_buffer($userid) {
+  return json_decode(get_config('playlyfe', 'u'.$userid.'_buffer'), true);
 }
 
-function set_buffer($data) {
-  global $USER;
-  set_config('u'.$USER->id.'_buffer', json_encode($data), 'playlyfe');
+function set_buffer($userid, $data) {
+  set_config('u'.$userid.'_buffer', json_encode($data), 'playlyfe');
 }
 
-function add_to_buffer($events) {
-  global $USER;
-  $buffer = get_buffer();
+function add_to_buffer($userid, $events) {
+  $buffer = get_buffer($userid);
   array_push($buffer, $events);
-  set_buffer($buffer);
+  set_buffer($userid, $buffer);
 }
 // Activity Stream in a Course Level, Team Activity within course
 // Course Progress
@@ -394,3 +394,28 @@ function add_to_buffer($events) {
 // Commenting
 // Forums
 // Grades
+
+
+function create_leaderboard($id, $scope_id) {
+  global $USER, $DB, $OUTPUT;
+  $pl = get_pl();
+  $leaderboard = $pl->get('/runtime/leaderboards/'.$id, array(
+    'player_id' => 'u'.$USER->id,
+    'cycle' => 'alltime',
+    'scope_id' => $scope_id
+  ));
+  $html = '<h3> Leaderboards for '.$id.' </h3><ul>';
+  foreach($leaderboard['data'] as $player) {
+    $score = $player['score'];
+    $id = $player['player']['id'];
+    $alias = $player['player']['alias'] or 'Null';
+    $rank = $player['rank'];
+    $list = explode('u', $id);
+    $user = $DB->get_record('user', array('id' => $list[1]));
+    $html .= "<li class='list-group-item'>";
+    $html .= $OUTPUT->user_picture($user, array('size'=>50));
+    $html .= "<b>$rank $alias $score</b></li>";
+  }
+  $html .= '</ul>';
+  return $html;
+}

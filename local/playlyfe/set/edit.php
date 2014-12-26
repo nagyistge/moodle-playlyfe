@@ -11,6 +11,7 @@ $PAGE->set_cacheable(false);
 $PAGE->settingsnav->get('root')->get('playlyfe')->get('sets')->make_active();
 $PAGE->navigation->clear_cache();
 $PAGE->requires->jquery();
+$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/reward.js'));
 $html = '';
 
 if (array_key_exists('id', $_POST)) {
@@ -72,7 +73,7 @@ if (array_key_exists('id', $_POST)) {
     foreach($metric['constraints']['items'] as $item) {
       $html .= $OUTPUT->box_start('generalbox authsui');
       $html .= '<div id="item'.$index.'">';
-      $html .= 'Badge '.($index+1).'<button onclick=remove('.$index.')>delete</button>';
+      $html .= 'Badge '.($index+1);
       $html .= '<p>Name: <input name="items_names['.$index.']" type="text" value="'.$item['name'].'"required /></p>';
       $html .= '<p>Description: <input name="items_desc['.$index.']" type="text" value="'.$item['description'].'"required /></p>';
       $html .= '<p>Max: <input name="items_max['.$index.']" type="number" value="1" value="'.$item['max'].'"required /></p>';
@@ -83,31 +84,10 @@ if (array_key_exists('id', $_POST)) {
       $index++;
     }
     $html .= '<div id="extra"></div>';
+    $html .= '<button type="button" id="add">Add Items</button><br>';
     $html .= '<input type="submit" name="submit" value="Submit" />';
     $html .= '</form>';
-    $html .= '<button id="add">Add Items</button>';
     echo $html;
+    $PAGE->requires->js_init_call('init_set', array($index));
     echo $OUTPUT->footer();
 }
-?>
-<script>
-    function remove(index) {
-      $('#item'+index).remove();
-    }
-    $(function() {
-      var index = 0;
-      $('#add').click(function() {
-        $('#extra').append(
-          '<div id="item'+index+'">'
-          +'Badge '+(index+1)+'<button onclick=remove('+index+')>delete</button>'
-          +'<p>Name: <input name="items_names['+index+']" type="text" required /></p>'
-          +'<p>Description: <input name="items_desc['+index+']" type="text" required /></p>'
-          +'<p>Max: <input name="items_max['+index+']" type="number" value="1" required /></p>'
-          +'<input type="hidden" name="MAX_FILE_SIZE" value="500000000" />'
-          +'<p>Badge Image: <input type="file" name="itemfile'+index+'" /></p>'
-          +'<p>Hidden: <input name="items_hidden['+index+']" type="checkbox" checked /></p></div>'
-        );
-        index++;
-      });
-    });
-</script>

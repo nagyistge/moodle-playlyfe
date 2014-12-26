@@ -11,6 +11,7 @@ $PAGE->set_cacheable(false);
 $PAGE->settingsnav->get('root')->get('playlyfe')->get('sets')->get('add')->make_active();
 $PAGE->navigation->clear_cache();
 $PAGE->requires->jquery();
+$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/reward.js'));
 $html = '';
 
 if (array_key_exists('id', $_POST)) {
@@ -71,32 +72,11 @@ if (array_key_exists('id', $_POST)) {
     $html .= '<p>Metric Id: <input type="text" name="id" required/></p>';
     $html .= '<p>Metric Description: <input type="text" name="description" required/></p>';
     $html .= '<div id="extra"></div>';
+    $html .= '<button id="add" type="button">Add Items</button><br>';
     $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
     $html .= '</form>';
-    $html .= '<button id="add">Add Items</button>';
     echo $html;
+    $PAGE->requires->js_init_call('init_set', array());
+    $PAGE->requires->js_init_call('add_item', array());
     echo $OUTPUT->footer();
 }
-?>
-<script>
-    function remove(index) {
-      $('#item'+index).remove();
-    }
-    $(function() {
-      var index = 0;
-      $('#add').click(function() {
-        $('#extra').append(
-          '<div class="box generalbox authsui" id="item'+index+'">'
-          +'Badge '+(index+1)+'<button onclick=remove('+index+')>delete</button>'
-          +'<p>Name: <input name="items_names['+index+']" type="text" required /></p>'
-          +'<p>Description: <input name="items_desc['+index+']" type="text" required /></p>'
-          +'<p>Max: <input name="items_max['+index+']" type="number" value="1" required /></p>'
-          +'<input type="hidden" name="MAX_FILE_SIZE" value="500000000" />'
-          +'<p>Badge Image: <input type="file" name="itemfile'+index+'" /></p>'
-          +'<p>Hidden: <input name="items_hidden['+index+']" type="checkbox" checked /></p></div>'
-        );
-        index++;
-      });
-    });
-</script>
-

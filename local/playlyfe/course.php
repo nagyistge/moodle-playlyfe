@@ -1,6 +1,6 @@
 <?php
-require(dirname(dirname(dirname(__FILE__))).'/config.php');
-require('classes/sdk.php');
+require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once('classes/sdk.php');
 require_login();
 if (!has_capability('moodle/site:config', context_system::instance())) {
   print_error('accessdenied', 'admin');
@@ -19,18 +19,18 @@ $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
 $PAGE->navigation->clear_cache();
 $PAGE->requires->jquery();
 $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/reward.js'));
-$completed_rule = get_rule($id, 'completed');
-$bonus_rule = get_rule($id, 'bonus');
+$completed_rule = get_rule($id, 'completed', 'course', 'Course '.$course->shortname. ' Completed');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
 $html = '';
 
 if (array_key_exists('submit', $_POST)) {
   $cid = $completed_rule['id'];
-  $bid = $bonus_rule['id'];
   if(array_key_exists($cid, $_POST['metrics'])) {
     patch_rule($completed_rule, $_POST['metrics'][$cid], $_POST['values'][$cid]);
   }
-  if(array_key_exists($bid, $_POST['metrics'])) {
+  if(array_key_exists('course_'.$id.'_bonus', $_POST['metrics'])) {
+    $bonus_rule = get_rule($id, 'bonus', 'course', 'Course '.$course->shortname. ' Bonus');
+    $bid = $bonus_rule['id'];
     patch_rule($bonus_rule, $_POST['metrics'][$bid], $_POST['values'][$bid]);
   }
   set_leaderboards($_POST, $metrics, array($course), 'course'.$id.'_leaderboard');
@@ -43,7 +43,6 @@ if (array_key_exists('submit', $_POST)) {
   // $mods = $modinfo->get_cms();
   // $sections = $modinfo->get_section_info_all();
   // $name = $course->fullname;
-  echo $OUTPUT->header();
   $name = $course->shortname;
   $html .= "<h1> $name </h1>";
   $html .= '<form action="course.php?id='.$id.'" method="post">';
@@ -52,7 +51,7 @@ if (array_key_exists('submit', $_POST)) {
   foreach ($metrics as $metric) {
     if($metric['type'] === 'point') {
       if(in_array($metric['id'], $leaderboards)) {
-      $html .= '<input type="checkbox" value="'.$metric['id'].'" name="leaderboards[]" checked />'.$metric['id'].'<br>';
+        $html .= '<input type="checkbox" value="'.$metric['id'].'" name="leaderboards[]" checked />'.$metric['id'].'<br>';
       }
       else {
         $html .= '<input type="checkbox" value="'.$metric['id'].'" name="leaderboards[]" />'.$metric['id'].'<br>';
@@ -65,12 +64,13 @@ if (array_key_exists('submit', $_POST)) {
   $criteria = $DB->get_record('course_completion_criteria', array('course' => $id, 'criteriatype' => 2));
   // 2 for timeend criteria
   if($criteria and $criteria->timeend > 0) {
+    $bonus_rule = get_rule($id, 'bonus', 'course', 'Course '.$course->shortname. ' Bonus');
     $html .= '<h2> Bonus for Early Completion Before '.date("D, d M Y H:i:s", $criteria->timeend).'</h2>';
     $html .= create_rule_table($bonus_rule, $metrics);
   }
   $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
   $html .= '</form>';
+  echo $OUTPUT->header();
   echo $html;
-  complete_course(15);
   echo $OUTPUT->footer();
 }

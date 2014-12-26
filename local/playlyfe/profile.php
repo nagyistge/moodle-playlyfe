@@ -834,6 +834,27 @@ function get_coursemodule($module, $recordid, $courseid) {
     }
 }
 
+/**
+ * Calculates an overall percentage of progress
+ *
+ * @param array $events   The possible events that can occur for modules
+ * @param array $attempts The user's attempts on course activities
+ * @return int  Progress value as a percentage
+ */
+function progress_percentage($events, $attempts) {
+    $attemptcount = 0;
+
+    foreach ($events as $event) {
+        if ($attempts[$event['type'].$event['id']] == 1) {
+            $attemptcount++;
+        }
+    }
+
+    $progressvalue = $attemptcount == 0 ? 0 : $attemptcount / count($events);
+
+    return (int)round($progressvalue * 100);
+}
+
 $profile = $pl->get('/runtime/player', array('player_id' => 'u'.$USER->id, 'detailed' => 'true'));
 $html .= '<h1>Alias: '.$profile['alias'].'</h1>';
 $html = $html.'<h1>Scores</h1>';
@@ -886,18 +907,57 @@ else {
     }
   }
 }
-// $courses = enrol_get_my_courses();
-// foreach ($courses as $courseid => $course) {
-//   $modules = modules_in_use($course->id);
-//   if ($course->visible && !empty($modules)) {
-//     $context = course_context($course->id);
-//     $params = array('contextid' => $context->id);
-//     $events = event_information($modules, $course->id);
-//     $attempts = progress_attempts($modules,$events, $USER->id, $course->id);
-//     $html .= $course->shortname;
-//     $html .= 'Progress '.count($attempts);
-//   }
-// }
+
+function draw_progress($modules, $events, $userid, $attempts, $course, $simple = false) {
+  global $OUTPUT, $CFG;
+  $numevents = count($events);
+  $tableoptions['class'] = 'progressBarProgressTable noNow';
+  $content = HTML_WRITER::start_tag('table', $tableoptions);
+  $width = 100 / $numevents;
+  $content .= HTML_WRITER::start_tag('tr');
+  $counter = 1;
+  foreach ($events as $event) {
+    //$attempted = $attempts[$event['type'].$event['id']];
+    // A cell in the progress bar.
+    $celloptions = array(
+        'class' => 'progressBarCell',
+        'id' => '',
+        'width' => $width.'%',
+         'style' => 'background-color: blue;'
+    );
+    $cellcontent = $OUTPUT->pix_icon('blank', '', 'block_progress');
+    $content .= HTML_WRITER::tag('td', $cellcontent, $celloptions);
+  }
+  $content .= HTML_WRITER::end_tag('tr');
+  $content .= HTML_WRITER::end_tag('table');
+
+  // Add the info box below the table.
+  $divoptions = array('class' => 'progressEventInfo', 'id' => 'progressBarInfo -'.$userid.'-info');
+  $content .= HTML_WRITER::start_tag('div', $divoptions);
+  $content .= HTML_WRITER::end_tag('div');
+  return $content;
+}
+
+$overall_progress = 0;
+$index = 0;
+$courses = enrol_get_my_courses();
+foreach ($courses as $courseid => $course) {
+  $modules = modules_in_use($course->id);
+  if ($course->visible && !empty($modules)) {
+    $index++;
+    $context = course_context($course->id);
+    $params = array('contextid' => $context->id);
+    $events = event_information($modules, $course->id);
+    $attempts = progress_attempts($modules, $events, $USER->id, $course->id);
+    $overall_progress += progress_percentage($events, $attempts);
+    // $html .= $course->shortname;
+    // //$html .= progress_percentage($events, $attempts);
+    // $html .= '  Events  '.count($events);
+    // $html .= '  Atte  '.count($attempts) . '<br>';
+    $html .= draw_progress($modules, $events, $USER->id, $attempts, $course);
+  }
+}
+$html .= 'Progress '.$overall_progress/$index;
 echo $OUTPUT->header();
 echo '<div class="userprofile">';
 echo '<h1>Profile Page<h1>';
@@ -907,4 +967,5 @@ echo '</div>';
 echo '</div>';
 echo '</div>';
 echo $html;
+//complete_course(17);
 echo $OUTPUT->footer();
