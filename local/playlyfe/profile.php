@@ -630,17 +630,6 @@ function progress_attempts($modules, $events, $userid, $course) {
         $numreaders = count($readers);
     }
 
-    // Get cache store if caching is working 2.4 onwards.
-    if (class_exists('cache')) {
-        $cachingused = true;
-        $cachedlogs = cache::make('block_progress', 'cachedlogs');
-        $cachedlogviews = $cachedlogs->get($userid);
-        if (empty($cachedlogviews)) {
-            $cachedlogviews = array();
-        }
-        $cachedlogsupdated = false;
-    }
-
     foreach ($events as $event) {
         $module = $modules[$event['type']];
         $uniqueid = $event['type'].$event['id'];
@@ -843,15 +832,15 @@ function get_coursemodule($module, $recordid, $courseid) {
  */
 function progress_percentage($events, $attempts) {
     $attemptcount = 0;
-
     foreach ($events as $event) {
-        if ($attempts[$event['type'].$event['id']] == 1) {
+        if(array_key_exists($event['type'].$event['id'],  $attempts)) {
+          if ($attempts[$event['type'].$event['id']] == 1) {
             $attemptcount++;
+          }
+        } else {
         }
     }
-
     $progressvalue = $attemptcount == 0 ? 0 : $attemptcount / count($events);
-
     return (int)round($progressvalue * 100);
 }
 
@@ -944,17 +933,18 @@ $courses = enrol_get_my_courses();
 foreach ($courses as $courseid => $course) {
   $modules = modules_in_use($course->id);
   if ($course->visible && !empty($modules)) {
-    $index++;
     $context = course_context($course->id);
     $params = array('contextid' => $context->id);
     $events = event_information($modules, $course->id);
     $attempts = progress_attempts($modules, $events, $USER->id, $course->id);
-    $overall_progress += progress_percentage($events, $attempts);
-    // $html .= $course->shortname;
-    // //$html .= progress_percentage($events, $attempts);
-    // $html .= '  Events  '.count($events);
-    // $html .= '  Atte  '.count($attempts) . '<br>';
+    //$overall_progress += progress_percentage($events, $attempts);
+    $overall_progress = $overall_progress + count($attempts)/count($events);
+    $html .= $course->shortname;
+    $html .= progress_percentage($events, $attempts);
+    $html .= '  Events  '.count($events);
+    $html .= '  Atte  '.count($attempts) . '<br>';
     $html .= draw_progress($modules, $events, $USER->id, $attempts, $course);
+    $index++;
   }
 }
 $html .= 'Progress '.$overall_progress/$index;
@@ -967,5 +957,4 @@ echo '</div>';
 echo '</div>';
 echo '</div>';
 echo $html;
-//complete_course(17);
 echo $OUTPUT->footer();

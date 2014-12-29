@@ -32,10 +32,12 @@ function display_change($change, $course_name) {
       $value .= '     <img src="image_def.php?metric='.$metric['id'].'&size=medium&item='.$key.'"></img>    ';
     }
   }
-  $text .= 'You have gained '.$value.' '.$metric['name'].' '.$course_name;
+  $text .= 'You have gained <b>'.$value.' '.$metric['name'].'</b> through <b>'.$course_name.'</b>';
   $count++;
   return $text;
 }
+
+
 foreach($notifications['data'] as $notification) {
   if ($notification['seen'] == false) {
     array_push($ids, $notification['id']);
@@ -43,7 +45,8 @@ foreach($notifications['data'] as $notification) {
   if ($notification['event'] == 'custom_rule') {
     foreach($notification['changes'] as $change) {
       $title = $notification['rule']['name'];
-      $html .= '<p>'.display_change($change, $title).' on '.date(strtotime($notification['timestamp'])).'</p>';
+      $date = new DateTime($notification['timestamp']);
+      $html .= '<p>'.display_change($change, $title).' on '.$date->format('Y-m-d H:i:s').'</p>';
     }
   }
 }

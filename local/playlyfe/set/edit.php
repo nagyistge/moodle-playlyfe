@@ -10,11 +10,16 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->settingsnav->get('root')->get('playlyfe')->get('sets')->make_active();
 $PAGE->navigation->clear_cache();
-$PAGE->requires->jquery();
+if($CFG->version <= 2012120311.00) {
+  $PAGE->requires->js(new moodle_url('http://code.jquery.com/jquery-1.11.2.min.js'));
+}
+else {
+  42$PAGE->requires->jquery();
+}
 $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/reward.js'));
 $html = '';
 
-if (array_key_exists('id', $_POST)) {
+if (array_key_exists('submit', $_POST)) {
     $items_names = $_POST['items_names'];
     $items_desc = $_POST['items_desc'];
     $items_max = $_POST['items_max'];

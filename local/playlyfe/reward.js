@@ -79,31 +79,18 @@ function add_handler(version, data) {
 }
 
 function show_rewards(version, data) {
-  var event = data.pop()
-  show_dailog(event, data);
-    //position: { my: "center", at: "center", of: "body" }
-  //   buttons: [
-  //     {
-  //       text: "OK",
-  //       click: function() {
-  //         // $("#dialog").dialog({
-  //         //   dialogClass: "no-close",
-  //         //   closeOnEscape: false,
-  //         //   title: 'gello'
-  //         // });
-  //         // $("#dialog").html('<h3>You have Gained</h3>'+render_reward(item));
-  //       }
-  //     }
-  //   ]
-  // });
+  var event = data.events.pop();
+  var leaderboard = data.leaderboards.pop();
+  show_dailog(event, leaderboard, data);
 }
 
-function show_dailog(event, data) {
+function show_dailog(event, leaderboard, data) {
   $("#dialog").dialog({
     dialogClass: "no-close",
     closeOnEscape: false,
     //draggable: false,
     //resizable: false,
+    //position: { my: "center", at: "center", of: "body" }
     height: "auto",
     width: "auto",
     modal: true,
@@ -112,7 +99,7 @@ function show_dailog(event, data) {
       {
         text: "Next",
         click: function() {
-          if(data.length === 0) {
+          if(data.events.length === 0) {
             $( this ).dialog("close");
           }
           else {
@@ -124,31 +111,35 @@ function show_dailog(event, data) {
   });
   var html = '';
   for(var i=0; i<event.changes.length; i++) {
-    html = render_reward(event.changes[i]);
+    html += render_reward(event.changes[i]);
   }
+  html += leaderboard;
   $("#dialog").html('<h3>You have Gained</h3>'+html);
 }
 
 function render_reward(event) {
-  console.log(event);
   metric= event.metric;
   delta = event.delta;
-  html = '<img src="image_def.php?metric='+metric.id+'&size=large"></img>';
+  html = '<img src="/local/playlyfe/image_def.php?metric='+metric.id+'&size=large"></img>';
   if (metric.type === 'point') {
     value = delta['new'] - delta.old;
   }
-  // else {
-  //   for(key in delta) {
-  //     value = delta['new'] - $value['old']).' x '.$key;
-  //     value += '     <img src="image_def.php?metric='.$metric['id'].'&size=medium&item='.$key.'"></img>    ';
-  //   }
-  // }
+  else {
+    for(key in delta) {
+      if(delta['old'] !== null) {
+        value = (delta[key]['new'] - delta[key]['old'])+' x '+key;
+      }
+      else {
+         value = (delta[key]['new'])+' x '+key;
+      }
+      value += '     <img src="/local/playlyfe/image_def.php?metric='+metric.id+'&size=medium&item='+key+'"></img>    ';
+    }
+  }
   html += 'You have gained '+value+' '+metric.name;
   return html;
 }
 
-function show_course_group(version, data) {
-  add_course_group(version, data);
+function handle_course_group_add(version, data) {
   $('#add').click(function() {
     add_course_group(version, data);
   });
@@ -159,10 +150,16 @@ function add_course_group(version, data) {
   groups_count++;
   var courses = data.courses;
   var metrics = data.metrics;
+  var rewards = data.rewards;
   html = '<div class="box generalbox authsui"><h1>'+groups_count+'</h1>';
   for(var i = 0; i < courses.length; i++) {
     var course = courses[i];
-    html += '<input type="checkbox" value="'+course.id+'" name="courses['+groups_count+'][]" />'+course.name+'<br>';
+    if(course.selected) {
+      html += '<input type="checkbox" value="'+course.id+'" name="courses['+groups_count+'][]" checked/>'+course.name+'<br>';
+    }
+    else {
+      html += '<input type="checkbox" value="'+course.id+'" name="courses['+groups_count+'][]" />'+course.name+'<br>';
+    }
   }
   html += '<table id="treward_'+groups_count+'" class="generaltable">';
   html += '<thead>';
@@ -176,6 +173,9 @@ function add_course_group(version, data) {
   html += '</table>';
   html += '<p><button type="button" id="add_'+groups_count+'">Add Reward</button></p></div>';
   $('#course_group').append(html);
+  if(rewards !== null && typeof rewards !== 'undefined') {
+    init_table('', { id: groups_count, metrics: metrics, rewards: rewards })
+  }
   add_handler('', { id: groups_count, metrics: metrics });
 }
 

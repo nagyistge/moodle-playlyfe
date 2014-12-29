@@ -273,25 +273,6 @@ function create_reward($metrics, $values) {
 }
 
 
-function create_course_group($course_group_rule, $courses, $metrics) {
-  global $pl, $PAGE;
-  $html = '<h2> Courses </h2>';
-  $html .= '<div>';
-  foreach ($courses as $course) {
-    if($course['enable_completion']) {
-      if(in_array($metric['id'], $leaderboards)) {
-        $html .= '<input type="checkbox" value="'.$course->id.'" name="courses[][]" checked />'.$course->shortname.'<br>';
-      }
-      else {
-        $html .= '<input type="checkbox" value="'.$course->id.'" name="courses[][]" />'.$course->shortname.'<br>';
-      }
-    }
-  }
-  $html .= '</div><br>';
-  $html .= "<h2> Rewards on Course Completion </h2>";
-  $html .= create_rule_table($course_completed_rule , $metrics);
-}
-
 function create_rule_table($rule, $metrics) {
   global $PAGE;
   $id = $rule['id'];
@@ -395,27 +376,32 @@ function add_to_buffer($userid, $events) {
 // Forums
 // Grades
 
-
 function create_leaderboard($id, $scope_id) {
   global $USER, $DB, $OUTPUT;
   $pl = get_pl();
-  $leaderboard = $pl->get('/runtime/leaderboards/'.$id, array(
-    'player_id' => 'u'.$USER->id,
-    'cycle' => 'alltime',
-    'scope_id' => $scope_id
-  ));
-  $html = '<h3> Leaderboards for '.$id.' </h3><ul>';
-  foreach($leaderboard['data'] as $player) {
-    $score = $player['score'];
-    $id = $player['player']['id'];
-    $alias = $player['player']['alias'] or 'Null';
-    $rank = $player['rank'];
-    $list = explode('u', $id);
-    $user = $DB->get_record('user', array('id' => $list[1]));
-    $html .= "<li class='list-group-item'>";
-    $html .= $OUTPUT->user_picture($user, array('size'=>50));
-    $html .= "<b>$rank $alias $score</b></li>";
+  $html = '';
+  try {
+    $leaderboard = $pl->get('/runtime/leaderboards/'.$id, array(
+      'player_id' => 'u'.$USER->id,
+      'cycle' => 'alltime',
+      'scope_id' => $scope_id
+    ));
+    $html .= '<h3> Leaderboards for '.$id.' </h3><ul>';
+    foreach($leaderboard['data'] as $player) {
+      $score = $player['score'];
+      $id = $player['player']['id'];
+      $alias = $player['player']['alias'] or 'Null';
+      $rank = $player['rank'];
+      $list = explode('u', $id);
+      $user = $DB->get_record('user', array('id' => $list[1]));
+      $html .= "<li class='list-group-item'>";
+      $html .= $OUTPUT->user_picture($user, array('size'=>50));
+      $html .= "<b>$rank $alias $score</b></li>";
+    }
+    $html .= '</ul>';
   }
-  $html .= '</ul>';
+  catch(Exception $e) {
+    //print_object($e);
+  }
   return $html;
 }

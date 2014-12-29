@@ -19,10 +19,15 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
 $PAGE->navigation->clear_cache();
-$PAGE->requires->jquery();
+if($CFG->version <= 2012120311.00) {
+  $PAGE->requires->js(new moodle_url('http://code.jquery.com/jquery-1.11.2.min.js'));
+}
+else {
+  $PAGE->requires->jquery();
+}
 $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/reward.js'));
-$submit_rule = get_rule($quiz->id, 'submitted');
-$bonus_rule = get_rule($quiz->id, 'bonus');
+$submit_rule = get_rule($quiz->id, 'submitted', '', 'Quiz Submitted');
+$bonus_rule = get_rule($quiz->id, 'bonus', '', 'Quiz Bonus');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
 $html = '';
 

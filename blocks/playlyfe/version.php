@@ -1,4 +1,4 @@
 <?php
-$plugin->version = 2014112718;
-$plugin->requires = 2013051409.00;
+$plugin->version = 2014112859;
+$plugin->requires = 2012120311.00;
 $plugin->component = 'block_playlyfe';

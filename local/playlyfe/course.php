@@ -17,7 +17,12 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
 $PAGE->navigation->clear_cache();
-$PAGE->requires->jquery();
+if($CFG->version <= 2012120311.00) {
+  $PAGE->requires->js(new moodle_url('http://code.jquery.com/jquery-1.11.2.min.js'));
+}
+else {
+  $PAGE->requires->jquery();
+}
 $PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/reward.js'));
 $completed_rule = get_rule($id, 'completed', 'course', 'Course '.$course->shortname. ' Completed');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
@@ -73,4 +78,5 @@ if (array_key_exists('submit', $_POST)) {
   echo $OUTPUT->header();
   echo $html;
   echo $OUTPUT->footer();
+  //complete_course(15);
 }

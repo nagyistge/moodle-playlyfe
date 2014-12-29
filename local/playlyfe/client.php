@@ -16,6 +16,7 @@ if (!has_capability('moodle/site:config', context_system::instance())) {
   print_error('accessdenied', 'admin');
 }
 $PAGE->settingsnav->get('root')->get('playlyfe')->get('client')->make_active();
+global $USER;
 
 use Playlyfe\Sdk\Playlyfe;
 
@@ -60,6 +61,17 @@ if($form->is_cancelled()) {
       return $access_token;
     }
   ));
+  // optimize this
+  try {
+    $data = array('id' => 'u'.$USER->id, 'alias' => 'admin');
+    $pl->post('/admin/players', array(), $data);
+    set_config('u'.$USER->id.'_buffer', json_encode(array()), 'playlyfe');
+  }
+  catch(Exception $e) {
+    if($e->name != 'player_exists') {
+      print_object($e);
+    }
+  }
 }
 $toform = array();
 $toform['id'] = get_config('playlyfe', 'client_id');
