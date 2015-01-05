@@ -85,6 +85,10 @@ function show_rewards(version, data) {
 }
 
 function show_dailog(event, leaderboard, data) {
+  var btnText = "Next";
+  if(data.events.length === 0) {
+    btnText = "OK";
+  }
   $("#dialog").dialog({
     dialogClass: "no-close",
     closeOnEscape: false,
@@ -97,7 +101,7 @@ function show_dailog(event, leaderboard, data) {
     title: event.rule.name,
     buttons: [
       {
-        text: "Next",
+        text: btnText,
         click: function() {
           if(data.events.length === 0) {
             $( this ).dialog("close");
@@ -136,6 +140,7 @@ function render_reward(event) {
     }
   }
   html += 'You have gained '+value+' '+metric.name;
+  html += '<br>';
   return html;
 }
 

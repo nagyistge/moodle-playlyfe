@@ -9,7 +9,8 @@
 /local/*
 !/local/playlyfe
 !/mod
-!/mod/forum/post.php
-!/mod/forum/view.php
 /mod/*
-
+!/mod/forum
+/mod/forum/*
+!/mod/forum/view.php
+!/mod/forum/post.php

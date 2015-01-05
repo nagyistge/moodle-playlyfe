@@ -35,15 +35,6 @@ foreach($metrics as $metric) {
     $delete = '<a href="manage.php?id='.$metric['id'].'&delete=true'.'">Delete</a>';
     $item_image = '<img src="../image.php?image_id='.$metric['image'].'"></img>';
     $table->data[] = new html_table_row(array($item_image, $metric['id'], $metric['name'], $metric['description'], $edit, $delete));
-    // $pl->post('/admin/leaderboards/'.$metric['id'].'/course1', array());
-    // $pl->post('/runtime/actions/aaa/play', array('player_id' => 'u2'), array(
-    //   'scopes' => array(
-    //     array(
-    //       'entity_id' => 'u2',
-    //       'id' => 'erer/course1'
-    //     )
-    //   )
-    // ));
   }
 }
 $html .= html_writer::table($table);
