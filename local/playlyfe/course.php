@@ -17,13 +17,6 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
 $PAGE->navigation->clear_cache();
-if($CFG->version <= 2012120311.00) {
-  $PAGE->requires->js(new moodle_url('http://code.jquery.com/jquery-1.11.2.min.js'));
-}
-else {
-  $PAGE->requires->jquery();
-}
-$PAGE->requires->js(new moodle_url($CFG->wwwroot.'/local/playlyfe/reward.js'));
 $completed_rule = get_rule($id, 'completed', 'course', 'Course '.$course->shortname. ' Completed');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
 $html = '';
@@ -42,12 +35,6 @@ if (array_key_exists('submit', $_POST)) {
   redirect(new moodle_url('/local/playlyfe/course.php', array('id' => $id)));
 } else {
   $leaderboards = array_merge(get_leaderboards('all_leaderboards'), get_leaderboards('course'.$id.'_leaderboard'));
-  // $modinfo = get_fast_modinfo($course);
-  // $modnames = get_module_types_names();
-  // $modnamesused = $modinfo->get_used_module_names();
-  // $mods = $modinfo->get_cms();
-  // $sections = $modinfo->get_section_info_all();
-  // $name = $course->fullname;
   $name = $course->shortname;
   $html .= "<h1> $name </h1>";
   $html .= '<form action="course.php?id='.$id.'" method="post">';
@@ -78,5 +65,4 @@ if (array_key_exists('submit', $_POST)) {
   echo $OUTPUT->header();
   echo $html;
   echo $OUTPUT->footer();
-  //complete_course(15);
 }
