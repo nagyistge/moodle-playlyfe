@@ -947,7 +947,9 @@ foreach ($courses as $courseid => $course) {
     $index++;
   }
 }
-$html .= 'Progress '.$overall_progress/$index;
+if($index >  0) {
+  $html .= 'Progress '.$overall_progress/$index;
+}
 echo $OUTPUT->header();
 echo '<div class="userprofile">';
 echo '<h1>Profile Page<h1>';

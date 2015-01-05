@@ -11,7 +11,6 @@ $PAGE->set_cacheable(false);
 $PAGE->navigation->clear_cache();
 $html = '<h1> Your Notifications </h1>';
 $notifications = $pl->get('/runtime/notifications', array('player_id' => 'u'.$USER->id));
-$notifications['data'] = array_reverse($notifications['data']);
 $count = 1;
 $ids = array();
 
@@ -37,18 +36,23 @@ function display_change($change, $course_name) {
   return $text;
 }
 
-
-foreach($notifications['data'] as $notification) {
-  if ($notification['seen'] == false) {
-    array_push($ids, $notification['id']);
-  }
-  if ($notification['event'] == 'custom_rule') {
-    foreach($notification['changes'] as $change) {
-      $title = $notification['rule']['name'];
-      $date = new DateTime($notification['timestamp']);
-      $html .= '<p>'.display_change($change, $title).' on '.$date->format('Y-m-d H:i:s').'</p>';
+if(!is_null($notifications)) {
+  $notifications['data'] = array_reverse($notifications['data']);
+  foreach($notifications['data'] as $notification) {
+    if ($notification['seen'] == false) {
+      array_push($ids, $notification['id']);
+    }
+    if ($notification['event'] == 'custom_rule') {
+      foreach($notification['changes'] as $change) {
+        $title = $notification['rule']['name'];
+        $date = new DateTime($notification['timestamp']);
+        $html .= '<p>'.display_change($change, $title).' on '.$date->format('Y-m-d H:i:s').'</p>';
+      }
     }
   }
+}
+else {
+  $html .= 'You have no new Notifications';
 }
 
 if(count($ids) > 0) {

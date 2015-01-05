@@ -1,6 +1,5 @@
 <?php
-
-require_once('/var/www/html/vendor/autoload.php');
+require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/vendor/autoload.php');
 use Playlyfe\Sdk\Playlyfe;
 
 $client_id = get_config('playlyfe', 'client_id');
@@ -322,7 +321,14 @@ function get_rule($id, $event, $context = '', $name) {
         'id' => $context.'_'.$id.'_'.$event,
         'name' => $name,
         'type' => 'custom',
-        'rules' => array()
+        'rules' => array(),
+        'variables' => array(
+          array(
+            'name' => 'score',
+            'type' => 'int',
+            'required' => false
+          )
+        )
       );
       try {
         return $pl->post('/design/versions/latest/rules', array(), $rule);
@@ -337,7 +343,7 @@ function get_rule($id, $event, $context = '', $name) {
   }
 }
 
-function patch_rule($rule, $metrics, $values) {
+function patch_rule($rule, $metrics, $values, $requires = array()) {
   global $pl;
   $id = $rule['id'];
   unset($rule['id']);
@@ -345,7 +351,7 @@ function patch_rule($rule, $metrics, $values) {
   $rule['rules'] = array(
     array(
       'rewards' => create_reward($metrics, $values),
-      'requires' => (object)array()
+      'requires' => (object)$requires
     )
   );
   try {
@@ -384,7 +390,9 @@ function create_leaderboard($id, $scope_id) {
     $leaderboard = $pl->get('/runtime/leaderboards/'.$id, array(
       'player_id' => 'u'.$USER->id,
       'cycle' => 'alltime',
-      'scope_id' => $scope_id
+      'scope_id' => $scope_id,
+      'ranking' => 'relative',
+      'entity_id' => 'u'.$USER->id
     ));
     $html .= '<h3> Leaderboards for '.$id.' </h3><ul>';
     foreach($leaderboard['data'] as $player) {
@@ -401,7 +409,55 @@ function create_leaderboard($id, $scope_id) {
     $html .= '</ul>';
   }
   catch(Exception $e) {
-    //print_object($e);
+    $html = json_encode($e);
   }
   return $html;
+}
+
+function calculate_data($userid) {
+  $buffer = get_buffer($userid);
+  $data = array(
+    'events' => array(),
+    'leaderboards' => array()
+  );
+  $leaderboads = array();
+  $rule_id = '';
+  foreach($buffer as $events) {
+    if(count($events) > 0 and array_key_exists('0', $events['local'])) {
+      $event = $events['local'][0];
+      if($event['event'] == 'custom_rule') {
+        array_push($data['events'], $event);
+        $rule_id = $event['rule']['id'];
+        $rule_id = explode('_', $rule_id);
+        $text = '';
+        if(in_array('course', $rule_id)) {
+          $leaderboard_ids = get_leaderboards('course'.$rule_id[1].'_leaderboard');
+          if(count($leaderboard_ids) > 0) {
+            foreach($leaderboard_ids as $leaderboard_id) {
+              $text .= create_leaderboard($leaderboard_id, 'course'.$rule_id[1]);
+            }
+          }
+        }
+        array_push($data['leaderboards'], $text);
+      }
+    }
+  }
+  set_buffer($userid, array());
+  return $data;
+}
+
+function add_to_attempts() {
+
+}
+
+function has_finished_rule($userid, $id) {
+  $data = get($userid.'_data');
+  if(!in_array($id, $data)) {
+    array_push($data, $id);
+    set($userid.'_data', $data);
+    return false;
+  }
+  else {
+    return true;
+  }
 }

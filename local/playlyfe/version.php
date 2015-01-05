@@ -1,4 +1,4 @@
 <?php
 $plugin->version = 2014112859;
-$plugin->requires = 2012120311.00;
+$plugin->requires = 2012120304.04;
 $plugin->component = 'local_playlyfe';
