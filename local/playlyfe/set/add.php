@@ -26,7 +26,7 @@ if (array_key_exists('id', $_POST)) {
     $items_hidden = $_POST['items_hidden'];
     $items = array();
     for ($i = 0; $i < count($items_names); $i++) {
-      if($items_hidden[$i] == 'on'){
+      if($items_hidden[$i] === 'on'){
         $hidden = true;
       }
       else {

@@ -4,7 +4,7 @@
 
   function course_completed_handler($event) {
     global $DB;
-    mtrace(json_encode($event));
+    //mtrace(json_encode($event));
     $id = $event->course;
     $userid = $event->userid;
     $timecompleted = $event->timecompleted;
@@ -22,20 +22,20 @@
     //   foreach($coures_completed as $completed) {
     //   }
     // }
+    mtrace(json_encode($scopes));
     execute_rule('course_'.$id.'_completed', $userid, $scopes);
     $criteria = $DB->get_record('course_completion_criteria', array('course' => $id, 'criteriatype' => 2));
     if($criteria and $criteria->timeend >= $timecompleted) {
       execute_rule('course_'.$id.'_bonus', $userid, $scopes);
     }
-    //$finished_course_groups = get('course_group_finished_'.$userid);
-    //in_array(, $finished_course_groups)
   }
 
   function activity_completion_changed_handler($event) {
-    //echo 'ACTIVITY COMPLETED';
-    //print_object($event);
-    //$id = $event->id;
-    //execute_rule($id);
+    // echo 'ACTIVITY COMPLETED';
+    // mtrace(json_encode($event));
+    // print_object($event);
+    // //$id = $event->id;
+    // execute_rule($event->id, $event->userid);
   }
 
   function user_created_handler($event) {
@@ -46,59 +46,98 @@
     set_buffer($user_id, array());
   }
 
-  function user_logout_handler($event) {
-  }
-
-  function user_enrolled_handler($event) {
-  }
-
-  function pl_quiz_attempt_started_handler($event) {
-    //print_object($event);
-  }
-
+  //     stdClass Object
+  // (
+  //     [component] => mod_quiz
+  //     [attemptid] => 14
+  //     [timestamp] => 1420360717
+  //     [userid] => 2
+  //     [quizid] => 4
+  //     [cmid] => 43
+  //     [courseid] => 40
+  //     [submitterid] => 2
+  //     [timefinish] => 1420360717
+  // )
   function pl_quiz_attempt_submitted_handler($event) {
-    //print_object($event);
-    execute_rule('quiz_'.$event->quizid.'_submitted');
-    execute_rule('quiz_'.$event->quizid.'_bonus');
+    global $DB, $CFG;
+    list($quiz, $cm) = get_cmid($event->cmid);
+    $userid = $event->userid;
+    // mtrace(json_encode($event));
+    // mtrace(json_encode($quiz));
+    // mtrace(json_encode($cm));
+    $params = array();
+    $statuscondition = ' AND state IN (:state1)';
+    $params['state1'] = 'finished';
+    $params['quizid'] = $quiz->id;
+    $params['userid'] = $userid;
+    $attempts = $DB->get_records_select('quiz_attempts',
+            'quiz = :quizid AND userid = :userid' . $statuscondition,
+            $params, 'attempt ASC');
+    $lastfinishedattempt = end($attempts);
+    mtrace(json_encode($lastfinishedattempt));
+    $variables = array(
+      'sumgrades' => $lastfinishedattempt->sumgrades
+    );
+    execute_rule('quiz_'.$event->quizid.'_submitted', $userid, array(), $variables);
+    if($quiz->timeclose> 0 and $event->timefinish > $quiz->timeclose) {
+      execute_rule('quiz_'.$event->quizid.'_bonus', $userid);
+    }
+    $data = get($userid.'_attempts');
+    //$data[$event->quizid] = "";
+    //set($userid.'_attempts', $data);
   }
 
   function forum_discussion_created_handler($event) {
-    execute_rule('forum_'.$event->forum.'_discussion_created');
+    execute_rule($id, $event->userid);
   }
 
   function forum_post_created_handler($event) {
-    execute_rule('forum_'.$event->forum.'_post_created');
+    execute_rule($id, $event->userid);
   }
 
   function forum_viewed_handler($event) {
-    execute_rule('forum_'.$event->forum.'_viewed');
+    $id = 'forum_'.$event->forum.'_viewed';
+    $userid = $event->userid;
+    if(!has_finished_rule($id, $userid)) {
+      execute_rule($id, $event->userid);
+    //  show_reward($event->userid);
+    }
   }
 
-  function execute_rule($id, $userid, $scopes = array()) {
+  function execute_rule($id, $userid, $scopes = array(), $variables = array()) {
     $pl = get_pl();
     # Maybe optimize this check if the rule actually exists
     try {
       $response = $pl->post('/admin/rules/'.$id, array(), array(
         'data' => array(
           array(
-            'variables' => (object)array(),
+            'variables' => (object)$variables,
             'player_ids' => array('u'.$userid),
             'scopes' => $scopes
           )
         )
       ));
       add_to_buffer($userid, $response[0][0]['events']);
+      set($userid.'_finished', $id);
     }
     catch(Exception $e) {
-      mtrace(json_encode($e));
       if($e->name == 'rule_not_found') {
         return;
       }
       else {
+        mtrace(json_encode($e));
         print_object($e);
       }
     }
   }
+
+  // function show_reward($userid) {
+  //   global $CFG, $PAGE;
+  //   if (isloggedin() || !isguestuser()) {
+  //     $data = calculate_data($userid);
+  //     $PAGE->requires->js_init_call('show_rewards', array($data));
+  //   }
+  // }
 
   function local_playlyfe_extends_settings_navigation(settings_navigation $settingsnav, $context) {
     global $USER, $PAGE;
@@ -110,7 +149,7 @@
         $nodePlaylyfe->add('Client', new moodle_url('/local/playlyfe/client.php'), null, null, 'client', new pix_icon('t/edit', 'edit'));
         $nodePlaylyfe->add('Publish', new moodle_url('/local/playlyfe/publish.php'), null, null, 'publish', new pix_icon('t/edit', 'edit'));
 
-        $nodePlaylyfe->add('Courses', new moodle_url('/local/playlyfe/courses.php'), null, null, 'courses', new pix_icon('t/edit', 'edit'));
+        // $nodePlaylyfe->add('Courses', new moodle_url('/local/playlyfe/courses.php'), null, null, 'courses', new pix_icon('t/edit', 'edit'));
 
         $nodePlaylyfe->add('Courses Completion', new moodle_url('/local/playlyfe/course_group.php'), null, null, 'courses_group', new pix_icon('t/edit', 'edit'));
 
@@ -137,13 +176,15 @@
         if($PAGE->activityname == 'quiz') {
           $coursesett = $settingsnav->get('courseadmin');
           $coursesett->add('Gamification', new moodle_url('/local/playlyfe/course.php', array('id' => $PAGE->course->id)), null, null, 'course', new pix_icon('t/edit', 'edit'));
-          $quizsett = $settingsnav->get('modulesettings');
+          $quizsett = $settingsnav->get(0);
+          //$quizsett = $settingsnav->get('modulesettings');
           $quizsett->add('Gamification', new moodle_url('/local/playlyfe/quiz.php', array('cmid' => $PAGE->cm->id)), null, null, 'quiz', new pix_icon('t/edit', 'edit'));
         }
         if($PAGE->activityname == 'forum') {
           $coursesett = $settingsnav->get('courseadmin');
           $coursesett->add('Gamification', new moodle_url('/local/playlyfe/course.php', array('id' => $PAGE->course->id)), null, null, 'course', new pix_icon('t/edit', 'edit'));
-          $forumsett = $settingsnav->get('modulesettings');
+          $forumsett = $settingsnav->get(0);
+          //$forumsett = $settingsnav->get('modulesettings');
           $forumsett->add('Gamification', new moodle_url('/local/playlyfe/forum.php', array('cmid' => $PAGE->cm->id)), null, null, 'forum', new pix_icon('t/edit', 'edit'));
         }
       }
@@ -153,8 +194,19 @@
   }
 
   function local_playlyfe_extends_navigation($navigation) {
+    global $CFG, $PAGE, $USER, $DB, $OUTPUT;
+    if($CFG->version <= 2012120311.00) {
+      $PAGE->requires->js(new moodle_url('http://code.jquery.com/jquery-1.11.2.min.js'));
+      $PAGE->requires->js(new moodle_url('http://code.jquery.com/ui/1.11.2/jquery-ui.min.js'));
+      $PAGE->requires->css(new moodle_url('http://code.jquery.com/ui/1.11.2/themes/sunny/jquery-ui.css'));
+    }
+    else {
+      $PAGE->requires->jquery();
+      $PAGE->requires->jquery_plugin('ui');
+      $PAGE->requires->jquery_plugin('ui-css');
+    }
+    $PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/playlyfe/reward.js'));
     if (isloggedin() and !isguestuser()) {
-      global $CFG, $PAGE, $USER, $DB, $OUTPUT;
       $buffer = get_buffer($USER->id);
       $data = array(
         'events' => array(),
@@ -163,18 +215,6 @@
       $leaderboads = array();
       $rule_id = '';
       if(count($buffer) > 0) {
-        # TODO Rewrite it
-        if($CFG->version <= 2012120311.00) {
-          $PAGE->requires->js(new moodle_url('http://code.jquery.com/jquery-1.11.2.min.js'));
-          $PAGE->requires->js(new moodle_url('http://code.jquery.com/ui/1.11.2/jquery-ui.min.js'));
-          $PAGE->requires->css(new moodle_url('http://code.jquery.com/ui/1.11.2/themes/sunny/jquery-ui.css'));
-        }
-        else {
-          $PAGE->requires->jquery();
-          $PAGE->requires->jquery_plugin('ui');
-          $PAGE->requires->jquery_plugin('ui-css');
-        }
-        $PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/playlyfe/reward.js'));
         foreach($buffer as $events) {
           if(count($events) > 0 and array_key_exists('0', $events['local'])) {
             $event = $events['local'][0];
