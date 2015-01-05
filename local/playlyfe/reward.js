@@ -215,3 +215,16 @@ function add_item() {
   })(index);
   index++;
 }
+
+function init_conditions() {
+  $('#condition_type').change(function(event){
+    var value = $(this).find("option:selected").val();
+    //console.log('hello', value);
+    // if(value === 'none') {
+    //   $('#condition_type').hide();
+    // }
+    // else {
+    //   $('#condition_type').show();
+    // }
+  });
+}

@@ -62,9 +62,6 @@
     global $DB, $CFG;
     list($quiz, $cm) = get_cmid($event->cmid);
     $userid = $event->userid;
-    // mtrace(json_encode($event));
-    // mtrace(json_encode($quiz));
-    // mtrace(json_encode($cm));
     $params = array();
     $statuscondition = ' AND state IN (:state1)';
     $params['state1'] = 'finished';
@@ -74,25 +71,31 @@
             'quiz = :quizid AND userid = :userid' . $statuscondition,
             $params, 'attempt ASC');
     $lastfinishedattempt = end($attempts);
-    mtrace(json_encode($lastfinishedattempt));
     $variables = array(
-      'sumgrades' => $lastfinishedattempt->sumgrades
+      'score' => intval($lastfinishedattempt->sumgrades)
     );
-    execute_rule('quiz_'.$event->quizid.'_submitted', $userid, array(), $variables);
-    if($quiz->timeclose> 0 and $event->timefinish > $quiz->timeclose) {
+    $response = execute_rule('quiz_'.$event->quizid.'_submitted', $userid, array(), $variables);
+    if($quiz->timeclose > 0 and $event->timefinish > $quiz->timeclose) {
       execute_rule('quiz_'.$event->quizid.'_bonus', $userid);
     }
-    $data = get($userid.'_attempts');
-    //$data[$event->quizid] = "";
-    //set($userid.'_attempts', $data);
+    if(array_key_exists('local', $response[0][0]['events'])) {
+      $data = get($userid.'_attempts');
+      $last = end($data);
+      array_push($data, $response[0][0]['events']['local'][0]['id']);
+      set($userid.'_attempts', $data);
+      if(!is_null($last)) {
+        $pl = get_pl();
+        $pl->post('/admin/players/u'.$userid.'/revert', array(), array('event_ids' => array($last)));
+      }
+    }
   }
 
   function forum_discussion_created_handler($event) {
-    execute_rule($id, $event->userid);
+    execute_rule('forum_'.$event->forum.'_discussion_created', $event->userid);
   }
 
   function forum_post_created_handler($event) {
-    execute_rule($id, $event->userid);
+    execute_rule('forum_'.$event->forum.'_post_created', $event->userid);
   }
 
   function forum_viewed_handler($event) {
@@ -100,7 +103,7 @@
     $userid = $event->userid;
     if(!has_finished_rule($id, $userid)) {
       execute_rule($id, $event->userid);
-    //  show_reward($event->userid);
+      show_reward($event->userid);
     }
   }
 
@@ -111,14 +114,14 @@
       $response = $pl->post('/admin/rules/'.$id, array(), array(
         'data' => array(
           array(
-            'variables' => (object)$variables,
+            'variables' => $variables,
             'player_ids' => array('u'.$userid),
             'scopes' => $scopes
           )
         )
       ));
       add_to_buffer($userid, $response[0][0]['events']);
-      set($userid.'_finished', $id);
+      return $response;
     }
     catch(Exception $e) {
       if($e->name == 'rule_not_found') {
@@ -131,13 +134,13 @@
     }
   }
 
-  // function show_reward($userid) {
-  //   global $CFG, $PAGE;
-  //   if (isloggedin() || !isguestuser()) {
-  //     $data = calculate_data($userid);
-  //     $PAGE->requires->js_init_call('show_rewards', array($data));
-  //   }
-  // }
+  function show_reward($userid) {
+    global $CFG, $PAGE;
+    if (isloggedin() || !isguestuser()) {
+      $data = calculate_data($userid);
+      $PAGE->requires->js_init_call('show_rewards', array($data));
+    }
+  }
 
   function local_playlyfe_extends_settings_navigation(settings_navigation $settingsnav, $context) {
     global $USER, $PAGE;
