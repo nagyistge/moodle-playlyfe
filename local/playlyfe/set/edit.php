@@ -13,6 +13,8 @@ $PAGE->navigation->clear_cache();
 $html = '';
 
 if (array_key_exists('submit', $_POST)) {
+    $id = $_POST['id'];
+    $metric = $pl->get('/design/versions/latest/metrics/'.$id);
     $items_names = $_POST['items_names'];
     $items_desc = $_POST['items_desc'];
     $items_max = $_POST['items_max'];
@@ -28,6 +30,7 @@ if (array_key_exists('submit', $_POST)) {
       $item = array(
         'name' => $items_names[$i],
         'max' => $items_max[$i],
+        'image' => $metric['constraints']['items'][$i]['image'],
         'description' => $items_desc[$i],
         'hidden' => $hidden
       );

@@ -17,11 +17,11 @@ $html = '';
 define("UPLOAD_DIR", "/images/");
 
 if (array_key_exists('id', $_POST)) {
-  $metric = array(
-    'name' => $_POST['name'],
-    'description' => $_POST['description'],
-    'type' => 'point'
-  );
+  $id = $_POST['id'];
+  $metric = $pl->get('/design/versions/latest/metrics/'.$id, array());
+  unset($metric['id']);
+  $metric['name'] = $_POST['name'];
+  $metric['description'] = $_POST['description'];
   try {
     if (strlen($_FILES['uploadedfile']['name']) > 0) {
       $myFile = $_FILES['uploadedfile']['tmp_name'];
