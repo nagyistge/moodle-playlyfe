@@ -184,28 +184,61 @@ function add_course_group(version, data) {
   add_handler('', { id: groups_count, metrics: metrics });
 }
 
-
 var index = 0;
 
 function init_set(version, new_index) {
   $('#add').click(function() {
     add_item();
   });
-  if(new_index !== null && typeof new_index !== 'undefined') {
-    index = new_index;
-  }
 }
 
-function add_item() {
+function create_input(title, name, value, type) {
+  type = type || 'text';
+  var html = '';
+  html += '<div id="fitem_id_id" class="fitem required fitem_ftext">';
+  html += '<div class="fitemtitle"><label>'+title+'<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req"></label></div>';
+  html += '<div class="felement ftext"><input name="'+name+'" type="'+type+'" value="'+value+'" required></div></div>';
+  return html;
+}
+
+function create_file(title, name) {
+  var html = '';
+  html += '<div id="fitem_id_id" class="fitem required fitem_ftext">';
+  html += '<div class="fitemtitle"><label>'+title+'</label></div>';
+  html += '<div class="felement ftext"><input name="'+name+'" type="file"></div></div>';
+  return html;
+}
+
+function create_checkbox(title, name) {
+  var html = '';
+  html += '<div id="fitem_id_id" class="fitem required fitem_ftext">';
+  html += '<div class="fitemtitle"><label>'+title+'<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req"></label></div>';
+  html += '<div class="felement ftext"><input name="'+name+'" type="checkbox" checked></div></div>';
+  return html;
+}
+
+function create_(title, name) {
+  var html = '';
+  html += '<div id="fitem_id_id" class="fitem required fitem_ftext">';
+  html += '<div class="fitemtitle"><label>'+title+'<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req"></label></div>';
+  html += '<div class="felement ftext"><input name="'+name+'" type="checkbox" checked></div></div>';
+  return html;
+}
+
+function add_item(version, item) {
+  item = item || {};
+  item.name = item.name || '';
+  item.description = item.description || '';
+  item.max = item.max || '1';
   $('#extra').append(
     '<div id="item_'+index+'" class="generalbox authsui">'
-    +'Badge '+(index+1)+'<button type="button" id="remove_'+index+'">delete</button>'
-    +'<p>Name: <input name="items_names['+index+']" type="text" required /></p>'
-    +'<p>Description: <input name="items_desc['+index+']" type="text" required /></p>'
-    +'<p>Max: <input name="items_max['+index+']" type="number" value="1" required /></p>'
-    +'<input type="hidden" name="MAX_FILE_SIZE" value="500000000" />'
-    +'<p>Badge Image: <input type="file" name="itemfile'+index+'" /></p>'
-    +'<p>Hidden: <input name="items_hidden['+index+']" type="checkbox" checked /></p></div>'
+    + create_input('Name', 'items_names['+index+']', item.name)
+    + create_input('Description', 'items_desc['+index+']', item.description)
+    + create_input('Max', 'items_max['+index+']', item.max, 'number')
+    + create_file('Image', 'itemfile'+index)
+    + create_checkbox('Hidden', 'items_hidden['+index+']')
+    +'<button type="button" id="remove_'+index+'">remove</button>'
+    +'</div>'
   );
   (function(i) {
     $('#remove_'+i).click(function() {

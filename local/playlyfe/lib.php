@@ -114,7 +114,7 @@
       $response = $pl->post('/admin/rules/'.$id, array(), array(
         'data' => array(
           array(
-            'variables' => $variables,
+            'variables' => (object)$variables,
             'player_ids' => array('u'.$userid),
             'scopes' => $scopes
           )

@@ -4,7 +4,7 @@ use Playlyfe\Sdk\Playlyfe;
 
 $client_id = get_config('playlyfe', 'client_id');
 $client_secret = get_config('playlyfe', 'client_secret');
- if ($client_id === null or $client_secret === null) {
+if (!$client_id or !$client_secret) {
   throw new Exception('Please set your client_id and client_secret in the Playlyfe Plugin Settings Page');
 }
 
@@ -459,5 +459,45 @@ function has_finished_rule($userid, $id) {
   }
   else {
     return true;
+  }
+}
+
+class PForm {
+  public $html;
+
+  function __construct($title, $path='') {
+    $this->html .= '<form class="mform" enctype="multipart/form-data" action="'.$path.'" method="post">';
+    $this->html .= '<fieldset class="clearfix"><legend class="ftoggler">'.$title.'</legend><div class="advancedbutton"></div><div class="fcontainer clearfix">';
+  }
+
+  public function create_file($title, $name) {
+    $this->html .= '<div id="fitem_id_id" class="fitem required fitem_ftext">';
+    $this->html .= '<div class="fitemtitle"><label>'.$title.'</label></div>';
+    $this->html .= '<div class="felement ftext"><input name="'.$name.'" type="file"></div></div>';
+  }
+
+  public function create_input($title, $name, $value='', $type='text') {
+    $this->html .= '<div id="fitem_id_id" class="fitem required fitem_ftext">';
+    $this->html .= '<div class="fitemtitle"><label>'.$title.'<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req"></label></div>';
+    $this->html .= '<div class="felement ftext"><input name="'.$name.'" type="'.$type.'" value="'.$value.'" required></div></div>';
+  }
+
+  public function create_button($id, $text) {
+    $this->html .= '<button id="'.$id.'" type="button">'.$text.'</button><br>';
+  }
+
+  public function end() {
+    $this->html .= '<div id="extra"></div>';
+    $this->html .= '<div class="fitem fitem_actionbuttons fitem_fgroup"><div class="felement fgroup"><input type="submit" name="submit" value="Submit" /></div></div>';
+    $this->html .= '</div></fieldset></form>';
+    echo $this->html;
+  }
+
+  public function create_hidden($name, $value) {
+    $this->html .= '<input name="'.$name.'" type="hidden" value="'.$value.'">';
+  }
+
+  public function create_separator() {
+    $this->html .= '<hr></hr>';
   }
 }

@@ -36,17 +36,12 @@ if (array_key_exists('id', $_POST)) {
 } else {
     $id = required_param('id', PARAM_TEXT);
     $metric = $pl->get('/design/versions/latest/metrics/'.$id, array());
-    $metric_name = $metric['name'];
     echo $OUTPUT->header();
-    $html .= "<h1> Editing Metric - $metric_name </h1>";
-    $html .= '<form enctype="multipart/form-data" action="edit.php" method="post">';
-    $html .= '<input type="hidden" name="MAX_FILE_SIZE" value="500000000" />'; //500kb is 500000
-    $html .= '<p>Metric Image: <input type="file" name="uploadedfile" /></p>';
-    $html .= '<p>Metric Name: <input type="text" name="name" value="'.$metric_name.'"/></p>';
-    $html .= '<input type="hidden" name="id" value="'.$id.'"/>';
-    $html .= '<p>Metric Description: <input type="text" name="description" value="'.$metric['description'].'"/></p>';
-    $html .= '<input type="submit" name="submit" value="Submit" />';
-    $html .= '</form>';
-    echo $html;
+    $form = new PForm('Editing Metric - '.$metric['name']);
+    $form->create_file('Image', 'uploadedfile');
+    $form->create_input('Name', 'name', $metric['name']);
+    $form->create_hidden('id', $id);
+    $form->create_input('Description', 'description', $metric['description']);
+    $form->end();
     echo $OUTPUT->footer();
 }

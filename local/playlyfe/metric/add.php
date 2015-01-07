@@ -57,15 +57,11 @@ if (array_key_exists('id', $_POST)) {
       $metric = $pl->get('/design/versions/latest/metrics/'.$_GET['id'], array());
     }
     echo $OUTPUT->header();
-    $html .= '<h1> Create a new Metric </h1>';
-    $html .= '<form enctype="multipart/form-data" action="add.php" method="post">';
-    $html .= '<input type="hidden" name="MAX_FILE_SIZE" value="500000000" />'; //500kb is 500000
-    $html .= '<p>Metric Image: <input type="file" name="uploadedfile" /></p>';
-    $html .= '<p>Metric Name: <input type="text" name="name" required/></p>';
-    $html .= '<p>Metric Id: <input type="text" name="id" required/></p>';
-    $html .= '<p>Metric Description: <input type="text" name="description" required/></p>';
-    $html .= '<input type="submit" name="submit" value="Submit" />';
-    $html .= '</form>';
-    echo $html;
+    $form = new PForm('Metric');
+    $form->create_file('Image', 'uploadedfile');
+    $form->create_input('Name', 'name');
+    $form->create_input('ID', 'id');
+    $form->create_input('Description', 'description');
+    $form->end();
     echo $OUTPUT->footer();
 }

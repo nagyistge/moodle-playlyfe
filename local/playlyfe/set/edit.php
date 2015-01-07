@@ -27,10 +27,16 @@ if (array_key_exists('submit', $_POST)) {
       else {
         $hidden = false;
       }
+      if(array_key_exists($i, $metric['constraints']['items'])) {
+        $item_image = $metric['constraints']['items'][$i]['image'];
+      }
+      if(!$item_image or $item_image === null) {
+        $item_image = 'default-item';
+      }
       $item = array(
         'name' => $items_names[$i],
         'max' => $items_max[$i],
-        'image' => $metric['constraints']['items'][$i]['image'],
+        'image' => $item_image,
         'description' => $items_desc[$i],
         'hidden' => $hidden
       );
@@ -63,32 +69,18 @@ if (array_key_exists('submit', $_POST)) {
     $metric = $pl->get('/design/versions/latest/metrics/'.$id);
     $metric_name = $metric['name'];
     echo $OUTPUT->header();
-    $html .= "<h1> Editing Set - $metric_name </h1>";
-    $html .= '<form id="mform1" enctype="multipart/form-data" action="edit.php" method="post">';
-    $html .= '<input type="hidden" name="MAX_FILE_SIZE" value="500000000" />'; //500kb is 500000
-    $html .= '<p>Metric Image: <input type="file" name="uploadedfile" /></p>';
-    $html .= '<p>Metric Name: <input type="text" name="name" value="'.$metric_name.'"/></p>';
-    $html .= '<input type="hidden" name="id" value="'.$id.'"/>';
-    $html .= '<p>Metric Description: <input type="text" name="description" value="'.$metric['description'].'"/></p>';
-    $index = 0;
+    $form = new PForm("Editing Set - $metric_name");
+    $form->create_file('Image', 'uploadedfile');
+    $form->create_input('Name', 'name', $metric_name);
+    $form->create_hidden('id', $id);
+    $form->create_input('Description', 'description', $metric['description']);
+    $form->create_button('add', 'Add Items');
+    $form->create_separator();
+    $form->end();
     foreach($metric['constraints']['items'] as $item) {
-      $html .= $OUTPUT->box_start('generalbox authsui');
-      $html .= '<div id="item'.$index.'">';
-      $html .= 'Badge '.($index+1);
-      $html .= '<p>Name: <input name="items_names['.$index.']" type="text" value="'.$item['name'].'"required /></p>';
-      $html .= '<p>Description: <input name="items_desc['.$index.']" type="text" value="'.$item['description'].'"required /></p>';
-      $html .= '<p>Max: <input name="items_max['.$index.']" type="number" value="1" value="'.$item['max'].'"required /></p>';
-      $html .= '<p>Hidden: <input name="items_hidden['.$index.']" type="checkbox" checked /></p></div>';
-      $html .= '<input type="hidden" name="MAX_FILE_SIZE" value="500000000" />';
-      $html .= '<p>Badge Image: <input type="file" name="itemfile'.$index.'" /></p>';
-      $html .= $OUTPUT->box_end();
-      $index++;
+      $PAGE->requires->js_init_call('add_item', array($item));
     }
-    $html .= '<div id="extra"></div>';
-    $html .= '<button type="button" id="add">Add Items</button><br>';
-    $html .= '<input type="submit" name="submit" value="Submit" />';
-    $html .= '</form>';
     echo $html;
-    $PAGE->requires->js_init_call('init_set', array($index));
+    $PAGE->requires->js_init_call('init_set', array());
     echo $OUTPUT->footer();
 }

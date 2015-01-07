@@ -62,17 +62,14 @@ if (array_key_exists('id', $_POST)) {
     }
 } else {
     echo $OUTPUT->header();
-    $html .= '<h1> Create a new Set </h1>';
-    $html .= '<form id="mform1" enctype="multipart/form-data" action="add.php" method="post">';
-    $html .= '<input type="hidden" name="MAX_FILE_SIZE" value="500000000" />'; //500kb is 500000
-    $html .= '<p>Metric Image: <input type="file" name="uploadedfile" /></p>';
-    $html .= '<p>Metric Name: <input type="text" name="name" required/></p>';
-    $html .= '<p>Metric Id: <input type="text" name="id" required/></p>';
-    $html .= '<p>Metric Description: <input type="text" name="description" required/></p>';
-    $html .= '<div id="extra"></div>';
-    $html .= '<button id="add" type="button">Add Items</button><br>';
-    $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
-    $html .= '</form>';
+    $form = new PForm('Set');
+    $form->create_file('Image', 'uploadedfile');
+    $form->create_input('Name', 'name');
+    $form->create_input('ID', 'id');
+    $form->create_input('Description', 'description');
+    $form->create_button('add', 'Add Items');
+    $form->create_separator();
+    $form->end();
     echo $html;
     $PAGE->requires->js_init_call('init_set', array());
     $PAGE->requires->js_init_call('add_item', array());
