@@ -68,7 +68,7 @@ if (array_key_exists('id', $_POST)) {
     $form->create_input('ID', 'id');
     $form->create_input('Description', 'description');
     $form->create_button('add', 'Add Items');
-    $form->create_separator();
+    $form->create_separator('Items');
     $form->end();
     echo $html;
     $PAGE->requires->js_init_call('init_set', array());

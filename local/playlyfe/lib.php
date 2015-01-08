@@ -180,14 +180,18 @@
           $coursesett = $settingsnav->get('courseadmin');
           $coursesett->add('Gamification', new moodle_url('/local/playlyfe/course.php', array('id' => $PAGE->course->id)), null, null, 'course', new pix_icon('t/edit', 'edit'));
           $quizsett = $settingsnav->get(0);
-          //$quizsett = $settingsnav->get('modulesettings');
+          if(!$quizsett) {
+            $quizsett = $settingsnav->get('modulesettings');
+          }
           $quizsett->add('Gamification', new moodle_url('/local/playlyfe/quiz.php', array('cmid' => $PAGE->cm->id)), null, null, 'quiz', new pix_icon('t/edit', 'edit'));
         }
         if($PAGE->activityname == 'forum') {
           $coursesett = $settingsnav->get('courseadmin');
           $coursesett->add('Gamification', new moodle_url('/local/playlyfe/course.php', array('id' => $PAGE->course->id)), null, null, 'course', new pix_icon('t/edit', 'edit'));
           $forumsett = $settingsnav->get(0);
-          //$forumsett = $settingsnav->get('modulesettings');
+          if(!$forumsett) {
+            $forumsett = $settingsnav->get('modulesettings');
+          }
           $forumsett->add('Gamification', new moodle_url('/local/playlyfe/forum.php', array('cmid' => $PAGE->cm->id)), null, null, 'forum', new pix_icon('t/edit', 'edit'));
         }
       }

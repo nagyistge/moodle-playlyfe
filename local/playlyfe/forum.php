@@ -23,7 +23,6 @@ $discussion_rule = get_rule($forum->id, 'discussion_created', '',  'Forum '.$for
 $post_rule = get_rule($forum->id, 'post_created', '', 'Forum '.$forum->id.' Posted');
 $view_rule = get_rule($forum->id, 'viewed', '', 'Forum '.$forum->id.' Viewed');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
-$html = '';
 
 if (array_key_exists('submit', $_POST)) {
   $did = $discussion_rule['id'];
@@ -40,18 +39,14 @@ if (array_key_exists('submit', $_POST)) {
   }
   redirect(new moodle_url('/local/playlyfe/forum.php', array('cmid' => $cmid)));
 } else {
-  $name = $cm->name;
   echo $OUTPUT->header();
-  $html .= "<h1> $name </h1>";
-  $html .= '<form id="mform1" action="forum.php?cmid='.$cmid.'" method="post">';
-  $html .= "<h2> Forum Discussion Created </h2>";
-  $html .= create_rule_table($discussion_rule, $metrics);
-  $html .= "<h2> Forum Post Created </h2>";
-  $html .= create_rule_table($post_rule, $metrics);
-  $html .= "<h2> Forum Viewed </h2>";
-  $html .= create_rule_table($view_rule, $metrics);
-  $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
-  $html .= '</form>';
-  echo $html;
+  $form = new PFORM($cm->name, 'forum.php?cmid='.$cmid);
+  $form->create_separator('Forum Discussion Created');
+  $form->create_rule_table($discussion_rule, $metrics);
+  $form->create_separator('Forum Post Created');
+  $form->create_rule_table($post_rule, $metrics);
+  $form->create_separator('Forum Viewed');
+  $form->create_rule_table($view_rule, $metrics);
+  $form->end();
   echo $OUTPUT->footer();
 }

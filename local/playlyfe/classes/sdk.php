@@ -174,7 +174,7 @@ function get_cmid($cmid) {
   return array($modrec, $cmrec);
 }
 
-function set_leaderboards($post, $metrics, $courses, $key) {
+function set_leaderboards($post, $metrics, $course, $key) {
   global $pl;
   if(!array_key_exists('leaderboards', $post)) {
     $post['leaderboards'] = array();
@@ -183,13 +183,11 @@ function set_leaderboards($post, $metrics, $courses, $key) {
   foreach($metrics as $metric) {
     if($metric['type'] == 'point') {
       $metric_id = $metric['id'];
-      foreach($courses as $course) {
-        if(in_array($metric_id, $post['leaderboards'])) {
-          $pl->post('/admin/leaderboards/'.$metric_id.'/course'.$course->id, array());
-        }
-        else {
-          $pl->delete('/admin/leaderboards/'.$metric_id.'/course'.$course->id, array());
-        }
+      if(in_array($metric_id, $post['leaderboards'])) {
+        $pl->post('/admin/leaderboards/'.$metric_id.'/course'.$course->id, array());
+      }
+      else {
+        $pl->delete('/admin/leaderboards/'.$metric_id.'/course'.$course->id, array());
       }
     }
   }
@@ -464,6 +462,7 @@ function has_finished_rule($userid, $id) {
 
 class PForm {
   public $html;
+  public $requiredHtml = '<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req">';
 
   function __construct($title, $path='') {
     $this->html .= '<form class="mform" enctype="multipart/form-data" action="'.$path.'" method="post">';
@@ -476,9 +475,17 @@ class PForm {
     $this->html .= '<div class="felement ftext"><input name="'.$name.'" type="file"></div></div>';
   }
 
-  public function create_input($title, $name, $value='', $type='text') {
-    $this->html .= '<div id="fitem_id_id" class="fitem required fitem_ftext">';
-    $this->html .= '<div class="fitemtitle"><label>'.$title.'<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req"></label></div>';
+  public function create_input($title, $name, $value='', $type='text', $required=true) {
+    $this->html .= '<div id="fitem_id_id" class="fitem';
+    if($required) {
+      $this->html .= 'required';
+    }
+    $this->html .= 'fitem_ftext">';
+    $this->html .= '<div class="fitemtitle"><label>'.$title;
+    if($required) {
+      $this->html .= '<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req">';
+    }
+    $this->html .= '</label></div>';
     $this->html .= '<div class="felement ftext"><input name="'.$name.'" type="'.$type.'" value="'.$value.'" required></div></div>';
   }
 
@@ -486,18 +493,119 @@ class PForm {
     $this->html .= '<button id="'.$id.'" type="button">'.$text.'</button><br>';
   }
 
+  public function create_hidden($name, $value) {
+    $this->html .= '<input name="'.$name.'" type="hidden" value="'.$value.'">';
+  }
+
+  public function create_checkbox($title, $name, $value, $checked = true, $required = false) {
+    $this->html .= '<div class="fitem required fitem_ftext">';
+    $this->html .= '<div class="fitemtitle"><label>'.$title.'</label>';
+    if($required) {
+      $this->html .= $this->requiredHtml;
+    }
+    $this->html .= '</div>';
+    $check_text = '';
+    if($checked === true) {
+      $check_text = 'checked';
+    }
+    $this->html .= '<div class="felement ftext"><input value="'.$value.'" name="'.$name.'" type="checkbox" '.$check_text.'></div></div>';
+  }
+
+  public function create_separator($title='') {
+    $this->html .= '<h3>'.$title.'</h3>';
+    $this->html .= '<hr></hr>';
+  }
+
+  public function create_rule_table($rule, $metrics) {
+    global $PAGE;
+    $id = $rule['id'];
+    $this->html .= '<table id="treward_'.$id.'" class="generaltable">'; //admintable
+    $this->html .= '<thead>';
+    $this->html .= '<tr>';
+    $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
+    $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Value</th>';
+    $this->html .= '</tr>';
+    $this->html .= '</thead>';
+    $this->html .= '<tbody>';
+    $this->html .= '</tbody>';
+    $this->html .= '</table>';
+    $this->html .= '<p><button type="button" id="add_'.$id.'">Add Reward</button></p>';
+    if(count($rule['rules']) > 0) {
+      $rewards = $rule['rules'][0]['rewards'];
+    } else {
+      $rewards = array();
+    }
+    $data = array(
+      'id' => $id,
+      'metrics' => $metrics,
+      'rewards' => $rewards
+    );
+    $PAGE->requires->js_init_call('init_table', array($data));
+    $PAGE->requires->js_init_call('add_handler', array($data));
+  }
+
+  public function create_leaderboard_table($metrics, $leaderboards) {
+    foreach ($metrics as $metric) {
+      if($metric['type'] === 'point') {
+        $this->create_checkbox($metric['name'], 'leaderboards[]', $metric['id'], in_array($metric['id'], $leaderboards));
+      }
+    }
+  }
+
+  function create_select($name, $options, $selected='') {
+    $this->html .= '<select name="'.$name.'" id="'.$name.'">';
+    foreach($options as $option) {
+      if($selected === $option) {
+        $this->html .= '<option selected>'.$option.'</option>';
+      }
+      else {
+        $this->html .= '<option>'.$option.'</option>';
+      }
+    }
+    $this->html .= '</select>';
+  }
+
+  function create_condition_operator($condition) {
+    $this->html .= '<select name="condition_operator" id="condition_operator">';
+    if($condition and $condition['operator'] === 'gt') {
+      $this->html .= '<option value="gt">greater</option>';
+    }
+    else {
+      $this->html .= '<option value="gt" selected>greater</option>';
+    }
+    if($condition and $condition['operator'] === 'lt') {
+      $this->html .= '<option value="lt" selected>lesser</option>';
+    }
+    else {
+      $this->html .= '<option value="lt">lesser</option>';
+    }
+    if($condition and $condition['operator'] === 'eq') {
+      $this->html .= '<option value="eq" selected>equal</option>';
+    }
+    else {
+      $this->html .= '<option value="eq">equal</option>';
+    }
+    $this->html .= '</select>';
+  }
+
+  public function create_conditions($rule) {
+    $this->html .= '<h6>Conditions</h6>';
+    $condition = null;
+    if(array_key_exists('context', $rule['rules'][0]['requires'])) {
+      $condition = $rule['rules'][0]['requires']['context'];
+    }
+    if($condition) {
+      $selected = 'score';
+    }
+    $this->create_select('condition_type', array('none', 'score'), $selected);
+    $this->create_condition_operator($condition);
+    $this->create_input('Than', 'condition_value', $condition['rhs'], 'number', false);
+  }
+
   public function end() {
     $this->html .= '<div id="extra"></div>';
     $this->html .= '<div class="fitem fitem_actionbuttons fitem_fgroup"><div class="felement fgroup"><input type="submit" name="submit" value="Submit" /></div></div>';
     $this->html .= '</div></fieldset></form>';
     echo $this->html;
-  }
-
-  public function create_hidden($name, $value) {
-    $this->html .= '<input name="'.$name.'" type="hidden" value="'.$value.'">';
-  }
-
-  public function create_separator() {
-    $this->html .= '<hr></hr>';
   }
 }

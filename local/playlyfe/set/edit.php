@@ -75,7 +75,7 @@ if (array_key_exists('submit', $_POST)) {
     $form->create_hidden('id', $id);
     $form->create_input('Description', 'description', $metric['description']);
     $form->create_button('add', 'Add Items');
-    $form->create_separator();
+    $form->create_separator('Items');
     $form->end();
     foreach($metric['constraints']['items'] as $item) {
       $PAGE->requires->js_init_call('add_item', array($item));

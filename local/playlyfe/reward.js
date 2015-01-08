@@ -195,7 +195,7 @@ function init_set(version, new_index) {
 function create_input(title, name, value, type) {
   type = type || 'text';
   var html = '';
-  html += '<div id="fitem_id_id" class="fitem required fitem_ftext">';
+  html += '<div class="fitem required fitem_ftext">';
   html += '<div class="fitemtitle"><label>'+title+'<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req"></label></div>';
   html += '<div class="felement ftext"><input name="'+name+'" type="'+type+'" value="'+value+'" required></div></div>';
   return html;
@@ -203,7 +203,7 @@ function create_input(title, name, value, type) {
 
 function create_file(title, name) {
   var html = '';
-  html += '<div id="fitem_id_id" class="fitem required fitem_ftext">';
+  html += '<div class="fitem required fitem_ftext">';
   html += '<div class="fitemtitle"><label>'+title+'</label></div>';
   html += '<div class="felement ftext"><input name="'+name+'" type="file"></div></div>';
   return html;
@@ -211,7 +211,7 @@ function create_file(title, name) {
 
 function create_checkbox(title, name) {
   var html = '';
-  html += '<div id="fitem_id_id" class="fitem required fitem_ftext">';
+  html += '<div class="fitem required fitem_ftext">';
   html += '<div class="fitemtitle"><label>'+title+'<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req"></label></div>';
   html += '<div class="felement ftext"><input name="'+name+'" type="checkbox" checked></div></div>';
   return html;
@@ -219,7 +219,7 @@ function create_checkbox(title, name) {
 
 function create_(title, name) {
   var html = '';
-  html += '<div id="fitem_id_id" class="fitem required fitem_ftext">';
+  html += '<div class="fitem required fitem_ftext">';
   html += '<div class="fitemtitle"><label>'+title+'<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req"></label></div>';
   html += '<div class="felement ftext"><input name="'+name+'" type="checkbox" checked></div></div>';
   return html;
@@ -231,7 +231,7 @@ function add_item(version, item) {
   item.description = item.description || '';
   item.max = item.max || '1';
   $('#extra').append(
-    '<div id="item_'+index+'" class="generalbox authsui">'
+    '<div id="item_'+index+'" class="generalbox authsui" style="display: inline-block;">'
     + create_input('Name', 'items_names['+index+']', item.name)
     + create_input('Description', 'items_desc['+index+']', item.description)
     + create_input('Max', 'items_max['+index+']', item.max, 'number')

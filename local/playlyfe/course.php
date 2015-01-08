@@ -18,8 +18,7 @@ $PAGE->set_cacheable(false);
 $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
 $PAGE->navigation->clear_cache();
 $completed_rule = get_rule($id, 'completed', 'course', 'Course '.$course->shortname. ' Completed');
-$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
-$html = '';
+$metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'name,id,type,constraints'));
 
 if (array_key_exists('submit', $_POST)) {
   $cid = $completed_rule['id'];
@@ -31,38 +30,23 @@ if (array_key_exists('submit', $_POST)) {
     $bid = $bonus_rule['id'];
     patch_rule($bonus_rule, $_POST['metrics'][$bid], $_POST['values'][$bid]);
   }
-  set_leaderboards($_POST, $metrics, array($course), 'course'.$id.'_leaderboard');
+  set_leaderboards($_POST, $metrics, $course, 'course'.$id.'_leaderboard');
   redirect(new moodle_url('/local/playlyfe/course.php', array('id' => $id)));
 } else {
   $leaderboards = array_merge(get_leaderboards('all_leaderboards'), get_leaderboards('course'.$id.'_leaderboard'));
-  $name = $course->shortname;
-  $html .= "<h1> $name </h1>";
-  $html .= '<form action="course.php?id='.$id.'" method="post">';
-  $html .= '<h2> Leaderboards for this Course </h2>';
-  $html .= '<div>';
-  foreach ($metrics as $metric) {
-    if($metric['type'] === 'point') {
-      if(in_array($metric['id'], $leaderboards)) {
-        $html .= '<input type="checkbox" value="'.$metric['id'].'" name="leaderboards[]" checked />'.$metric['id'].'<br>';
-      }
-      else {
-        $html .= '<input type="checkbox" value="'.$metric['id'].'" name="leaderboards[]" />'.$metric['id'].'<br>';
-      }
-    }
-  }
-  $html .= '</div><br>';
-  $html .= "<h2> Rewards on Course Completion </h2>";
-  $html .= create_rule_table($completed_rule, $metrics);
   $criteria = $DB->get_record('course_completion_criteria', array('course' => $id, 'criteriatype' => 2));
+  echo $OUTPUT->header();
+  $form = new PFORM($course->shortname, 'course.php?id='.$id);
+  $form->create_separator('Leaderboards');
+  $form->create_leaderboard_table($metrics, $leaderboards);
+  $form->create_separator('Rewards for Course Completion');
+  $form->create_rule_table($completed_rule, $metrics);
   // 2 for timeend criteria
   if($criteria and $criteria->timeend > 0) {
     $bonus_rule = get_rule($id, 'bonus', 'course', 'Course '.$course->shortname. ' Bonus');
-    $html .= '<h2> Bonus for Early Completion Before '.date("D, d M Y H:i:s", $criteria->timeend).'</h2>';
-    $html .= create_rule_table($bonus_rule, $metrics);
+    $form->create_separator('Bonus for Early Completion Before '.date("D, d M Y H:i:s", $criteria->timeend));
+    $form->create_rule_table($bonus_rule, $metrics);
   }
-  $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
-  $html .= '</form>';
-  echo $OUTPUT->header();
-  echo $html;
+  $form->end();
   echo $OUTPUT->footer();
 }
