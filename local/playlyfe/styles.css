@@ -1,0 +1,50 @@
+#closebutton {
+  margin-top:4px;
+  margin-right: 4px;
+}
+
+.pl-leaderboard-checkbox {
+  text-align: center;
+}
+
+.progressbar {
+  background-color: black;
+  border-radius: 13px; /* (height of inner div) / 2 + padding */
+  padding: 3px;
+  width: 10%;
+}
+
+.progressbar > div {
+   background-color: orange;
+   height: 20px;
+   border-radius: 10px;
+}
+
+.leaderboard-list {
+  list-style: outside none none;
+}
+
+.leaderboard-player {
+  font-size: 16px;
+  border: 1px solid black;
+  color: black;
+}
+
+.leaderboard-player-rank {
+  float: left;
+  margin: 10px 20px 10px 10px;
+}
+
+.leaderboard-player-alias {
+  float: right;
+  margin: 20px 40% 10px 10px;
+}
+
+.leaderboard-player-score {
+  float: right;
+  margin: 20px 20px 10px 10px;
+}
+
+.leaderboard-player-selected {
+  color: red;
+}

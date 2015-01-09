@@ -32,7 +32,7 @@ function addReward(id, metrics, index, reward) {
   id = id || '';
   var html = '<tr id="row_'+id+index+'" class="r'+index+' centeralign">';
   html += '<td>'+selectMetric(id, metrics, index, reward)+'</td>';
-  close_button = '<a style="float:right" id="close_'+id+index+'">remove</a>';
+  close_button = '<a style="float:right; padding-left: 25px;" id="close_'+id+index+'">remove</a>';
   if(reward !== undefined) {
     var value = reward.value;
     if(reward.metric.type === 'set') {

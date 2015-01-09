@@ -37,14 +37,14 @@ if (array_key_exists('submit', $_POST)) {
   $criteria = $DB->get_record('course_completion_criteria', array('course' => $id, 'criteriatype' => 2));
   echo $OUTPUT->header();
   $form = new PFORM($course->shortname, 'course.php?id='.$id);
-  $form->create_separator('Leaderboards');
+  $form->create_separator('Leaderboards', 'Select the metrics for which you would like to have leaderboards within this course');
   $form->create_leaderboard_table($metrics, $leaderboards);
-  $form->create_separator('Rewards for Course Completion');
+  $form->create_separator('Rewards for Course Completion', 'Give rewards to users who complete this course');
   $form->create_rule_table($completed_rule, $metrics);
   // 2 for timeend criteria
   if($criteria and $criteria->timeend > 0) {
     $bonus_rule = get_rule($id, 'bonus', 'course', 'Course '.$course->shortname. ' Bonus');
-    $form->create_separator('Bonus for Early Completion Before '.date("D, d M Y H:i:s", $criteria->timeend));
+    $form->create_separator('Bonus for Early Completion', 'Give rewards to users who complete this course before the date'.date("D, d M Y H:i:s", $criteria->timeend));
     $form->create_rule_table($bonus_rule, $metrics);
   }
   $form->end();

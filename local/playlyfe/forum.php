@@ -41,11 +41,11 @@ if (array_key_exists('submit', $_POST)) {
 } else {
   echo $OUTPUT->header();
   $form = new PFORM($cm->name, 'forum.php?cmid='.$cmid);
-  $form->create_separator('Forum Discussion Created');
+  $form->create_separator('Forum Discussion Created', 'You can give rewards to users who start forum topics');
   $form->create_rule_table($discussion_rule, $metrics);
-  $form->create_separator('Forum Post Created');
+  $form->create_separator('Forum Post Created', 'You can give rewards to users who reply to comments and topics created by others');
   $form->create_rule_table($post_rule, $metrics);
-  $form->create_separator('Forum Viewed');
+  $form->create_separator('Forum Viewed', 'You can give rewards to users who view the forum. This reward is given only once so that the users dont abuse the system');
   $form->create_rule_table($view_rule, $metrics);
   $form->end();
   echo $OUTPUT->footer();

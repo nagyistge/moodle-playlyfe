@@ -80,13 +80,16 @@
     }
     if(array_key_exists('local', $response[0][0]['events'])) {
       $data = get($userid.'_attempts');
-      $last = end($data);
+      if(count($data) > 0) {
+        $pl = get_pl();
+        try {
+          $pl->post('/admin/players/u'.$userid.'/revert', array(), array('event_ids' => array($data)));
+          $data = array();
+        }
+        catch(Exception $e) {}
+      }
       array_push($data, $response[0][0]['events']['local'][0]['id']);
       set($userid.'_attempts', $data);
-      if(!is_null($last)) {
-        $pl = get_pl();
-        $pl->post('/admin/players/u'.$userid.'/revert', array(), array('event_ids' => array($last)));
-      }
     }
   }
 
@@ -151,6 +154,7 @@
 
         $nodePlaylyfe->add('Client', new moodle_url('/local/playlyfe/client.php'), null, null, 'client', new pix_icon('t/edit', 'edit'));
         $nodePlaylyfe->add('Publish', new moodle_url('/local/playlyfe/publish.php'), null, null, 'publish', new pix_icon('t/edit', 'edit'));
+        $nodePlaylyfe->add('Settings', new moodle_url('/local/playlyfe/setting.php'), null, null, 'settings', new pix_icon('t/edit', 'edit'));
 
         // $nodePlaylyfe->add('Courses', new moodle_url('/local/playlyfe/courses.php'), null, null, 'courses', new pix_icon('t/edit', 'edit'));
 
@@ -213,7 +217,7 @@
       $PAGE->requires->jquery_plugin('ui-css');
     }
     $PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/playlyfe/reward.js'));
-    if (isloggedin() and !isguestuser()) {
+    if (isloggedin() and !isguestuser() and !strpos($PAGE->url, '/mod/forum/post.php')) {
       $buffer = get_buffer($USER->id);
       $data = array(
         'events' => array(),
@@ -246,7 +250,14 @@
         $PAGE->requires->js_init_call('show_rewards', array($data));
         set_buffer($USER->id, array());
       }
-      $nodeProfile = $navigation->add('Playlyfe Profile', new moodle_url('/local/playlyfe/profile.php'));
-      $nodeNotifications = $navigation->add('Notifications', new moodle_url('/local/playlyfe/notification.php'));
+      if(json_decode(get_config('playlyfe', 'profile')) === true) {
+        $navigation->add('Playlyfe Profile', new moodle_url('/local/playlyfe/profile.php'));
+      }
+      if(json_decode(get_config('playlyfe', 'notification')) === true) {
+        $navigation->add('Notifications', new moodle_url('/local/playlyfe/notification.php'));
+      }
+      if(json_decode(get_config('playlyfe', 'leaderboards')) === true) {
+        $navigation->add('Leaderboards', new moodle_url('/local/playlyfe/leaderboard.php'));
+      }
     }
   }

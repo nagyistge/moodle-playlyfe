@@ -30,7 +30,6 @@ catch(Exception $e) {
   echo 'Please Check your Client ID and Client Secret. They seem to be incorrect. And make sure you are using a Whitelabel Client';
 }
 
-
 function get_pl() {
   global $client_id, $client_secret;
   return new Playlyfe(array(
@@ -470,17 +469,17 @@ class PForm {
   }
 
   public function create_file($title, $name) {
-    $this->html .= '<div id="fitem_id_id" class="fitem required fitem_ftext">';
+    $this->html .= '<div class="fitem required fitem_ftext">';
     $this->html .= '<div class="fitemtitle"><label>'.$title.'</label></div>';
     $this->html .= '<div class="felement ftext"><input name="'.$name.'" type="file"></div></div>';
   }
 
   public function create_input($title, $name, $value='', $type='text', $required=true) {
-    $this->html .= '<div id="fitem_id_id" class="fitem';
+    $this->html .= '<div class="fitem';
     if($required) {
-      $this->html .= 'required';
+      $this->html .= ' required';
     }
-    $this->html .= 'fitem_ftext">';
+    $this->html .= ' fitem_ftext">';
     $this->html .= '<div class="fitemtitle"><label>'.$title;
     if($required) {
       $this->html .= '<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req">';
@@ -498,7 +497,11 @@ class PForm {
   }
 
   public function create_checkbox($title, $name, $value, $checked = true, $required = false) {
-    $this->html .= '<div class="fitem required fitem_ftext">';
+    $this->html .= '<div class="fitem';
+    if($required) {
+      $this->html .= ' required';
+    }
+    $this->html .= ' fitem_ftext">';
     $this->html .= '<div class="fitemtitle"><label>'.$title.'</label>';
     if($required) {
       $this->html .= $this->requiredHtml;
@@ -511,14 +514,16 @@ class PForm {
     $this->html .= '<div class="felement ftext"><input value="'.$value.'" name="'.$name.'" type="checkbox" '.$check_text.'></div></div>';
   }
 
-  public function create_separator($title='') {
+  public function create_separator($title='', $text='') {
     $this->html .= '<h3>'.$title.'</h3>';
     $this->html .= '<hr></hr>';
+    $this->html .= '<p>'.$text.'</p>';
   }
 
   public function create_rule_table($rule, $metrics) {
     global $PAGE;
     $id = $rule['id'];
+    //$this->html .= '<div id="treward_'.$id.'" class="generaltable">';
     $this->html .= '<table id="treward_'.$id.'" class="generaltable">'; //admintable
     $this->html .= '<thead>';
     $this->html .= '<tr>';
@@ -529,7 +534,8 @@ class PForm {
     $this->html .= '<tbody>';
     $this->html .= '</tbody>';
     $this->html .= '</table>';
-    $this->html .= '<p><button type="button" id="add_'.$id.'">Add Reward</button></p>';
+    $this->html .= '<button type="button" id="add_'.$id.'">Add Reward</button>';
+    //$this->html .= '</div>';
     if(count($rule['rules']) > 0) {
       $rewards = $rule['rules'][0]['rewards'];
     } else {
@@ -545,21 +551,40 @@ class PForm {
   }
 
   public function create_leaderboard_table($metrics, $leaderboards) {
+    $this->html .= '<table class="generaltable">';
+    $this->html .= '<thead>';
+    $this->html .= '<tr>';
+    $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
+    $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Leaderboard</th>';
+    $this->html .= '</tr>';
+    $this->html .= '</thead>';
+    $this->html .= '<tbody>';
     foreach ($metrics as $metric) {
       if($metric['type'] === 'point') {
-        $this->create_checkbox($metric['name'], 'leaderboards[]', $metric['id'], in_array($metric['id'], $leaderboards));
+        $this->html .= '<tr>';
+        $this->html .= '<td>'.$metric['name'].'</td>';
+        $this->html .= '<td class="pl-leaderboard-checkbox">';
+        $check_text = '';
+        if(in_array($metric['id'], $leaderboards)){
+          $check_text = 'checked';
+        }
+        $this->html .= '<input value="'.$metric['id'].'" name="leaderboards[]" type="checkbox" '.$check_text.'>';
+        $this->html .= '</td>';
+        $this->html .= '</tr>';
       }
     }
+    $this->html .= '</tbody>';
+    $this->html .= '</table>';
   }
 
   function create_select($name, $options, $selected='') {
     $this->html .= '<select name="'.$name.'" id="'.$name.'">';
-    foreach($options as $option) {
+    foreach($options as $option => $value) {
       if($selected === $option) {
-        $this->html .= '<option selected>'.$option.'</option>';
+        $this->html .= '<option value="'.$value.'" selected>'.$option.'</option>';
       }
       else {
-        $this->html .= '<option>'.$option.'</option>';
+        $this->html .= '<option value="'.$value.'">'.$option.'</option>';
       }
     }
     $this->html .= '</select>';
@@ -594,10 +619,11 @@ class PForm {
     if(array_key_exists('context', $rule['rules'][0]['requires'])) {
       $condition = $rule['rules'][0]['requires']['context'];
     }
+    $selected = 'none';
     if($condition) {
       $selected = 'score';
     }
-    $this->create_select('condition_type', array('none', 'score'), $selected);
+    $this->create_select('condition_type', array('none' => 'none', 'score' => 'score'), $selected);
     $this->create_condition_operator($condition);
     $this->create_input('Than', 'condition_value', $condition['rhs'], 'number', false);
   }
