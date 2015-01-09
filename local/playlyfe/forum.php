@@ -25,22 +25,13 @@ $view_rule = get_rule($forum->id, 'viewed', '', 'Forum '.$forum->id.' Viewed');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
 
 if (array_key_exists('submit', $_POST)) {
-  $did = $discussion_rule['id'];
-  $pid = $post_rule['id'];
-  $vid = $view_rule['id'];
-  if(array_key_exists($did, $_POST['metrics'])) {
-    patch_rule($discussion_rule, $_POST['metrics'][$did], $_POST['values'][$did]);
-  }
-  if(array_key_exists($pid, $_POST['metrics'])) {
-    patch_rule($post_rule, $_POST['metrics'][$pid], $_POST['values'][$pid]);
-  }
-  if(array_key_exists($vid, $_POST['metrics'])) {
-    patch_rule($view_rule, $_POST['metrics'][$vid], $_POST['values'][$vid]);
-  }
+  patch_rule($discussion_rule, $_POST);
+  patch_rule($post_rule, $_POST);
+  patch_rule($view_rule, $_POST);
   redirect(new moodle_url('/local/playlyfe/forum.php', array('cmid' => $cmid)));
 } else {
   echo $OUTPUT->header();
-  $form = new PFORM($cm->name, 'forum.php?cmid='.$cmid);
+  $form = new PForm($cm->name, 'forum.php?cmid='.$cmid);
   $form->create_separator('Forum Discussion Created', 'You can give rewards to users who start forum topics');
   $form->create_rule_table($discussion_rule, $metrics);
   $form->create_separator('Forum Post Created', 'You can give rewards to users who reply to comments and topics created by others');

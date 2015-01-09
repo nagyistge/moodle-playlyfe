@@ -261,3 +261,117 @@ function init_conditions() {
     // }
   });
 }
+
+function create_select(name, options, selected) {
+  selected = selected || '';
+  var html = '<select name="'+name+'" id="'+name+'">';
+  for(var key in options) {
+    if(selected === key) {
+      html += '<option value="'+options[key]+'" selected>'+key+'</option>';
+    }
+    else {
+      html += '<option value="'+options[key]+'">'+key+'</option>';
+    }
+  }
+  html += '</select>';
+  return html;
+}
+
+function create_condition_operator(id, condition) {
+  var html = '';
+  html += '<select name="condition_operator['+id+'][]">';
+  if(condition !== null && typeof condition !== 'undefined') {
+    var exists = true;
+  }
+  else {
+    var exists = false;
+  }
+  if(exists && condition.operator === 'gt') {
+    html += '<option value="gt" selected>></option>';
+  }
+  else {
+    html += '<option value="gt">></option>';
+  }
+  if(exists && condition.operator === 'ge') {
+    html += '<option value="ge" selected>>=</option>';
+  }
+  else {
+    html += '<option value="ge">>=</option>';
+  }
+  if(exists && condition.operator === 'lt') {
+    html += '<option value="lt" selected><</option>';
+  }
+  else {
+    html += '<option value="lt"><</option>';
+  }
+  if(exists && condition.operator === 'le') {
+    html += '<option value="le" selected><</option>';
+  }
+  else {
+    html += '<option value="le"><=</option>';
+  }
+  if(exists && condition.operator === 'eq') {
+    html += '<option value="eq" selected>=</option>';
+  }
+  else {
+    html += '<option value="eq">=</option>';
+  }
+  if(exists && condition.operator === 'neq') {
+    html += '<option value="neq" selected>≠</option>';
+  }
+  else {
+    html += '<option value="neq">≠</option>';
+  }
+  html += '</select>';
+  return html;
+}
+
+function create_condition(id, index, context) {
+  var html = '<tr id="row_condition_'+id+index+'" class="r'+index+' centeralign">';
+  html += '<td>'+create_select('condition_type['+id+'][]', {score: 'score' }, '')+'</td>';
+  html += '<td>'+create_condition_operator(id, context)+'</td>';
+  close_button = '<a class="remove-button" id="close_condition_'+id+index+'">remove</a>';
+  var value = context.rhs || '1';
+  html += '<td><div id="col'+index+'"><input name="condition_value['+id+'][]" type="number" value="'+value+'" required />'+close_button+'</div></td>';
+  html += '</tr>';
+  return html;
+}
+
+function init_condition_table(version, rule) {
+  var condition_index = 0;
+  var id = rule.id;
+  if(rule.rules.length > 0) {
+    var requires = rule.rules[0].requires;
+    if(requires.type === 'var') {
+      $('#tcondition_'+id+' tbody').append(create_condition(id, condition_index, requires.context));
+      (function(i) {
+        $('#close_condition_'+id+i).click(function() {
+          $('#row_condition_'+id+i).remove();
+        });
+      })(condition_index);
+      condition_index++;
+    }
+    else if(requires.type === 'and') {
+      for(var i=0;i<requires.expression.length;i++) {
+        $('#tcondition_'+id+' tbody').append(create_condition(id, condition_index, requires.expression[i].context));
+        (function(i) {
+          $('#close_condition_'+id+i).click(function() {
+            $('#row_condition_'+id+i).remove();
+          });
+        })(condition_index);
+        condition_index++;
+      }
+    }
+  }
+  (function () {
+    $('#add_condition_'+id).click(function() {
+      $('#tcondition_'+id+' tbody').append(create_condition(id, condition_index, {}));
+      (function(i) {
+        $('#close_condition_'+id+i).click(function() {
+          $('#row_condition_'+id+i).remove();
+        });
+      })(condition_index);
+      condition_index++;
+    });
+  })();
+}

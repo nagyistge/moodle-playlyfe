@@ -48,3 +48,12 @@
 .leaderboard-player-selected {
   color: red;
 }
+
+.remove-button {
+  float: right;
+  padding-left: 25px;
+}
+
+.underline {
+  text-decoration: underline;
+}

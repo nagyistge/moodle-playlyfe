@@ -340,22 +340,70 @@ function get_rule($id, $event, $context = '', $name) {
   }
 }
 
-function patch_rule($rule, $metrics, $values, $requires = array()) {
+function create_requires($id, $post) {
+  $requires = array();
+  if(array_key_exists('condition_type', $post)) {
+    if(count($post['condition_type'][$id]) === 1) {
+      $requires = array(
+        'type' => 'var',
+        'context' => array (
+          'lhs' => '$vars.score',
+          'operator' => $post['condition_operator'][$id][0],
+          'rhs' => $post['condition_value'][$id][0]
+        )
+      );
+    }
+    else {
+      $expression = array();
+      $index = 0;
+      foreach ($post['condition_type'][$id] as $value) {
+        array_push($expression, array(
+          'type' => 'var',
+          'context' => array (
+            'lhs' => '$vars.score',
+            'operator' => $post['condition_operator'][$id][$index],
+            'rhs' => $post['condition_value'][$id][$index]
+          )
+        ));
+        $index++;
+      }
+      $requires = array(
+        'type' => 'and',
+        'expression' => $expression
+      );
+    }
+  }
+  return $requires;
+}
+
+function patch_rule($rule, $post) {
   global $pl;
   $id = $rule['id'];
   unset($rule['id']);
   unset($rule['name']);
-  $rule['rules'] = array(
-    array(
-      'rewards' => create_reward($metrics, $values),
-      'requires' => (object)$requires
-    )
-  );
-  try {
-    return $pl->patch('/design/versions/latest/rules/'.$id, array(), $rule);
+  if(array_key_exists('metrics', $post) and array_key_exists($id, $post['metrics'])) {
+    $rule['rules'] = array(
+      array(
+        'rewards' => create_reward($post['metrics'][$id], $post['values'][$id]),
+        'requires' => (object) create_requires($id, $post)
+      )
+    );
+    try {
+      // print_object($rule);
+      $pl->patch('/design/versions/latest/rules/'.$id, array(), $rule);
+    }
+    catch(Exception $e) {
+      print_object($e);
+    }
   }
-  catch(Exception $e) {
-    print_object($e);
+  else {
+    $rule['rules'] = array();
+    try {
+      $pl->patch('/design/versions/latest/rules/'.$id, array(), $rule);
+    }
+    catch(Exception $e) {
+      print_object($e);
+    }
   }
 }
 
@@ -520,6 +568,19 @@ class PForm {
     $this->html .= '<p>'.$text.'</p>';
   }
 
+  function create_select($name, $options, $selected='') {
+    $this->html .= '<select name="'.$name.'" id="'.$name.'">';
+    foreach($options as $option => $value) {
+      if($selected === $option) {
+        $this->html .= '<option value="'.$value.'" selected>'.$option.'</option>';
+      }
+      else {
+        $this->html .= '<option value="'.$value.'">'.$option.'</option>';
+      }
+    }
+    $this->html .= '</select>';
+  }
+
   public function create_rule_table($rule, $metrics) {
     global $PAGE;
     $id = $rule['id'];
@@ -577,55 +638,21 @@ class PForm {
     $this->html .= '</table>';
   }
 
-  function create_select($name, $options, $selected='') {
-    $this->html .= '<select name="'.$name.'" id="'.$name.'">';
-    foreach($options as $option => $value) {
-      if($selected === $option) {
-        $this->html .= '<option value="'.$value.'" selected>'.$option.'</option>';
-      }
-      else {
-        $this->html .= '<option value="'.$value.'">'.$option.'</option>';
-      }
-    }
-    $this->html .= '</select>';
-  }
-
-  function create_condition_operator($condition) {
-    $this->html .= '<select name="condition_operator" id="condition_operator">';
-    if($condition and $condition['operator'] === 'gt') {
-      $this->html .= '<option value="gt">greater</option>';
-    }
-    else {
-      $this->html .= '<option value="gt" selected>greater</option>';
-    }
-    if($condition and $condition['operator'] === 'lt') {
-      $this->html .= '<option value="lt" selected>lesser</option>';
-    }
-    else {
-      $this->html .= '<option value="lt">lesser</option>';
-    }
-    if($condition and $condition['operator'] === 'eq') {
-      $this->html .= '<option value="eq" selected>equal</option>';
-    }
-    else {
-      $this->html .= '<option value="eq">equal</option>';
-    }
-    $this->html .= '</select>';
-  }
-
-  public function create_conditions($rule) {
-    $this->html .= '<h6>Conditions</h6>';
-    $condition = null;
-    if(array_key_exists('context', $rule['rules'][0]['requires'])) {
-      $condition = $rule['rules'][0]['requires']['context'];
-    }
-    $selected = 'none';
-    if($condition) {
-      $selected = 'score';
-    }
-    $this->create_select('condition_type', array('none' => 'none', 'score' => 'score'), $selected);
-    $this->create_condition_operator($condition);
-    $this->create_input('Than', 'condition_value', $condition['rhs'], 'number', false);
+  public function create_condition_table($rule) {
+    global $PAGE;
+    $this->html .= '<table id="tcondition_'.$rule['id'].'" class="generaltable">';
+    $this->html .= '<thead>';
+    $this->html .= '<tr>';
+    $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Type</th>';
+    $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Operator</th>';
+    $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Value</th>';
+    $this->html .= '</tr>';
+    $this->html .= '</thead>';
+    $this->html .= '<tbody>';
+    $this->html .= '</tbody>';
+    $this->html .= '</table>';
+    $this->html .= '<button type="button" id="add_condition_'.$rule['id'].'">Add Condition</button>';
+    $PAGE->requires->js_init_call('init_condition_table', array($rule));
   }
 
   public function end() {

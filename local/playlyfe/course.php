@@ -17,24 +17,20 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
 $PAGE->navigation->clear_cache();
+$criteria = $DB->get_record('course_completion_criteria', array('course' => $id, 'criteriatype' => 2));
 $completed_rule = get_rule($id, 'completed', 'course', 'Course '.$course->shortname. ' Completed');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'name,id,type,constraints'));
 
 if (array_key_exists('submit', $_POST)) {
-  $cid = $completed_rule['id'];
-  if(array_key_exists($cid, $_POST['metrics'])) {
-    patch_rule($completed_rule, $_POST['metrics'][$cid], $_POST['values'][$cid]);
-  }
-  if(array_key_exists('course_'.$id.'_bonus', $_POST['metrics'])) {
+  patch_rule($completed_rule, $_POST);
+  if($criteria and $criteria->timeend > 0) {
     $bonus_rule = get_rule($id, 'bonus', 'course', 'Course '.$course->shortname. ' Bonus');
-    $bid = $bonus_rule['id'];
-    patch_rule($bonus_rule, $_POST['metrics'][$bid], $_POST['values'][$bid]);
+    patch_rule($bonus_rule, $_POST);
   }
   set_leaderboards($_POST, $metrics, $course, 'course'.$id.'_leaderboard');
   redirect(new moodle_url('/local/playlyfe/course.php', array('id' => $id)));
 } else {
   $leaderboards = array_merge(get_leaderboards('all_leaderboards'), get_leaderboards('course'.$id.'_leaderboard'));
-  $criteria = $DB->get_record('course_completion_criteria', array('course' => $id, 'criteriatype' => 2));
   echo $OUTPUT->header();
   $form = new PFORM($course->shortname, 'course.php?id='.$id);
   $form->create_separator('Leaderboards', 'Select the metrics for which you would like to have leaderboards within this course');

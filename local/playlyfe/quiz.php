@@ -23,44 +23,20 @@ $submit_rule = get_rule($quiz->id, 'submitted', '', 'Quiz Submitted');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
 
 if (array_key_exists('submit', $_POST)) {
-  $cid = $submit_rule['id'];
-  $requires = array();
-  if(array_key_exists('metrics', $_POST)) {
-    if(array_key_exists($cid, $_POST['metrics'])) {
-      if($_POST['condition_type'] === 'score' and $_POST['condition_value']) {
-        $requires = array(
-          'type' => 'var',
-          'context' => array (
-            'lhs' => '$vars.score',
-            'operator' => $_POST['condition_operator'],
-            'rhs' => $_POST['condition_value']
-          )
-        );
-      }
-      patch_rule($submit_rule, $_POST['metrics'][$cid], $_POST['values'][$cid], $requires);
-    }
-    if($quiz->timeclose > 0 or $quiz->timelimit > 0) {
-      $bonus_rule = get_rule($quiz->id, 'bonus', '', 'Quiz Bonus');
-      $bid = $bonus_rule['id'];
-      if(array_key_exists($bid, $_POST['metrics'])) {
-        patch_rule($bonus_rule, $_POST['metrics'][$bid], $_POST['values'][$bid]);
-      }
-      else {
-        patch_rule($bonus_rule, array(), array());
-      }
-    }
-  }
-  else {
-    patch_rule($submit_rule, array(), array(), array());
+  patch_rule($submit_rule, $_POST);
+  if($quiz->timeclose > 0 or $quiz->timelimit > 0) {
+    $bonus_rule = get_rule($quiz->id, 'bonus', '', 'Quiz Bonus');
+    patch_rule($bonus_rule, $_POST);
   }
   redirect(new moodle_url('/local/playlyfe/quiz.php', array('cmid' => $cmid)));
 } else {
   echo $OUTPUT->header();
-  $form = new PFORM($cm->name, 'quiz.php?cmid='.$cmid);
-  $form->create_separator('Rewards on Quiz Completion', 'Give rewards when the user completes this quiz. Additionally add conditions to give the reward only when the user gets a particular score');
-  $form->create_conditions($submit_rule);
+  $form = new PForm($cm->name, 'quiz.php?cmid='.$cmid);
+  $form->create_separator('Rewards on Quiz Completion', 'Give rewards when the user completes this quiz. Additionally add conditions to give the reward only when the user gets a particular score in the quiz');
+  $form->html .= '<h3 class="underline">Conditions</h3>';
+  $form->create_condition_table($submit_rule);
+  $form->html .= '<h3 class="underline">Rewards</h3>';
   $form->create_rule_table($submit_rule, $metrics);
-  $PAGE->requires->js_init_call('init_conditions', array());
   if($quiz->timeclose > 0 or $quiz->timelimit > 0) {
     $bonus_rule = get_rule($quiz->id, 'bonus', '', 'Quiz Bonus');
     $form->create_separator('Reward for Early Completion Before '.date("D, d M Y H:i:s", $quiz->timeclose));

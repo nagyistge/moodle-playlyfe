@@ -1,10 +1,18 @@
 <?php
   require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
   require_once('classes/sdk.php');
-
+  //     stdClass Object
+  // (
+  //     [userid] => 2
+  //     [course] => 40
+  //     [id] => 49
+  //     [reaggregate] => 1420800081
+  //     [timeenrolled] => 1420360717
+  //     [timestarted] => 1420800081
+  //     [timecompleted] => 1420800081
+  // )
   function course_completed_handler($event) {
     global $DB;
-    //mtrace(json_encode($event));
     $id = $event->course;
     $userid = $event->userid;
     $timecompleted = $event->timecompleted;
@@ -17,12 +25,29 @@
     //   'id' => 'werwe/course'.$id,
     //   'entity_id' => 'u'.$USER->id
     // ));
-    // $course_group_completed = $DB->get_records('course_completions', array('userid' => $userid));
-    // if(count($coures_completed) > 0) {
-    //   foreach($coures_completed as $completed) {
-    //   }
+    $courses_completed = $DB->get_records('course_completions', array('userid' => $userid));
+    $courses_done = array();
+    foreach($courses_completed as $course_completed) {
+      array_push($courses_done, $course_completed->course);
+    }
+    mtrace(json_encode($courses_done));
+    // $course_group = get('course_group', $arr);
+    // $index = 0;
+    // forech($course_group as $cg) {
+    //    $has_done = false;
+    //    $id = 'course_group_'.$index.'_completed';
+    //    foreach($cg as $course) {
+    //      if(!array_in($courses_done, $course)) {
+    //        $has_done = false;
+    //        break;
+    //      }
+    //    }
+    //    if($has_done and !has_finished_rule($id, $userid)) {
+    //       execute_rule($id, $event->userid);
+    //       show_reward($event->userid);
+    //     }
+    //   $index++;
     // }
-    mtrace(json_encode($scopes));
     execute_rule('course_'.$id.'_completed', $userid, $scopes);
     $criteria = $DB->get_record('course_completion_criteria', array('course' => $id, 'criteriatype' => 2));
     if($criteria and $criteria->timeend >= $timecompleted) {
@@ -79,17 +104,24 @@
       execute_rule('quiz_'.$event->quizid.'_bonus', $userid);
     }
     if(array_key_exists('local', $response[0][0]['events'])) {
-      $data = get($userid.'_attempts');
-      if(count($data) > 0) {
+      if(count($response[0][0]['events']['local']) > 0) {
+        $data = get($userid.'_attempts');
+        for($i=0;$i<count($data);$i++) {
+          if(!$data[$i]) {
+            unset($data[$i]);
+          }
+        }
         $pl = get_pl();
         try {
           $pl->post('/admin/players/u'.$userid.'/revert', array(), array('event_ids' => array($data)));
           $data = array();
         }
-        catch(Exception $e) {}
+        catch(Exception $e) {
+          //print_object($e);
+        }
+        array_push($data, $response[0][0]['events']['local'][0]['id']);
+        set($userid.'_attempts', $data);
       }
-      array_push($data, $response[0][0]['events']['local'][0]['id']);
-      set($userid.'_attempts', $data);
     }
   }
 
@@ -156,9 +188,7 @@
         $nodePlaylyfe->add('Publish', new moodle_url('/local/playlyfe/publish.php'), null, null, 'publish', new pix_icon('t/edit', 'edit'));
         $nodePlaylyfe->add('Settings', new moodle_url('/local/playlyfe/setting.php'), null, null, 'settings', new pix_icon('t/edit', 'edit'));
 
-        // $nodePlaylyfe->add('Courses', new moodle_url('/local/playlyfe/courses.php'), null, null, 'courses', new pix_icon('t/edit', 'edit'));
-
-        $nodePlaylyfe->add('Courses Completion', new moodle_url('/local/playlyfe/course_group.php'), null, null, 'courses_group', new pix_icon('t/edit', 'edit'));
+        $nodePlaylyfe->add('Course Group', new moodle_url('/local/playlyfe/course_group.php'), null, null, 'courses_group', new pix_icon('t/edit', 'edit'));
 
         $nodeMetric = $nodePlaylyfe->add('Metrics', null, null, null, 'metrics');
         $nodeMetric->add('Manage Metrics', new moodle_url('/local/playlyfe/metric/manage.php'), null, null, 'manage', new pix_icon('t/edit', 'edit'));
