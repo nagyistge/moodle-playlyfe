@@ -454,7 +454,11 @@ function create_leaderboard($id, $scope_id) {
     $html .= '</ul>';
   }
   catch(Exception $e) {
-    $html = json_encode($e);
+    if($e->name === 'player_not_found') {
+    }
+    else {
+      $html = json_encode($e);
+    }
   }
   return $html;
 }

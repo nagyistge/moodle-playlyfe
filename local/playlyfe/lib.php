@@ -30,24 +30,21 @@
     foreach($courses_completed as $course_completed) {
       array_push($courses_done, $course_completed->course);
     }
-    mtrace(json_encode($courses_done));
-    // $course_group = get('course_group', $arr);
-    // $index = 0;
-    // forech($course_group as $cg) {
-    //    $has_done = false;
-    //    $id = 'course_group_'.$index.'_completed';
-    //    foreach($cg as $course) {
-    //      if(!array_in($courses_done, $course)) {
-    //        $has_done = false;
-    //        break;
-    //      }
-    //    }
-    //    if($has_done and !has_finished_rule($id, $userid)) {
-    //       execute_rule($id, $event->userid);
-    //       show_reward($event->userid);
-    //     }
-    //   $index++;
-    // }
+    // mtrace(json_encode($courses_done));
+    $course_group = get('course_group');
+    // mtrace(json_encode($course_group));
+    foreach($course_group as $index => $cg) {
+      $has_done = true;
+      $cg_id = 'course_group_'.$index.'_completed';
+      foreach($cg as $course_id) {
+        if(!in_array($course_id, $courses_done)) {
+          $has_done = false;
+        }
+      }
+      if($has_done and !has_finished_rule($cg_id, $userid)) {
+        execute_rule($cg_id, $event->userid);
+      }
+    }
     execute_rule('course_'.$id.'_completed', $userid, $scopes);
     $criteria = $DB->get_record('course_completion_criteria', array('course' => $id, 'criteriatype' => 2));
     if($criteria and $criteria->timeend >= $timecompleted) {

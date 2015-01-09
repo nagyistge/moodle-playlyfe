@@ -19,22 +19,19 @@ $course_groups = get('course_groups');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
 $courses = $DB->get_records('course');
 
-// $courses_completed = $DB->get_records('course_completions', array('userid' => $USER->id));
-
 if (array_key_exists('submit', $_POST)) {
   print_object($_POST);
-  $index = 1;
-  foreach($_POST['courses'] as $courses) {
-    if(array_key_exists($index, $_POST['metrics'])) {
-      $rule = get_rule($index, 'completed', 'course_group', 'Course Group Completed');
-      patch_rule($rule, $_POST['metrics'][$index], $_POST['values'][$index]);
-      set('course_group_'.$index, $courses);
+  $arr = array();
+  if(array_key_exists('courses', $_POST)) {
+    foreach($_POST['courses'] as $index => $courses) {
+      $rule = get_rule($index, 'completed', 'course_group', 'Course Group '.$index.' Completed');
+      patch_rule($rule, $_POST);
+      $arr[$index] = $courses;
     }
-    $index++;
+    set('course_group', $arr);
   }
   redirect(new moodle_url('/local/playlyfe/course_group.php'));
 } else {
-  $rules = $pl->get('/design/versions/latest/rules', array('fields' => 'id,name,rules'));
   $arr = array();
   foreach($courses as $course) {
     if($course->enablecompletion) {
@@ -45,36 +42,34 @@ if (array_key_exists('submit', $_POST)) {
     $html .= 'You dont have any courses with course completion enabled. Please add couse completion to your courses';
   }
   else {
-    $html .= '<h2> Please Select the courses which have to be completed and the rewards for completion of all of them </h2>';
-    $html .= '<form action="course_group.php" method="post">';
-    $html .= '<div id="course_group">';
-    $index = 1;
-    foreach($rules as $rule) {
-      if(strpos($rule['name'], 'Group') !== false) {
-        $courses = array();
-        $sc = get('course_group_'.$index);
-        foreach($sc as $course_id) {
-          $course = $DB->get_record('course', array('id' => $course_id));
-          array_push($courses, array('name' => $course->shortname, 'id' => $course->id, 'selected' => true ));
-        }
-        $data = array(
-          'courses' => array_merge($courses, $arr),
-          'metrics' => $metrics,
-          'rewards' => $rule['rules']['0']['rewards']
-        );
-        $PAGE->requires->js_init_call('add_course_group', array($data));
-        //$html .= "<h2> Rewards on Course Group Completion </h2>";
-        //$html .= create_rule_table($rule , $metrics);
-        $index++;
+    $form = new PForm('Course Group Completion');
+    $form->create_separator('Please Select the courses you would like to group together to reward the user for completion of them');
+    $form->html .= '<div id="course_group"></div>';
+    $course_group = get('course_group');
+    foreach($course_group as $index => $cg) {
+      $rule = get_rule($index, 'completed', 'course_group', 'Course Group '.$index.' Completed');
+      $courses = array();
+      foreach($cg as $course_id) {
+        $course = $DB->get_record('course', array('id' => $course_id));
+        array_push($courses, array('name' => $course->shortname, 'id' => $course->id, 'selected' => true ));
       }
+      foreach ($arr as $course) {
+        if(!in_array($course['id'], $cg)) {
+          array_push($courses, $course);
+        }
+      }
+      $data = array(
+        'courses' => $courses,
+        'metrics' => $metrics,
+        'rewards' => $rule['rules']['0']['rewards']
+      );
+      $PAGE->requires->js_init_call('add_course_group', array($data));
     }
-    $html .= '</div><br>';
-    $html .= '<button id="add" type="button">Add</button><br>';
     $PAGE->requires->js_init_call('handle_course_group_add', array(array('courses' => $arr, 'metrics' => $metrics)));
-    $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
-    $html .= '</form>';
   }
   echo $OUTPUT->header();
+  $form->create_button('add', 'Add');
+  $form->end();
   echo $html;
   echo $OUTPUT->footer();
 }

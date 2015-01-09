@@ -156,17 +156,34 @@ function add_course_group(version, data) {
   var courses = data.courses;
   var metrics = data.metrics;
   var rewards = data.rewards;
-  html = '<div class="box generalbox authsui"><h1>'+groups_count+'</h1>';
+  var html = '<h3> Course Group '+groups_count+'</h3><hr></hr>';
+  html += '<p> Please select the courses and add rewards to give when all of them have been completed </p>';
+  html += '<table class="generaltable">';
+  html += '<thead>';
+  html += '<tr>';
+  html += '<th class="header c1 lastcol centeralign" style="" scope="col">Course</th>';
+  html += '<th class="header c1 lastcol centeralign" style="" scope="col">Select</th>';
+  html += '</tr>';
+  html += '</thead>';
+  html += '<tbody>';
   for(var i = 0; i < courses.length; i++) {
     var course = courses[i];
+    html += '<tr>';
+    html += '<td>'+course.name+'</td>';
+    html += '<td class="pl-leaderboard-checkbox">';
     if(course.selected) {
-      html += '<input type="checkbox" value="'+course.id+'" name="courses['+groups_count+'][]" checked/>'+course.name+'<br>';
+      html += '<input type="checkbox" value="'+course.id+'" name="courses['+groups_count+'][]" checked/>';
     }
     else {
-      html += '<input type="checkbox" value="'+course.id+'" name="courses['+groups_count+'][]" />'+course.name+'<br>';
+      html += '<input type="checkbox" value="'+course.id+'" name="courses['+groups_count+'][]" />';
     }
+    html += '</td>';
+    html += '</tr>';
   }
-  html += '<table id="treward_'+groups_count+'" class="generaltable">';
+  var id = 'course_group_'+groups_count+'_completed';
+  html += '</tbody>';
+  html += '</table>';
+  html += '<table id="treward_'+id+'" class="generaltable">';
   html += '<thead>';
   html += '<tr>';
   html += '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
@@ -176,12 +193,12 @@ function add_course_group(version, data) {
   html += '<tbody>';
   html += '</tbody>';
   html += '</table>';
-  html += '<p><button type="button" id="add_'+groups_count+'">Add Reward</button></p></div>';
+  html += '<p><button type="button" id="add_'+id+'">Add Reward</button></p>';
   $('#course_group').append(html);
   if(rewards !== null && typeof rewards !== 'undefined') {
-    init_table('', { id: groups_count, metrics: metrics, rewards: rewards })
+    init_table('', { id: id, metrics: metrics, rewards: rewards })
   }
-  add_handler('', { id: groups_count, metrics: metrics });
+  add_handler('', { id: id, metrics: metrics });
 }
 
 var index = 0;
