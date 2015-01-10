@@ -9,7 +9,7 @@ $PAGE->set_title($SITE->shortname);
 $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->navigation->clear_cache();
-$html = '<h1> Your Notifications </h1>';
+$html = '<h1> Your Notifications </h1><hr></hr>';
 $notifications = $pl->get('/runtime/notifications', array('player_id' => 'u'.$USER->id));
 $count = 1;
 $ids = array();
@@ -18,9 +18,11 @@ global $DB;
 
 function display_change($change, $course_name) {
   global $count;
-  $text = $count.'';
+  $text = '';
   $metric= $change['metric'];
   $delta = $change['delta'];
+  $text .= '<div class="notification">';
+  $text .= '<div class="notification-index">'.$count.'</div>';
   $text .= '<img src="image_def.php?metric='.$metric['id'].'&size=large"></img>';
   if ($metric['type'] == 'point') {
     $value = $delta['new'] - $delta['old'];
@@ -32,6 +34,7 @@ function display_change($change, $course_name) {
     }
   }
   $text .= 'You have gained <b>'.$value.' '.$metric['name'].'</b> through <b>'.$course_name.'</b>';
+  $text .= '</div>';
   $count++;
   return $text;
 }

@@ -8,16 +8,19 @@
 }
 
 .progressbar {
-  background-color: black;
-  border-radius: 13px; /* (height of inner div) / 2 + padding */
-  padding: 3px;
+  background-color: #ddd;
   width: 10%;
+  font-size: 14px;
+  text-align: center;
 }
 
 .progressbar > div {
-   background-color: orange;
-   height: 20px;
-   border-radius: 10px;
+  background-color: orange;
+  height: 20px;
+}
+
+.progress-text {
+  padding-left: 40px;
 }
 
 .leaderboard-list {
@@ -33,20 +36,30 @@
 .leaderboard-player-rank {
   float: left;
   margin: 10px 20px 10px 10px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #534DA1;
 }
 
 .leaderboard-player-alias {
   float: right;
   margin: 20px 40% 10px 10px;
+  color: #555;
+  font-size: 24px;
+  font-weight: bold;
 }
 
 .leaderboard-player-score {
   float: right;
   margin: 20px 20px 10px 10px;
+  font-weight: bold;
+  font-size: 24px;
+  color: #2060DF;
+}
 }
 
-.leaderboard-player-selected {
-  color: red;
+.leaderboard-player-alias.selected {
+  color: #000;
 }
 
 .remove-button {
@@ -56,4 +69,137 @@
 
 .underline {
   text-decoration: underline;
+}
+
+
+.notification {
+  font-size: 14px;
+  border: 1px solid #ccc;
+  color: black;
+}
+
+.notification-index {
+  float: left;
+  margin: 10px 20px 10px 10px;
+  font-size: 20px;
+  font-weight: 100;
+}
+
+.fb-leaderboard-player {
+  font-size: 16px;
+  border: 1px solid black;
+  color: black;
+}
+
+.fb-leaderboard-player-rank {
+  float: left;
+  margin: 20px 10px 10px 10px;
+  font-size: 20px;
+  font-weight: 100;
+}
+
+.fb-leaderboard-player-alias {
+  float: right;
+  margin: 20px 20% 10px 10px;
+}
+
+.fb-leaderboard-player-score {
+  float: right;
+  margin: 20px 20px 10px 10px;
+}
+
+.fb-leaderboard-player-selected {
+  color: red;
+}
+
+.list-unstyled {
+  margin: 0;
+  padding: 0;
+  list-style: outside none none;
+}
+
+.profile-alias {
+  font-size: 24px;
+  color: #555;
+  padding: 10px 10px 20px;
+}
+
+.profile-score-list {
+  height: calc(100% - 70px);
+  overflow: auto;
+}
+
+.score-header {
+  font-size: 24px;
+  color: #555;
+}
+
+.score-list-item {
+  padding: 10px 10px 20px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid #DDD;
+  box-shadow: 0px -20px 20px -20px rgba(119, 119, 119, 0.3);
+}
+
+.score-list-item .score-name {
+  color: #534DA1;
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0px;
+  text-shadow: 1px 1px 0px rgba(238, 238, 238, 0.4);
+}
+
+.score-list-item .score-icon {
+  width: 100px;
+  height: 120px;
+  position: absolute;
+  right: 0px;
+  bottom: -35px;
+  opacity: 0.5;
+}
+.score-item-icon {
+}
+
+.score-point .score-value {
+  font-weight: bold;
+  font-size: 24px;
+  color: #2060DF;
+}
+
+.score-point .score-value.small {
+  font-weight: bold;
+  font-size: 16px;
+  color: #2060DF;
+}
+
+.score-set.achieve {
+  font-weight: light;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.hud-section-item {
+  padding-left: 1.6rem;
+  padding-right: 1.6rem;
+}
+
+.no-margin, .no-space, .ui-helper-reset {
+  margin: 0px !important;
+}
+
+.leaderboard-button {
+  text-align: center;
+  float: right;
+  border: 1px solid rgb(221, 221, 221);
+  padding: 10px;
+  margin: 10px;
+  background-image: url("/theme/image.php?theme=standard&component=theme&image=hgradient");
+  background-repeat: repeat-x;
+  background-color: #E1E1DF;
+  width: 85px;
 }

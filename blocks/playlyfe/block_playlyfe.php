@@ -6,110 +6,89 @@ class block_playlyfe extends block_base {
   }
 
   public function get_content() {
-    global $USER, $OUTPUT, $DB;
+    global $USER, $OUTPUT, $DB, $PAGE;
     if ($this->content !== null) {
       return $this->content;
     }
-    $this->content =  new stdClass;
+    $this->content = new stdClass;
     $html = '';
     $pl = get_pl();
-    // try {
-      switch ($this->config->type) {
-        case 0:
-          $profile = $pl->get('/runtime/player', array('player_id' => 'u'.$USER->id));
-          $html = '<h6>Username</h6>';
-          $html .= $profile['alias'];
-          $html = $html.'<h6>Scores</h6><ul>';
-          if(count($profile['scores']) == 0){
-            $html .= '</ul> You Have no scores';
-          }
-          else {
-            foreach($profile['scores'] as $score) {
-              $score_name = $score['metric']['name'];
-              $score_id = $score['metric']['id'];
-              $score_type = $score['metric']['type'];
-              $score_value = $score['value'];
-              if($score_type === 'point') {
-                $html .= '<img src="/local/playlyfe/image_def.php?metric='.$score_id.'&size=small"></img>';
-                $html .= "<li>$score_name $score_value</li>";
+    $profile = $pl->get('/runtime/player', array('player_id' => 'u'.$USER->id));
+    $html .= '<h6>Username</h6>';
+    $html .= $profile['alias'];
+    $html .= '<h6>Scores</h6>';
+    if(count($profile['scores']) == 0){
+      $html .= 'You Have no scores';
+    }
+    else {
+      $html .= '<ul class="list-unstyled profile-score-list">';
+      $leaderboards = array();
+      if($PAGE->course) {
+        $leaderboards = get_leaderboards('course'.$PAGE->course->id.'_leaderboard');
+      }
+      foreach($profile['scores'] as $score) {
+        $score_name = $score['metric']['name'];
+        $score_id = $score['metric']['id'];
+        $score_type = $score['metric']['type'];
+        $score_value = $score['value'];
+        $html .= '<li class="score-list-item score-point">';
+        $html .= '<h5 class="score-name ellipsis ng-binding">'.$score_name.'</h5>';
+        $html .= '<div class="score-icon text-center"><img src="/local/playlyfe/image_def.php?metric='.$score_id.'&size=medium"></img></div>';
+        if($score_type === 'point') {
+          $leaderboard = null;
+          if(in_array($score_id, $leaderboards)) {
+            try {
+              $leaderboard = $pl->get('/runtime/leaderboards/'.$score_id, array(
+                'player_id' => 'u'.$USER->id,
+                'cycle' => 'alltime',
+                'scope_id' => 'course'.$PAGE->course->id,
+                'ranking' => 'relative',
+                'entity_id' => 'u'.$USER->id,
+                'radius' => 0
+              ));
+              // mtrace(json_encode(($leaderboard)));
+            }
+            catch(Exception $e) {
+              if($e->name == 'player_not_found') {
               }
               else {
-                $html .= "<li>$score_name</br>";
-                $html .= '<img src="/local/playlyfe/image_def.php?metric='.$score_id.'&size=small"></img>';
-                foreach($score_value as $value){
-                  $name = $value['name'];
-                  $count = $value['count'];
-                  $html .= '<br>';
-                  $html .= '     <img src="/local/playlyfe/image_def.php?metric='.$score_id.'&size=medium&item='.$count.'"></img>    ';
-                  $html .= '  '.$name.' x '.$count;
-                }
+                //mtrace(json_encode(($e)));
               }
             }
-            $html .= '</ul>';
           }
-          break;
-        case 1:
-          if(!is_null($this->config->metric) and $this->config->scope) {
-            $data = json_decode(get_config('playlyfe', 'course'.$this->config->scope.'_leaderboard'));
-            $id = $data[$this->config->metric];
-            $leaderboard = $pl->get('/runtime/leaderboards/'.$id, array(
-              'player_id' => 'u'.$USER->id,
-              'cycle' => 'alltime',
-              'scope_id' => 'course'.$this->config->scope,
-              //'ranking' => 'relative',
-              //'entity_id' => 'u'.$USER->id
+          $html .= '<div class="score-value large">'.$score_value.'</div>';
+          if(!is_null($leaderboard)) {
+            $url = new moodle_url('/local/playlyfe/leaderboard.php', array(
+              'course' => $PAGE->course->id,
+              'metric' => $score_id,
+              'page'=> 0,
+              'find_me' => true
             ));
-            $html .= '<h3> Leaderboards for '.$id.' </h3><ul>';
-            foreach($leaderboard['data'] as $player) {
-              $score = $player['score'];
-              $id = $player['player']['id'];
-              $alias = $player['player']['alias'] or 'Null';
-              $rank = $player['rank'];
-              $list = explode('u', $id);
-              $user = $DB->get_record('user', array('id' => $list[1]));
-              $html .= "<li class='list-group-item'>";
-              $html .= $OUTPUT->user_picture($user, array('size'=>50));
-              $html .= "<b>$rank $alias $score</b></li>";
+            $html .= '<div class="score-value small">'.html_writer::link($url, 'Rank'.$leaderboard['data'][0]['rank']).'</div>';
+          }
+          $html .= '</li>';
+        }
+        else {
+          foreach($score['value'] as $value) {
+            $html .= '<div class="score-icon text-center"><img src="image_def.php?metric='.$score_id.'&item='.$value['name'].'"></img></div>';
+            $html .= '<div class="score-value small">'.$value['name'].'</div>';
+            if($value['count'] > 0) {
+              $html .= 'x'.$value['count'];
             }
-            $html .= '</ul>';
           }
-          else {
-            $html = 'Please Configure This Block';
-          }
-          break;
-        case 2:
-          $players = $pl->get('/runtime/players', array('player_id' => 'u'.$USER->id));
-          $html .= '<ul>';
-          foreach($players['data'] as $value){
-            $id = $value['id'];
-            $alias = $value['alias'];
-            $html .= '<li class="list-group-item">';
-            $user = $DB->get_record('user', array('id' => explode('u', $id)[1]));
-            $html .= $OUTPUT->user_picture($user, array('size'=>100));
-            $html .= '<h6>'.$alias.'</h6></li>';
-          }
-          $html .= '</ul>';
-          break;
+          $html .= '</li>';
+        }
       }
-    // }
-    // catch(Exception $e) {
-    //   $html =  'Something Went Wrong';
-    // }
+    }
     $this->content->text = $html;
-    // global $COURSE;
-    // $url = new moodle_url('/blocks/playlyfe/view.php', array('blockid' => $this->instance->id, 'courseid' => $COURSE->id));
-    #$this->content->footer = html_writer::link($url, 'Add Page');
+    $url = new moodle_url('/local/playlyfe/profile.php');
+    $this->content->footer = html_writer::link($url, 'View Profile');
     return $this->content;
   }
 
   public function specialization() {
     if (!empty($this->config->title)) {
       $this->title = $this->config->title;
-    } else {
-      //$this->config->title = 'Playlyfe';
-    }
-    if (empty($this->config->type)) {
-      //$this->config->type = 0;
     }
   }
 
@@ -131,22 +110,4 @@ class block_playlyfe extends block_base {
   public function instance_allow_multiple() {
     return true;
   }
-
-  public function cron() {
-    mtrace( "Hey, my cron script is running" );
-    return true;
-  }
-
-  // public function hide_header() {
-  //   return true;
-  // }
-  //
-  //
-  //
-  // public function html_attributes() {
-  //     $attributes = parent::html_attributes(); // Get default values
-  //     $attributes['class'] .= ' block_'. $this->name(); // Append our class to class attribute
-  //     return $attributes;
-  // }
-
 }

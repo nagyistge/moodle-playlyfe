@@ -19,7 +19,7 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
 $PAGE->navigation->clear_cache();
-$submit_rule = get_rule($quiz->id, 'submitted', '', 'Quiz Submitted');
+$submit_rule = get_rule($quiz->id, 'submitted', '', 'Quiz '.$quiz->name.' Submitted');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
 
 if (array_key_exists('submit', $_POST)) {

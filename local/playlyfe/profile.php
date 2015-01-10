@@ -11,7 +11,7 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->navigation->clear_cache();
 $html = '';
-
+$profile = $pl->get('/runtime/player', array('player_id' => 'u'.$USER->id, 'detailed' => 'true'));
 global $CFG, $USER;
 
 /**
@@ -844,119 +844,67 @@ function progress_percentage($events, $attempts) {
     return (int)round($progressvalue * 100);
 }
 
-$profile = $pl->get('/runtime/player', array('player_id' => 'u'.$USER->id, 'detailed' => 'true'));
-$html .= '<h1>Alias: '.$profile['alias'].'</h1>';
-$html = $html.'<h1>Scores</h1>';
-if(count($profile['scores']) == 0){
-  $html .= '</ul> You Have no scores';
-}
-else {
-  foreach($profile['scores'] as $score) {
-    $score_id = $score['metric']['id'];
-    $score_type = $score['metric']['type'];
-    $html .= '<h3><img src="image_def.php?metric='.$score_id.'"></img>';
-    if($score_type == 'point') {
-      $score_value = $score['value'];
-      $html .= "$score_id <h2>$score_value</h2>";
-    }
-    else if($score_type == 'set') {
-      $html .= "$score_id</h3>";
-      $table = new html_table();
-      $table->head  = array('Image', 'Name', 'Description');
-      $table->colclasses = array('leftalign', 'leftalign');
-      $table->data  = array();
-      $table->attributes['class'] = 'admintable generaltable';
-      $table->id = 'profile_sets';
-
-      $table2 = new html_table();
-      $table2->head  = array('Image', 'Name', 'Description', 'Count');
-      $table2->colclasses = array('centeralign' ,'leftalign', 'leftalign', 'centeralign');
-      $table2->data  = array();
-      $table2->attributes['class'] = 'admintable generaltable';
-      $table2->id = 'profile_sets';
-
-      foreach($score['value'] as $value) {
-        $item_name = $value['name'];
-        $item_image = '<img src="image_def.php?metric='.$score_id.'&item='.$item_name.'"></img>';
-        if($value['count'] == 0){
-          $table->data[] = new html_table_row(array($item_image, $item_name, $value['description']));
-        }
-        else {
-          $table2->data[] = new html_table_row(array($item_image, $item_name, $value['description'], $value['count']));
-        }
-      }
-      if(count($table->data) > 0){
-        $html .= '<h2> To be Achieved </h2>';
-        $html .= html_writer::table($table);
-      }
-      if(count($table2->data) > 0){
-        $html .= '<h2> Achieved </h2>';
-        $html .= html_writer::table($table2);
-      }
-    }
-  }
-}
-
-function draw_progress($modules, $events, $userid, $attempts, $course, $simple = false) {
-  global $OUTPUT, $CFG;
-  $numevents = count($events);
-  $tableoptions['class'] = 'progressBarProgressTable noNow';
-  $content = HTML_WRITER::start_tag('table', $tableoptions);
-  $width = 100 / $numevents;
-  $content .= HTML_WRITER::start_tag('tr');
-  $counter = 1;
-  foreach ($events as $event) {
-    //$attempted = $attempts[$event['type'].$event['id']];
-    // A cell in the progress bar.
-    $celloptions = array(
-        'class' => 'progressBarCell',
-        'id' => '',
-        'width' => $width.'%',
-         'style' => 'background-color: blue;'
-    );
-    $cellcontent = $OUTPUT->pix_icon('blank', '', 'block_progress');
-    $content .= HTML_WRITER::tag('td', $cellcontent, $celloptions);
-  }
-  $content .= HTML_WRITER::end_tag('tr');
-  $content .= HTML_WRITER::end_tag('table');
-
-  // Add the info box below the table.
-  $divoptions = array('class' => 'progressEventInfo', 'id' => 'progressBarInfo -'.$userid.'-info');
-  $content .= HTML_WRITER::start_tag('div', $divoptions);
-  $content .= HTML_WRITER::end_tag('div');
-  return $content;
-}
-
 $overall_progress = 0;
 $index = 0;
 $courses = enrol_get_my_courses();
 foreach ($courses as $courseid => $course) {
   $modules = modules_in_use($course->id);
   if ($course->visible && !empty($modules)) {
-    $context = course_context($course->id);
-    $params = array('contextid' => $context->id);
     $events = event_information($modules, $course->id);
     $attempts = progress_attempts($modules, $events, $USER->id, $course->id);
-    //$overall_progress += progress_percentage($events, $attempts);
-    $overall_progress = $overall_progress + count($attempts)/count($events);
-    $html .= $course->shortname;
-    $html .= progress_percentage($events, $attempts);
-    $html .= '  Events  '.count($events);
-    $html .= '  Atte  '.count($attempts) . '<br>';
-    $html .= draw_progress($modules, $events, $USER->id, $attempts, $course);
+    $overall_progress += progress_percentage($events, $attempts);
+    //$overall_progress += count($attempts)/count($events);
+    //$html .= $course->shortname;
     $index++;
   }
 }
-if($index >  0) {
-  $html .= 'Progress '.$overall_progress/$index;
+$html .= '<h1>Your Profile<h1><hr></hr>';
+$html .= '<div class="profile-alias">';
+$html .= '<div class="userprofile">';
+$html .= '<div class="userprofilebox clearfix"><div class="profilepicture">';
+$html .= $OUTPUT->user_picture($USER, array('size'=>100));
+$html .= '</div>';
+$html .= '</div>';
+$html .= '</div>';
+if($index > 0) {
+  $progress = ($overall_progress/$index);
+  $html .= '<div class="progressbar">';
+  $html .= '<div style="width: '.$progress.'%;"><div class="progress-text">'.round($progress, 1).'%'.'</div></div>';
+  $html .= '</div>';
+}
+$html .= $profile['alias'];
+$html .= '</div>';
+$html .= '<header class="text-center"><h5 class="hud-section-item no-margin score-header">My Scores</h5></header>';
+if(count($profile['scores']) == 0){
+  $html .= 'You Have no scores';
+}
+else {
+  $html .= '<ul class="list-unstyled profile-score-list">';
+  foreach($profile['scores'] as $score) {
+    $score_id = $score['metric']['id'];
+    $score_name = $score['metric']['name'];
+    $score_type = $score['metric']['type'];
+    $html .= '<li class="score-list-item score-point">';
+    $html .= '<h5 class="score-name ellipsis ng-binding">'.$score_name.'</h5>';
+    $html .= '<div class="score-icon text-center"><img src="image_def.php?metric='.$score_id.'&size=large"></img></div>';
+    if($score_type == 'point') {
+      $html .= '<div class="score-value large">'.$score['value'].'</div></li>';
+    }
+    else if($score_type == 'set') {
+      foreach($score['value'] as $value) {
+        $html .= '<div class="score-item-icon"><img src="image_def.php?metric='.$score_id.'&item='.$value['name'].'&size=small"></img></div>';
+        $html .= '<div class="score-value small">'.$value['name'].'</div>';
+        if($value['count'] == 0) {
+          $html .= '<div class="score-set achieve">(Can be Achieved)</div>';
+        }
+        else {
+          $html .= 'x'.$value['count'];
+        }
+      }
+      $html .= '</li>';
+    }
+  }
 }
 echo $OUTPUT->header();
-echo '<div class="userprofile">';
-echo '<h1>Profile Page<h1>';
-echo '<div class="userprofilebox clearfix"><div class="profilepicture">';
-echo $OUTPUT->user_picture($USER, array('size'=>100));
-echo '</div>';
-echo '</div>';
-echo '</div>';
 echo $html;
 echo $OUTPUT->footer();

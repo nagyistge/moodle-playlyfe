@@ -439,17 +439,33 @@ function create_leaderboard($id, $scope_id) {
       'ranking' => 'relative',
       'entity_id' => 'u'.$USER->id
     ));
-    $html .= '<h3> Leaderboards for '.$id.' </h3><ul>';
+    $html .= '<h3> Leaderboards for '.$id.' </h3><ul class="leaderboard-list">';
     foreach($leaderboard['data'] as $player) {
       $score = $player['score'];
       $id = $player['player']['id'];
       $alias = $player['player']['alias'] or 'Null';
       $rank = $player['rank'];
       $list = explode('u', $id);
-      $user = $DB->get_record('user', array('id' => $list[1]));
-      $html .= "<li class='list-group-item'>";
-      $html .= $OUTPUT->user_picture($user, array('size'=>50));
-      $html .= "<b>$rank $alias $score</b></li>";
+      if($rank < 10) {
+        $rank = '0'.$rank;
+      }
+      if($id === 'u'.$USER->id) {
+        $html .= "<li class='fb-leaderboard-player fb-leaderboard-player-selected'>";
+        $html .= '<div class="fb-leaderboard-player-rank">'.$rank.'</div>';
+      }
+      else {
+        $html .= "<li class='fb-leaderboard-player'>";
+        $html .= '<div class="fb-leaderboard-player-rank">'.$rank.'</div>';
+      }
+      $user = $DB->get_record('user', array('id' => '2'));
+      $html .= $OUTPUT->user_picture($user, array('size'=>75));
+      //$user = $DB->get_record('user', array('id' => $list[1]));
+      //$html .= $OUTPUT->user_picture($user, array('size'=>100));
+      $html .= '<div class="fb-leaderboard-player-score">'.$score.'</div>';
+      $html .= '<div class="fb-leaderboard-player-alias">'.$alias.'</div></li>';
+    }
+    if(count($leaderboard['data']) === 0) {
+      $html .= 'The leaderboard is empty';
     }
     $html .= '</ul>';
   }
@@ -515,8 +531,8 @@ class PForm {
   public $html;
   public $requiredHtml = '<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req">';
 
-  function __construct($title, $path='') {
-    $this->html .= '<form class="mform" enctype="multipart/form-data" action="'.$path.'" method="post">';
+  function __construct($title, $path='', $method='post') {
+    $this->html .= '<form class="mform" enctype="multipart/form-data" action="'.$path.'" method="'.$method.'">';
     $this->html .= '<fieldset class="clearfix"><legend class="ftoggler">'.$title.'</legend><div class="advancedbutton"></div><div class="fcontainer clearfix">';
   }
 

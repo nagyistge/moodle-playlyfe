@@ -1,7 +1,7 @@
 <?php
   require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
   require_once('classes/sdk.php');
-  //     stdClass Object
+  // stdClass Object
   // (
   //     [userid] => 2
   //     [course] => 40
@@ -63,12 +63,13 @@
   function user_created_handler($event) {
     $pl = get_pl();
     $user_id = $event->id;
-    $data = array('id' => 'u'.$user_id, 'alias' => $event->username, 'email' => $event->email);
+    $fullname = $event->firstname.' '.$event->lastname;
+    $data = array('id' => 'u'.$user_id, 'alias' => $fullname, 'email' => $event->email);
     $pl->post('/admin/players', array(), $data);
-    set_buffer($user_id, array());
+    set_buffer($user_id, array()); //TODO: change to DB
   }
 
-  //     stdClass Object
+  // stdClass Object
   // (
   //     [component] => mod_quiz
   //     [attemptid] => 14

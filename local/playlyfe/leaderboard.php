@@ -14,10 +14,10 @@ $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'name,i
 global $CFG, $USER;
 $html = '';
 
-if(array_key_exists('course', $_POST) and array_key_exists('metric', $_POST)) {
-  $course = $_POST['course'];
-  $metric = $_POST['metric'];
-  $page = $_POST['page'];
+if(array_key_exists('course', $_GET) and array_key_exists('metric', $_GET)) {
+  $course = $_GET['course'];
+  $metric = $_GET['metric'];
+  $page = $_GET['page'];
   $query = array(
     'player_id' => 'u'.$USER->id,
     'cycle' => 'alltime',
@@ -25,8 +25,8 @@ if(array_key_exists('course', $_POST) and array_key_exists('metric', $_POST)) {
     'skip' => 10*$page,
     'limit' => 10
   );
-  if(array_key_exists('find_me', $_POST)) {
-    $find_me = $_POST['find_me'];
+  if(array_key_exists('find_me', $_GET)) {
+    $find_me = $_GET['find_me'];
     $query['ranking'] = 'relative';
     $query['entity_id'] = 'u'.$USER->id;
     $query['radius'] = 10;
@@ -49,25 +49,37 @@ if(array_key_exists('course', $_POST) and array_key_exists('metric', $_POST)) {
     if($rank < 10) {
       $rank = '0'.$rank;
     }
-    if($id === 'u'.$USER->id) {
-      $html .= "<li class='leaderboard-player leaderboard-player-selected'>";
-      $html .= '<div class="leaderboard-player-rank">'.$rank.'</div>';
+    $html .= "<li class='leaderboard-player'>";
+    $html .= '<div class="leaderboard-player-rank">'.$rank.'</div>';
+    $user = $DB->get_record('user', array('id' => $list[1]));
+    $html .= $OUTPUT->user_picture($user, array('size'=>100));
+    $html .= '<div class="leaderboard-player-score">'.$score.'</div>';
+    if($id == 'u'.$USER->id) {
+      $html .= '<div class="leaderboard-player-alias selected">'.$alias.'</div></li>';
     }
     else {
-      $html .= "<li class='leaderboard-player'>";
-      $html .= '<div class="leaderboard-player-rank">'.$rank.'</div>';
+      $html .= '<div class="leaderboard-player-alias">'.$alias.'</div></li>';
     }
-    $user = $DB->get_record('user', array('id' => '2'));
-    $html .= $OUTPUT->user_picture($user, array('size'=>75));
-    //$user = $DB->get_record('user', array('id' => $list[1]));
-    //$html .= $OUTPUT->user_picture($user, array('size'=>100));
-    $html .= '<div class="leaderboard-player-score">'.$score.'</div>';
-    $html .= '<div class="leaderboard-player-alias">'.$alias.'</div></li>';
-  }
-  if(count($leaderboard['data']) === 0) {
-    $html .= 'The leaderboard is empty';
   }
   $html .= '</ul>';
+  if(count($leaderboard['data']) === 0) {
+    if($page > 0) {
+      $html .= '<h4>This Leaderboard Page is empty. Please Go back to a previous page</h4>';
+    }
+    else {
+      $html .= '<h4>The leaderboard is empty</h4>';
+    }
+  }
+  if($page >= 0 and $page < intval($leaderboard['total']/10)) {
+    $_GET['page'] = $page+1;
+    $url = new moodle_url('/local/playlyfe/leaderboard.php', $_GET);
+    $html .= '<div class="leaderboard-button">'.html_writer::link($url, 'Next Page').'</div class="leadeboard-button">';
+  }
+  if($page > 0) {
+    $_GET['page'] = $page-1;
+    $url = new moodle_url('/local/playlyfe/leaderboard.php', $_GET);
+    $html .= '<div class="leaderboard-button">'.html_writer::link($url, 'Previous Page').'</div class="leadeboard-button">';
+  }
   echo $html;
   echo $OUTPUT->footer();
 }
@@ -87,7 +99,7 @@ else {
     }
   }
   echo $OUTPUT->header();
-  $form = new PFORM('Leaderboards', 'leaderboard.php');
+  $form = new PForm('Leaderboards', 'leaderboard.php', 'get');
   $form->create_separator('Course','Please select the course in which you would like to see the leaderboards');
   $form->create_select('course', $arr);
   $form->create_separator('Metric','Please select the metric for which you would like to view the leaderboard within the course');
