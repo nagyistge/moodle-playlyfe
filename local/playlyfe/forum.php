@@ -19,9 +19,9 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
 $PAGE->navigation->clear_cache();
-$discussion_rule = get_rule($forum->id, 'discussion_created', '',  'Forum '.$forum->id.' Discussion Created');
-$post_rule = get_rule($forum->id, 'post_created', '', 'Forum '.$forum->id.' Posted');
-$view_rule = get_rule($forum->id, 'viewed', '', 'Forum '.$forum->id.' Viewed');
+$discussion_rule = get_rule($forum->id, 'discussion_created', '',  'Forum '.$forum->name.' Discussion Created');
+$post_rule = get_rule($forum->id, 'post_created', '', 'Forum '.$forum->name.' Posted');
+$view_rule = get_rule($forum->id, 'viewed', '', 'Forum '.$forum->name.' Viewed');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
 
 if (array_key_exists('submit', $_POST)) {
