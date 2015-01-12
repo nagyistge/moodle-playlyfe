@@ -173,33 +173,6 @@ function get_cmid($cmid) {
   return array($modrec, $cmrec);
 }
 
-function set_leaderboards($post, $metrics, $course, $key) {
-  global $pl;
-  if(!array_key_exists('leaderboards', $post)) {
-    $post['leaderboards'] = array();
-  }
-  set_config($key, json_encode($post['leaderboards']), 'playlyfe');
-  foreach($metrics as $metric) {
-    if($metric['type'] == 'point') {
-      $metric_id = $metric['id'];
-      if(in_array($metric_id, $post['leaderboards'])) {
-        $pl->post('/admin/leaderboards/'.$metric_id.'/course'.$course->id, array());
-      }
-      else {
-        $pl->delete('/admin/leaderboards/'.$metric_id.'/course'.$course->id, array());
-      }
-    }
-  }
-}
-
-function get_leaderboards($key) {
-  $data = json_decode(get_config('playlyfe', $key));
-  if(!is_array($data)) {
-    $data = array();
-  }
-  return $data;
-}
-
 function get($key) {
   $data = json_decode(get_config('playlyfe', $key), true);
   if(!is_array($data)) {
@@ -363,7 +336,7 @@ function add_to_buffer($userid, $events) {
   set_buffer($userid, $buffer);
 }
 
-function create_leaderboard($id, $scope_id) {
+function create_leaderboard($id, $name, $scope_id) {
   global $USER, $DB, $OUTPUT;
   $pl = get_pl();
   $html = '';
@@ -375,41 +348,76 @@ function create_leaderboard($id, $scope_id) {
       'ranking' => 'relative',
       'entity_id' => 'u'.$USER->id
     ));
-    $html .= '<h3> Leaderboards for '.$id.' </h3><ul class="leaderboard-list">';
+    $html .= '<div class="leaderboard-header">';
+    $html .= '<h4> Leaderboards for '.$name.' </h4><hr></hr></div><ul class="leaderboard-list">';
+    $html .= '<table class="leadeboard-table">';
+    $html .= '<thead>';
+    $html .= '<tr>';
+    $html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Rank</th>';
+    $html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Avatar</th>';
+    $html .= '<th class="header c1 lastcol centeralign" style="" scope="col">User</th>';
+    $html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Score</th>';
+    $html .= '</tr>';
+    $html .= '</thead>';
+    $html .= '<tbody>';
+    // foreach ($metrics as $metric) {
+    //   if($metric['type'] === 'point') {
+    //     $html .= '<tr>';
+    //     $html .= '<td>'.$metric['name'].'</td>';
+    //     $html .= '<td class="pl-leaderboard-checkbox">';
+    //     $check_text = '';
+    //     if(in_array($metric['id'], $leaderboards)){
+    //       $check_text = 'checked';
+    //     }
+    //     $html .= '<input value="'.$metric['id'].'" name="leaderboards[]" type="checkbox" '.$check_text.'>';
+    //     $html .= '</td>';
+    //     $html .= '</tr>';
+    //   }
+    // }
     foreach($leaderboard['data'] as $player) {
-      $score = $player['score'];
-      $id = $player['player']['id'];
-      $alias = $player['player']['alias'] or 'Null';
-      $rank = $player['rank'];
-      $list = explode('u', $id);
-      if($rank < 10) {
-        $rank = '0'.$rank;
-      }
-      if($id === 'u'.$USER->id) {
-        $html .= "<li class='fb-leaderboard-player fb-leaderboard-player-selected'>";
-        $html .= '<div class="fb-leaderboard-player-rank">'.$rank.'</div>';
-      }
-      else {
-        $html .= "<li class='fb-leaderboard-player'>";
-        $html .= '<div class="fb-leaderboard-player-rank">'.$rank.'</div>';
-      }
+      $html .= '<tr>';
+      $html .= '<td><b>'.$player['rank'].'</b></td>';
+      $html .= '<td>';
       $user = $DB->get_record('user', array('id' => '2'));
-      $html .= $OUTPUT->user_picture($user, array('size'=>75));
-      //$user = $DB->get_record('user', array('id' => $list[1]));
-      //$html .= $OUTPUT->user_picture($user, array('size'=>100));
-      $html .= '<div class="fb-leaderboard-player-score">'.$score.'</div>';
-      $html .= '<div class="fb-leaderboard-player-alias">'.$alias.'</div></li>';
+      $html .= $OUTPUT->user_picture($user, array('size'=>50));
+      $html .= '</td>';
+      $html .= '<td><b>'.$player['player']['alias'].'</b></td>';
+      $html .= '<td><b>'.$player['score'].'</b></td>';
+      // $score = $player['score'];
+      // $id = $player['player']['id'];
+      // $alias = $player['player']['alias'] or 'Null';
+      // $rank = $player['rank'];
+      // $list = explode('u', $id);
+      // if($rank < 10) {
+      //   $rank = '0'.$rank;
+      // }
+      // if($id === 'u'.$USER->id) {
+      //   $html .= "<li class='fb-leaderboard-player fb-leaderboard-player-selected'>";
+      //   $html .= '<div class="fb-leaderboard-player-rank">'.$rank.'</div>';
+      // }
+      // else {
+      //   $html .= "<li class='fb-leaderboard-player'>";
+      //   $html .= '<div class="fb-leaderboard-player-rank">'.$rank.'</div>';
+      // }
+      // $user = $DB->get_record('user', array('id' => '2'));
+      // $html .= $OUTPUT->user_picture($user, array('size'=>75));
+      // //$user = $DB->get_record('user', array('id' => $list[1]));
+      // //$html .= $OUTPUT->user_picture($user, array('size'=>100));
+      // $html .= '<div class="fb-leaderboard-player-score">'.$score.'</div>';
+      // $html .= '<div class="fb-leaderboard-player-alias">'.$alias.'</div></li>';
     }
+    $html .= '</tbody>';
+    $html .= '</table>';
     if(count($leaderboard['data']) === 0) {
       $html .= 'The leaderboard is empty';
     }
-    $html .= '</ul>';
+    // $html .= '</ul>';
   }
   catch(Exception $e) {
     if($e->name === 'player_not_found') {
     }
     else {
-      $html = json_encode($e);
+      //mtrace(json_encode($e));
     }
   }
   return $html;
@@ -424,6 +432,14 @@ function calculate_data($userid) {
   $leaderboads = array();
   $rule_id = '';
   foreach($buffer as $events) {
+    $pl = get_pl();
+    $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'name,id,type'));
+    $metricsList = array();
+    foreach ($metrics as $metric) {
+      if($metric['type'] === 'point') {
+        array_push($metricsList, $metric);
+      }
+    }
     if(count($events) > 0 and array_key_exists('0', $events['local'])) {
       $event = $events['local'][0];
       if($event['event'] == 'custom_rule') {
@@ -432,11 +448,8 @@ function calculate_data($userid) {
         $rule_id = explode('_', $rule_id);
         $text = '';
         if(in_array('course', $rule_id)) {
-          $leaderboard_ids = get_leaderboards('course'.$rule_id[1].'_leaderboard');
-          if(count($leaderboard_ids) > 0) {
-            foreach($leaderboard_ids as $leaderboard_id) {
-              $text .= create_leaderboard($leaderboard_id, 'course'.$rule_id[1]);
-            }
+          foreach($metricsList as $metric) {
+            $text .= create_leaderboard($metric['id'], $metric['name'], 'course'.$rule_id[1]);
           }
         }
         array_push($data['leaderboards'], $text);

@@ -96,7 +96,7 @@ function show_dailog(event, leaderboard, data) {
       closeOnEscape: false,
       //draggable: false,
       //resizable: false,
-      //position: { my: "center", at: "center", of: "body" }
+      position: { my: "center", at: "center", of: "body" },
       height: "auto",
       width: "auto",
       modal: true,
@@ -125,12 +125,13 @@ function show_dailog(event, leaderboard, data) {
   html += leaderboard;
   $("#ui-id-1").html(event.rule.name);
   $("#dialog").html('<h3>You have Gained</h3>'+html);
+  $('.ui-dialog').css("top","20%");
 }
 
 function render_reward(event) {
   metric= event.metric;
   delta = event.delta;
-  html = '<img src="/local/playlyfe/image_def.php?metric='+metric.id+'&size=large"></img>';
+  html = '<img style="float: left;"" src="/local/playlyfe/image_def.php?metric='+metric.id+'&size=medium"></img>';
   if (metric.type === 'point') {
     value = delta['new'] - delta.old;
   }
@@ -145,8 +146,8 @@ function render_reward(event) {
       value += '     <img src="/local/playlyfe/image_def.php?metric='+metric.id+'&size=medium&item='+key+'"></img>    ';
     }
   }
-  html += 'You have gained '+value+' '+metric.name;
-  html += '<br>';
+  html += '<p><br>You have gained <b>'+value+'</b> '+metric.name + '</p>';
+  html += '<div style="clear: both;"></div>';
   return html;
 }
 

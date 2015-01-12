@@ -158,7 +158,6 @@
       }
       else {
         mtrace(json_encode($e));
-        print_object($e);
       }
     }
   }
@@ -167,7 +166,9 @@
     global $CFG, $PAGE;
     if (isloggedin() || !isguestuser()) {
       $data = calculate_data($userid);
-      $PAGE->requires->js_init_call('show_rewards', array($data));
+      if(count($data['events']) > 0) {
+        $PAGE->requires->js_init_call('show_rewards', array($data));
+      }
     }
   }
 
@@ -243,41 +244,11 @@
     }
     $PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/playlyfe/reward.js'));
     if (isloggedin() and !isguestuser() and !strpos($PAGE->url, '/mod/forum/post.php')) {
-        $buffer = get_buffer($USER->id);
-        $data = array(
-        'events' => array(),
-        'leaderboards' => array()
-      );
-      $rule_id = '';
-      if(count($buffer) > 0) {
-        foreach($buffer as $events) {
-          $pl = get_pl();
-          $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'name,id,type'));
-          $metricsList = array();
-          foreach ($metrics as $metric) {
-            if($metric['type'] === 'point') {
-              array_push($metricsList, $metric['id']);
-            }
-          }
-          if(count($events) > 0 and array_key_exists('0', $events['local'])) {
-            $event = $events['local'][0];
-            if($event['event'] == 'custom_rule') {
-              array_push($data['events'], $event);
-              $rule_id = $event['rule']['id'];
-              $rule_id = explode('_', $rule_id);
-              $text = '';
-              if(in_array('course', $rule_id)) {
-                foreach($metricsList as $metric_id) {
-                  $text .= create_leaderboard($metric_id, 'course'.$rule_id[1]);
-                }
-              }
-              array_push($data['leaderboards'], $text);
-            }
-          }
+        $data = calculate_data($USER->id);
+        if(count($data['events']) > 0) {
+          echo '<div id="dialog"></div>';
+          $PAGE->requires->js_init_call('show_rewards', array($data));
         }
-        echo '<div id="dialog"></div>';
-        $PAGE->requires->js_init_call('show_rewards', array($data));
-        set_buffer($USER->id, array());
       }
       $setting = json_decode(get_config('playlyfe', 'setting'), true);
       $ssg = json_decode(get_config('playlyfe', 'settingasdasd'), true);
@@ -295,4 +266,3 @@
         $navigation->add('Leaderboards', new moodle_url('/local/playlyfe/leaderboard.php'));
       }
     }
-  }

@@ -204,3 +204,23 @@
   background-color: #E1E1DF;
   width: 85px;
 }
+body {
+  height:100%;
+}
+
+.leaderboard-header {
+  font-size: 1rem;
+}
+
+.leaderboard .skew.reverse {
+  transform: skewX(20deg);
+}
+
+.vertical-middle {
+  vertical-align: middle;
+}
+
+.leadeboard-table td {
+  border: 1px solid #DDD;
+  vertical-align: middle;
+}

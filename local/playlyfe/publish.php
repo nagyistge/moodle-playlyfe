@@ -15,11 +15,11 @@ if (!has_capability('moodle/site:config', context_system::instance())) {
 }
 $PAGE->settingsnav->get('root')->get('playlyfe')->get('publish')->make_active();
 $html = '';
-
+$simulated = false;
 if (array_key_exists('submit', $_POST)) {
   try {
     $pl->post('/design/versions/latest/simulate');
-    redirect(new moodle_url('/'));
+    $simulated = true;
   }
   catch(Exception $e) {
     print_object($e);
@@ -47,10 +47,16 @@ if(count($unresolved_issues) > 0) {
   $html .= html_writer::table($table);
 }
 else {
-  $html .= '<h1> All Clear and Set to Go. Are you Sure you Want to publish all your changes? </h1>';
-  $html .= '<form action="publish.php" method="post">';
-  $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
-  $html .= '</form>';
+  if($simulated) {
+    $html .= '<h1>All Clear!</h2>';
+    $html .= '<h2>The Game has been successfully put into Simulation mode!</h2>';
+  }
+  else {
+    $html .= '<h1> Are you Sure you Want to publish all your changes? </h1>';
+    $html .= '<form action="publish.php" method="post">';
+    $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
+    $html .= '</form>';
+  }
 }
 
 echo $OUTPUT->header();
