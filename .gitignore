@@ -14,3 +14,4 @@
 /mod/forum/*
 !/mod/forum/view.php
 !/mod/forum/post.php
+!composer.json
