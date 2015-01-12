@@ -479,7 +479,7 @@ function display_change($change, $course_name) {
   $delta = $change['delta'];
   $text .= '<div class="notification">';
   $text .= '<div class="notification-index">'.$count.'</div>';
-  $text .= '<img src="image_def.php?metric='.$metric['id'].'&size=large"></img>';
+  $text .= '<img style="float: left;" src="image_def.php?metric='.$metric['id'].'&size=large"></img>';
   if ($metric['type'] == 'point') {
     $value = $delta['new'] - $delta['old'];
   }
@@ -489,8 +489,9 @@ function display_change($change, $course_name) {
       $value .= '     <img src="image_def.php?metric='.$metric['id'].'&size=medium&item='.$key.'"></img>    ';
     }
   }
-  $text .= 'You have gained <b>'.$value.' '.$metric['name'].'</b> through <b>'.$course_name.'</b>';
+  $text .= '<p class="notification-text">You have gained <b>'.$value.' '.$metric['name'].'</b> through <b>'.$course_name.'</b></p>';
   $text .= '</div>';
+  $text .= '<div style="clear: both;"></div>';
   $count++;
   return $text;
 }
@@ -499,7 +500,7 @@ function formatDateAgo($value) {
   $time = strtotime($value);
   $d = new \DateTime($value);
 
-  $weekDays = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+  $weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   $months = ['Janvier', 'Février', 'Mars', 'Avril',' Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
   if ($time > strtotime('-2 minutes'))

@@ -75,15 +75,19 @@
 
 .notification {
   font-size: 14px;
-  border: 1px solid #ccc;
   color: black;
 }
 
 .notification-index {
   float: left;
-  margin: 10px 20px 10px 10px;
+  margin: 20px 20px 10px 10px;
   font-size: 20px;
   font-weight: 100;
+}
+
+.notification-text {
+  margin: 20px 20px 10px 10px;
+  font-size: 20px;
 }
 
 .fb-leaderboard-player {

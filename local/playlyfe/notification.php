@@ -32,7 +32,7 @@ if(!is_null($notifications)) {
       foreach($notification['changes'] as $change) {
         $title = $notification['rule']['name'];
         $date = new DateTime($notification['timestamp']);
-        $html .= '<p>'.display_change($change, $title).' on '.$date->format('Y-m-d H:i:s').'</p>';
+        $html .= display_change($change, $title).' on '.$date->format('Y-m-d H:i:s');
       }
     }
   }
