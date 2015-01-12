@@ -859,53 +859,133 @@ foreach ($courses as $courseid => $course) {
     $index++;
   }
 }
-$html .= '<h1>Your Profile<h1><hr></hr>';
-$html .= '<div class="profile-alias">';
-$html .= '<div class="userprofile">';
-$html .= '<div class="userprofilebox clearfix"><div class="profilepicture">';
-$html .= $OUTPUT->user_picture($USER, array('size'=>120));
-$html .= '</div>';
-$html .= '</div>';
-$html .= '</div>';
+
+
+$html .= '
+<div id="pl-profile" class="profile pl-page">
+  <h1 class="page-title">Your Profile</h1>
+  <div class="page-section">
+    <div class="section-content">
+      <div class="player-card media">
+        <div class="player-avatar avatar large image">'.$OUTPUT->user_picture($USER, array('size'=>140)).'</div>
+        <div class="player-details content">
+          <h3 class="player-alias">'.$profile['alias'].'</h3>';
 if($index > 0) {
   $progress = ($overall_progress/$index);
-  $html .= '<div class="progressbar">';
-  $html .= '<div style="width: '.$progress.'%;"><div class="progress-text">'.round($progress, 1).'%'.'</div></div>';
-  $html .= '</div>';
+  $html .= '
+          <div class="progressbar">
+            <div style="width: '.$progress.'%;">
+              <div class="progress-text">'.round($progress, 1).'%'.'</div>
+            </div>
+          </div>';
 }
-$html .= $profile['alias'];
-$html .= '</div>';
-$html .= '<header class="text-center"><h5 class="hud-section-item no-margin score-header">My Scores</h5></header>';
-if(count($profile['scores']) == 0){
-  $html .= 'You Have no scores';
-}
-else {
-  $html .= '<ul class="list-unstyled profile-score-list">';
-  foreach($profile['scores'] as $score) {
-    $score_id = $score['metric']['id'];
-    $score_name = $score['metric']['name'];
-    $score_type = $score['metric']['type'];
-    $html .= '<li class="score-list-item score-point">';
-    $html .= '<h5 class="score-name ellipsis ng-binding">'.$score_name.'</h5>';
-    $html .= '<div class="score-icon text-center"><img src="image_def.php?metric='.$score_id.'&size=large"></img></div>';
-    if($score_type == 'point') {
-      $html .= '<div class="score-value large">'.$score['value'].'</div></li>';
-    }
-    else if($score_type == 'set') {
-      foreach($score['value'] as $value) {
-        $html .= '<div class="score-item-icon"><img src="image_def.php?metric='.$score_id.'&item='.$value['name'].'&size=small"></img></div>';
-        $html .= '<div class="score-value small">'.$value['name'].'</div>';
-        if($value['count'] == 0) {
-          $html .= '<div class="score-set achieve">(Can be Achieved)</div>';
-        }
-        else {
-          $html .= 'x'.$value['count'];
+$html .= '
+        </div>
+      </div>
+    </div>
+  </div>';
+
+$html .= '
+  <div class="page-section grid-12 full-width clearfix">
+    <div class="profile-achievements col-6">
+      <h2 class="section-title">Your Recent Achievements</h2>';
+    $item_count = 0;
+
+    if(count($profile['scores']) != 0) {
+      foreach($profile['scores'] as $score) {
+        if($score['metric']['type'] == 'set') {
+          $score_id = $score['metric']['id'];
+          $html .= '
+        <ul class="list-unstyled achievement-list clearfix">';
+          foreach($score['value'] as $value) {
+            $item_count += 1;
+            $html .= '
+          <li class="achievement-item '.($value['count'] == 0 ? 'locked' : 'achieved').'">
+            <div class="achievement-icon avatar image"><img src="image_def.php?metric='.$score_id.'&item='.$value['name'].'&size=medium"></img></div>
+            <div class="achievement-count" title="'.($value['count'] == 0 ? 'This achievement is locked' : '').'">'.($value['count'] == 0 ? 'L' : $value['count']).'</div>
+            <div class="achievement-name small content">'.$value['name'].'</div>
+          </li>';
+          }
+          $html .= '
+        </ul>';
         }
       }
-      $html .= '</li>';
     }
-  }
-}
+    else if(count($profile['scores']) == 0 || $item_count == 0) {
+      $html .= '
+      <div class="placeholder-content empty-content">You\'ve not earned any achievements yet.</div>';
+    }
+$html .= '
+    </div>
+
+    <div class="profile-scores col-6">
+      <h2 class="section-title">Your Scores</h2>
+      <ul class="list-unstyled profile-score-list">';
+    $score_count = 0;
+    if(count($profile['scores']) != 0) {
+      foreach($profile['scores'] as $score) {
+        $score_type = $score['metric']['type'];
+        if($score_type != 'set') {
+          $score_id = $score['metric']['id'];
+          $score_name = $score['metric']['name'];
+          $html .= '
+        <li class="score-list-item score-'.$score_type.'">
+          <h5 class="score-name ellipsis">'.$score_name.'</h5>
+          <div class="score-icon text-center"><img src="image_def.php?metric='.$score_id.'&size=large"></img></div>
+          <div class="score-value large">'.$score['value'].'</div>
+        </li>';
+        }
+      }
+    }
+    else if(count($profile['scores']) == 0 || $score_count == 0) {
+      $html .= '
+        <li class="placeholder-content empty-content">You don\'t have any scores yet.</li>';
+    }
+    $html .= '
+      </ul>
+    </div>
+  </div>';
+
+
+// $html .= '
+//     <div class="score-widget page-hud">
+//       <h3 class="hud-title">Your Scores</h3>';
+//   if(count($profile['scores']) == 0) {
+//     $html .= '
+//       <p class="hud-section-item no-score">You don\'t have any scores in this app yet.</p>';
+//   }
+//   else {
+//     $html .= '
+//       <ul class="list-unstyled profile-score-list">';
+//     foreach($profile['scores'] as $score) {
+//       $score_id = $score['metric']['id'];
+//       $score_name = $score['metric']['name'];
+//       $score_type = $score['metric']['type'];
+//       $html .= '
+//         <li class="score-list-item score-'.$score_type.'">
+//           <h5 class="score-name ellipsis">'.$score_name.'</h5>
+//           <div class="score-icon text-center"><img src="image_def.php?metric='.$score_id.'&size=large"></img></div>';
+//           if($score_type == 'point' || $score_type == 'compound') {
+//             $html .= '
+//             <div class="score-value large">'.$score['value'].'</div>';
+//           }
+//           else if($score_type == 'set') {
+//             foreach($score['value'] as $value) {
+//               $html .= '
+//             <div class="score-item media '.($value['count'] == 0 ? 'locked' : 'achieved').'">
+//               <div class="score-item-icon avatar image"><img src="image_def.php?metric='.$score_id.'&item='.$value['name'].'&size=small"></img></div>
+//               <div class="score-value small content">'.$value['name'].($value['count'] == 0 ? ' [Locked]' : '&times;'.$value['count']).'</div>
+//             </div>';
+//             }
+//           }
+//       $html .= '
+//         </li>';
+//     }
+//     $html .= '
+//       </ul>';
+//   }
+$html .= '
+</div>'; // </#pl-profile
 echo $OUTPUT->header();
 echo $html;
 echo $OUTPUT->footer();

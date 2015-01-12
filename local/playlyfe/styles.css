@@ -1,7 +1,315 @@
+/** PALETTE
+ *
+ * Grays
+ * #ffffff; /* white *
+ * #f8f8f8; /* gray-ultralight *
+ * #dddddd; /* gray-lightest *
+ * #bbbbbb; /* gray-lighter *
+ * #aaaaaa; /* gray-light *
+ * #888888; /* gray *
+ * #666666; /* gray-dark *
+ * #444444; /* gray-darker *
+ * #222222; /* gray-darkest *
+ * #000000; /* black *
+ *
+ * #eef6dc; /* prime-lightest *
+ * #ddeeb9; /* prime-lighter *
+ * #a9d44d; /* prime-light *
+ * #8fc717; /* prime *
+ * #80b314; /* prime-dark *
+ * #648b10; /* prime-darker *
+ * #364c08; /* prime-darkest *
+ *
+ * #f1f9ff; /* accent-lightest *
+ * #a5d6ff; /* accent-lighter *
+ * #58b4ff; /* accent-light *
+ * #259dff; /* accent *
+ * #0085f1; /* accent-dark *
+ * #004d8b; /* accent-darker *
+ * #001425; /* accent-darkest *
+ *
+ * #e20000; /* alert *
+ * #ffe2e2; /* alert-light *
+**/
+
+.text-center {
+  text-align: center;
+}
+.full-width {
+  width: 100%;
+}
+.full-height {
+  height: 100%;
+}
+.no-margin, .no-space, .ui-helper-reset {
+  margin: 0px !important;
+}
+.no-padding, .no-space {
+  padding: 0px !important;
+}
+.list-unstyled {
+  margin: 0;
+  padding: 0;
+  list-style: outside none none;
+}
+.remove-button {
+  float: right;
+  padding-left: 25px;
+}
+.underline {
+  text-decoration: underline;
+}
+.clearfix::before, .clearfix::after {
+  display: table;
+  line-height: 0;
+  content: "";
+}
+.clearfix::after {
+  clear: both;
+}
+
+/**
+//
+// Variable Grid System (Fluid Version).
+// Learn more ~ http://www.spry-soft.com/grids/
+// Based on 960 Grid System - http://960.gs/ & 960 Fluid - http://www.designinfluences.com/
+// Licensed under GPL and MIT.
+//
+*/
+.grid-12 {
+  width: 92%;
+  margin-left: 4%;
+  margin-right: 4%;
+}
+.grid-12.full-width {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.col-1,  .col-2,  .col-3,  .col-4,
+.col-5,  .col-6,  .col-7,  .col-8,
+.col-9,  .col-10, .col-11, .col-12,
+.col-13, .col-14, .col-15, .col-16 {
+  display: inline;
+  position: relative;
+  float: left;
+  margin-left: 1%;
+  margin-right: 1%;
+}
+
+.grid-12 .col-3 { width: 23%; }
+.grid-12 .col-6 { width: 48%; }
+.grid-12 .col-9 { width: 73%; }
+.grid-12 .col-12 { width: 98%; }
+
+.alpha { margin-left: 0; }
+.omega { margin-right: 0; }
+
+.grid-12 .col-1  { width: 6.333%; }
+.grid-12 .col-2  { width: 14.666%; }
+.grid-12 .col-4  { width: 31.333%; }
+.grid-12 .col-5  { width: 39.666%; }
+.grid-12 .col-7  { width: 56.333%; }
+.grid-12 .col-8  { width: 64.666%; }
+.grid-12 .col-10 { width: 81.333%; }
+.grid-12 .col-11 { width: 89.666%; }
+
+
+.grid-12 .pfx-3 { padding-left: 25%; }
+.grid-12 .pfx-6 { padding-left: 50%; }
+.grid-12 .pfx-9 { padding-left: 75%; }
+
+.grid-12 .pfx-1  { padding-left: 8.333%; }
+.grid-12 .pfx-2  { padding-left: 16.666%; }
+.grid-12 .pfx-4  { padding-left: 33.333%; }
+.grid-12 .pfx-5  { padding-left: 41.666%; }
+.grid-12 .pfx-7  { padding-left: 58.333%; }
+.grid-12 .pfx-8  { padding-left: 66.666%; }
+.grid-12 .pfx-10 { padding-left: 83.333%; }
+.grid-12 .pfx-11 { padding-left: 91.666%; }
+
+
+.grid-12 .sfx-3 { padding-right: 25%; }
+.grid-12 .sfx-6 { padding-right: 50%; }
+.grid-12 .sfx-9 { padding-right: 75%; }
+
+.grid-12 .sfx-1 { padding-right: 8.333%; }
+.grid-12 .sfx-2 { padding-right: 16.666%; }
+.grid-12 .sfx-4 { padding-right: 33.333%; }
+.grid-12 .sfx-5 { padding-right: 41.666%; }
+.grid-12 .sfx-7 { padding-right: 58.333%; }
+.grid-12 .sfx-8 { padding-right: 66.666%; }
+.grid-12 .sfx-10 { padding-right: 83.333%; }
+.grid-12 .sfx-11 { padding-right: 91.666%; }
+
+.grid-12 .push-1  { left:8.333%;  }
+.grid-12 .push-2  { left:16.667%; }
+.grid-12 .push-3  { left:25.0%;   }
+.grid-12 .push-4  { left:33.333%; }
+.grid-12 .push-5  { left:41.667%; }
+.grid-12 .push-6  { left:50.0%;   }
+.grid-12 .push-7  { left:58.333%; }
+.grid-12 .push-8  { left:66.667%; }
+.grid-12 .push-9  { left:75.0%;   }
+.grid-12 .push-10 { left:83.333%; }
+.grid-12 .push-11 { left:91.667%; }
+
+.grid-12 .pull-1  { left:-8.333%;  }
+.grid-12 .pull-2  { left:-16.667%; }
+.grid-12 .pull-3  { left:-25.0%;   }
+.grid-12 .pull-4  { left:-33.333%; }
+.grid-12 .pull-5  { left:-41.667%; }
+.grid-12 .pull-6  { left:-50.0%;   }
+.grid-12 .pull-7  { left:-58.333%; }
+.grid-12 .pull-8  { left:-66.667%; }
+.grid-12 .pull-9  { left:-75.0%;   }
+.grid-12 .pull-10 { left:-83.333%; }
+.grid-12 .pull-11 { left:-91.667%; }
+
+
+
+/* The media object
+   (OOCSS / stubbornella.com) */
+.media {
+  margin: 10px;
+  overflow: hidden;
+  zoom: 1;
+}
+.media .content {
+  /* use overflow for clearing floats and
+   creating new layout context */
+  overflow: hidden;
+  zoom: 1;
+}
+.media .image {
+  /* you can float the image to either left or right */
+  float: left;
+  margin-right: 10px;
+}
+.media .image img {
+  display: block;
+}
+.media .image.right {
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+.avatar {
+  position: relative;
+  background-color: transparent;
+  width: 40px;
+  height: 40px;
+}
+.avatar.large {  /* Playlyfe's Large image size */
+  width: 140px;
+  height: 140px;
+}
+.avatar img {
+  /* constrain the image dimensions to that of the parent block */
+  max-width: 100%;
+  max-height: 100%;
+  /* vertically and horizontally center the content in the parent block */
+  /* requires parent to have a non-static position and unfloated */
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 0; right: 0;
+  margin: auto;
+}
+
+
 #closebutton {
   margin-top:4px;
   margin-right: 4px;
 }
+
+/* Profile Styles */
+#pl-profile {
+  background-color: #ffffff; /* white */
+}
+
+.pl-page {
+  padding: 1rem;
+}
+.pl-page .page-title {
+  font-size: 1.8rem;
+  margin: 0.6rem 0;
+  font-weight: normal;
+  color: #666666; /* gray-dark */
+}
+
+.page-section {
+  padding: 0.5rem 0 1rem;
+  border-bottom: 1px solid #dddddd; /* gray-lightest */
+}
+.page-section .section-title {
+  font-size: 1.4rem;
+  margin: 0.35rem 0;
+  font-weight: normal;
+  color: #888888; /* gray */
+}
+
+.score-widget {
+  border: 1px solid #dddddd; /* gray-lightest */
+  width: 400px;
+  padding: 0 0.35rem 1rem;
+}
+.score-widget .hud-title {
+  font-size: 1.5rem;
+  margin: 0.35rem 0;
+  font-weight: normal;
+  color: #888888; /* gray */
+}
+.achievement-list {
+
+}
+.achievement-item {
+  float: left;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  position: relative;
+}
+.achievement-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto;
+  background-color: #ffffff; /* white */
+}
+.achievement-name {
+  font-size: 0.85rem;
+}
+.achievement-count {
+  position: absolute;
+  top: 0.5rem;
+  right: 1rem;
+  font-size: 0.85rem;
+  color: #ffffff;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background-color: #8fc717; /* prime */
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 5px -2px #dddddd; /* gray-lightest */
+}
+.placeholder-content {
+  padding: 0.5rem;
+  color: #bbbbbb; /* gray-lighter */
+  border: 1px dashed #dddddd; /* gray-lightest */
+}
+
+.hud-section-item {
+  padding-left: 1.6rem;
+  padding-right: 1.6rem;
+}
+
+
+
+
+
+
+
+
+
 
 .pl-leaderboard-checkbox {
   text-align: center;
@@ -57,20 +365,22 @@
   font-size: 24px;
   color: #2060DF;
 }
-}
 
 .leaderboard-player-alias.selected {
   color: #000;
 }
-
-.remove-button {
+.leaderboard-button {
+  text-align: center;
   float: right;
-  padding-left: 25px;
+  border: 1px solid rgb(221, 221, 221);
+  padding: 10px;
+  margin: 10px;
+  background-image: url("/theme/image.php?theme=standard&component=theme&image=hgradient");
+  background-repeat: repeat-x;
+  background-color: #E1E1DF;
+  width: 85px;
 }
 
-.underline {
-  text-decoration: underline;
-}
 
 
 .notification {
@@ -117,17 +427,7 @@
   color: red;
 }
 
-.list-unstyled {
-  margin: 0;
-  padding: 0;
-  list-style: outside none none;
-}
 
-.profile-alias {
-  font-size: 24px;
-  color: #555;
-  padding: 10px 10px 20px;
-}
 
 .profile-score-list {
   height: calc(100% - 70px);
@@ -164,6 +464,8 @@
   opacity: 0.5;
 }
 .score-item-icon {
+  width: 40px;
+  height: 40px;
 }
 
 .score-point .score-value {
@@ -178,35 +480,12 @@
   color: #2060DF;
 }
 
-.score-set.achieve {
-  font-weight: light;
-  font-size: 12px;
-  color: #aaa;
+.score-item {
+  margin: 0.25rem 0;
 }
-
-.text-center {
-  text-align: center;
-}
-
-.hud-section-item {
-  padding-left: 1.6rem;
-  padding-right: 1.6rem;
-}
-
-.no-margin, .no-space, .ui-helper-reset {
-  margin: 0px !important;
-}
-
-.leaderboard-button {
-  text-align: center;
-  float: right;
-  border: 1px solid rgb(221, 221, 221);
-  padding: 10px;
-  margin: 10px;
-  background-image: url("/theme/image.php?theme=standard&component=theme&image=hgradient");
-  background-repeat: repeat-x;
-  background-color: #E1E1DF;
-  width: 85px;
+.score-item.locked {
+  color: #bbbbbb; /* gray-lighter */
+  background-color: #f8f8f8; /* gray-ultralight */
 }
 body {
   height:100%;
