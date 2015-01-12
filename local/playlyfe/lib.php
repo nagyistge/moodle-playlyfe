@@ -243,6 +243,7 @@
       $PAGE->requires->jquery_plugin('ui-css');
     }
     $PAGE->requires->js(new moodle_url($CFG->wwwroot . '/local/playlyfe/reward.js'));
+    // $PAGE->requires->css(new moodle_url($CFG->wwwroot . '/local/playlyfe/icons.css'));
     if (isloggedin() and !isguestuser() and !strpos($PAGE->url, '/mod/forum/post.php')) {
         $data = calculate_data($USER->id);
         if(count($data['events']) > 0) {
