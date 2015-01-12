@@ -224,12 +224,9 @@
 }
 
 /* Profile Styles */
-#pl-profile {
-  background-color: #ffffff; /* white */
-}
-
 .pl-page {
   padding: 1rem;
+  background-color: #ffffff; /* white */
 }
 .pl-page .page-title {
   font-size: 1.8rem;
