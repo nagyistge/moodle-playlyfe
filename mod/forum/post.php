@@ -152,8 +152,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $post->groupid = groups_get_activity_group($cm);
     }
 
-    // Unsetting this will allow the correct return URL to be calculated later.
-    unset($SESSION->fromdiscussion);
+    forum_set_return();
 
 } else if (!empty($reply)) {      // User is writing a new reply
 
@@ -228,7 +227,6 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $post->subject = $strre.' '.$post->subject;
     }
 
-    // Unsetting this will allow the correct return URL to be calculated later.
     unset($SESSION->fromdiscussion);
 
 } else if (!empty($edit)) {  // User is editing their own post
@@ -279,8 +277,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
     $post = trusttext_pre_edit($post, 'message', $modcontext);
 
-    // Unsetting this will allow the correct return URL to be calculated later.
     unset($SESSION->fromdiscussion);
+
 
 }else if (!empty($delete)) {  // User is deleting a post
 
@@ -509,15 +507,7 @@ if (!isset($forum->maxattachments)) {  // TODO - delete this once we add a field
 
 require_once('post_form.php');
 
-$thresholdwarning = forum_check_throttling($forum, $cm);
-$mform_post = new mod_forum_post_form('post.php', array('course' => $course,
-                                                        'cm' => $cm,
-                                                        'coursecontext' => $coursecontext,
-                                                        'modcontext' => $modcontext,
-                                                        'forum' => $forum,
-                                                        'post' => $post,
-                                                        'thresholdwarning' => $thresholdwarning,
-                                                        'edit' => $edit), 'post', '', array('id' => 'mformforum'));
+$mform_post = new mod_forum_post_form('post.php', array('course'=>$course, 'cm'=>$cm, 'coursecontext'=>$coursecontext, 'modcontext'=>$modcontext, 'forum'=>$forum, 'post'=>$post), 'post', '', array('id' => 'mformforum'));
 
 $draftitemid = file_get_submitted_draft_itemid('attachments');
 file_prepare_draft_area($draftitemid, $modcontext->id, 'mod_forum', 'attachment', empty($post->id)?null:$post->id, mod_forum_post_form::attachment_options($forum));
@@ -691,9 +681,10 @@ if ($fromform = $mform_post->get_data()) {
 
     } else if ($fromform->discussion) { // Adding a new post to an existing discussion
         // Before we add this we must check that the user will not exceed the blocking threshold.
-        forum_check_blocking_threshold($thresholdwarning);
+        forum_check_throttling($forum, $cm, false);
 
         unset($fromform->groupid);
+
         $message = '';
         $addpost = $fromform;
         $addpost->forum=$forum->id;
@@ -743,7 +734,7 @@ if ($fromform = $mform_post->get_data()) {
 
     } else { // Adding a new discussion.
         // Before we add this we must check that the user will not exceed the blocking threshold.
-        forum_check_blocking_threshold($thresholdwarning);
+        forum_check_throttling($forum, $cm, false);
 
         if (!forum_user_can_post_discussion($forum, $fromform->groupid, -1, $cm, $modcontext)) {
             print_error('cannotcreatediscussion', 'forum');
@@ -788,7 +779,7 @@ if ($fromform = $mform_post->get_data()) {
             }
 
             if ($subscribemessage = forum_post_subscription($discussion, $forum)) {
-                $timemessage = 6;
+                $timemessage = 4;
             }
 
             // Update completion status
@@ -880,14 +871,13 @@ if ($forum->type == 'qanda'
     echo $OUTPUT->notification(get_string('qandanotify','forum'));
 }
 
-// If there is a warning message and we are not editing a post we need to handle the warning.
-if (!empty($thresholdwarning) && !$edit) {
-    // Here we want to throw an exception if they are no longer allowed to post.
-    forum_check_blocking_threshold($thresholdwarning);
+// If we are not editing a post we need to check the posting threshold.
+if (!$edit) {
+    forum_check_throttling($forum, $cm);
 }
 
 if (!empty($parent)) {
-    if (!$discussion = $DB->get_record('forum_discussions', array('id' => $parent->discussion))) {
+    if (! $discussion = $DB->get_record('forum_discussions', array('id' => $parent->discussion))) {
         print_error('notpartofdiscussion', 'forum');
     }
 

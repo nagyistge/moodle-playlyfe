@@ -106,11 +106,13 @@
 
 /// Print header.
 
-    $PAGE->set_title($forum->name);
+    $PAGE->set_title(format_string($forum->name));
     $PAGE->add_body_class('forumtype-'.$forum->type);
-    $PAGE->set_heading($course->fullname);
+    $PAGE->set_heading(format_string($course->fullname));
 
     echo $OUTPUT->header();
+
+  //echo "hi";
 
 /// Some capability checks.
     if (empty($cm->visible) and !has_capability('moodle/course:viewhiddenactivities', $context)) {
@@ -238,9 +240,11 @@
 
             break;
     }
-    $post = new stdClass();
-    $post->course = $id;
-    $post->forum = $forum->id;
-    $post->userid = $USER->id;
-    events_trigger('forum_viewed', $post);
+    $event = new stdClass();
+    $event->course = $id;
+    $event->forum = $forum->id;
+    $event->userid = $USER->id;
+    events_trigger('forum_viewed', $event);
     echo $OUTPUT->footer($course);
+
+
