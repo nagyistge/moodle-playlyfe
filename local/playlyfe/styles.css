@@ -9,7 +9,7 @@
 
 .progressbar {
   background-color: #ddd;
-  width: 10%;
+  width: 120px;
   font-size: 14px;
   text-align: center;
 }
@@ -20,7 +20,8 @@
 }
 
 .progress-text {
-  padding-left: 40px;
+  padding-left: 50px;
+  padding-top: 2px;
 }
 
 .leaderboard-list {

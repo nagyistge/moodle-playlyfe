@@ -78,6 +78,7 @@ function add_handler(version, data) {
   })();
 }
 
+var dialog_open = false;
 function show_rewards(version, data) {
   var event = data.events.pop();
   var leaderboard = data.leaderboards.pop();
@@ -89,35 +90,40 @@ function show_dailog(event, leaderboard, data) {
   if(data.events.length === 0) {
     btnText = "OK";
   }
-  $("#dialog").dialog({
-    dialogClass: "no-close",
-    closeOnEscape: false,
-    //draggable: false,
-    //resizable: false,
-    //position: { my: "center", at: "center", of: "body" }
-    height: "auto",
-    width: "auto",
-    modal: true,
-    title: event.rule.name,
-    buttons: [
-      {
-        text: btnText,
-        click: function() {
-          if(data.events.length === 0) {
-            $( this ).dialog("close");
-          }
-          else {
-            show_rewards('', data);
+  if(dialog_open === false) {
+    $("#dialog").dialog({
+      dialogClass: "no-close",
+      closeOnEscape: false,
+      //draggable: false,
+      //resizable: false,
+      //position: { my: "center", at: "center", of: "body" }
+      height: "auto",
+      width: "auto",
+      modal: true,
+      title: event.rule.name,
+      buttons: [
+        {
+          text: btnText,
+          click: function() {
+            if(data.events.length === 0) {
+              $( this ).dialog("close");
+              dialog_open = false;
+            }
+            else {
+              show_rewards('', data);
+            }
           }
         }
-      }
-    ]
-  });
+      ]
+    });
+    dialog_open = true;
+  }
   var html = '';
   for(var i=0; i<event.changes.length; i++) {
     html += render_reward(event.changes[i]);
   }
   html += leaderboard;
+  $("#ui-id-1").html(event.rule.name);
   $("#dialog").html('<h3>You have Gained</h3>'+html);
 }
 

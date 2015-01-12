@@ -10,35 +10,18 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->navigation->clear_cache();
 $html = '<h1> Your Notifications </h1><hr></hr>';
-$notifications = $pl->get('/runtime/notifications', array('player_id' => 'u'.$USER->id));
 $count = 1;
 $ids = array();
-
-global $DB;
-
-function display_change($change, $course_name) {
-  global $count;
-  $text = '';
-  $metric= $change['metric'];
-  $delta = $change['delta'];
-  $text .= '<div class="notification">';
-  $text .= '<div class="notification-index">'.$count.'</div>';
-  $text .= '<img src="image_def.php?metric='.$metric['id'].'&size=large"></img>';
-  if ($metric['type'] == 'point') {
-    $value = $delta['new'] - $delta['old'];
-  }
-  else {
-    foreach($delta as $key => $value) {
-      $value = ($value['new'] - $value['old']).' x '.$key;
-      $value .= '     <img src="image_def.php?metric='.$metric['id'].'&size=medium&item='.$key.'"></img>    ';
-    }
-  }
-  $text .= 'You have gained <b>'.$value.' '.$metric['name'].'</b> through <b>'.$course_name.'</b>';
-  $text .= '</div>';
-  $count++;
-  return $text;
+if($_GET) {
+  $page = $_GET['page'];
 }
-
+else {
+  $page = 0;
+}
+$date = date('Y-m-d',  time() - ($page+1)*(24 * 60 * 60));
+print_object($date);
+//, 'start' => '2015-01-01'
+$notifications = $pl->get('/runtime/notifications', array('player_id' => 'u'.$USER->id));
 if(!is_null($notifications)) {
   $notifications['data'] = array_reverse($notifications['data']);
   foreach($notifications['data'] as $notification) {
@@ -55,8 +38,13 @@ if(!is_null($notifications)) {
   }
 }
 else {
-  $html .= 'You have no new Notifications';
+  $html .= '<h4>You have no new Notifications</h4>';
 }
+
+// if($notifications and $page >= 0 and $page < intval($notifications['total']/10)) {
+//   $url = new moodle_url('/local/playlyfe/notification.php', array('page' => $page+1));
+//   $html .= '<div class="leaderboard-button">'.html_writer::link($url, 'Older Entries').'</div class="leadeboard-button">';
+// }
 
 if(count($ids) > 0) {
   try {

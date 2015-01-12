@@ -853,6 +853,7 @@ foreach ($courses as $courseid => $course) {
     $events = event_information($modules, $course->id);
     $attempts = progress_attempts($modules, $events, $USER->id, $course->id);
     $overall_progress += progress_percentage($events, $attempts);
+    // $html .= $course->id;
     //$overall_progress += count($attempts)/count($events);
     //$html .= $course->shortname;
     $index++;
@@ -862,7 +863,7 @@ $html .= '<h1>Your Profile<h1><hr></hr>';
 $html .= '<div class="profile-alias">';
 $html .= '<div class="userprofile">';
 $html .= '<div class="userprofilebox clearfix"><div class="profilepicture">';
-$html .= $OUTPUT->user_picture($USER, array('size'=>100));
+$html .= $OUTPUT->user_picture($USER, array('size'=>120));
 $html .= '</div>';
 $html .= '</div>';
 $html .= '</div>';

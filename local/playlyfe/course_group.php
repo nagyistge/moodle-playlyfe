@@ -13,6 +13,7 @@ $PAGE->set_title($SITE->shortname);
 $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
+$PAGE->settingsnav->get('root')->get('playlyfe')->get('course_group')->make_active();
 $PAGE->navigation->clear_cache();
 $html = '';
 $course_groups = get('course_groups');

@@ -77,14 +77,6 @@ $toform = array();
 $toform['id'] = get_config('playlyfe', 'client_id');
 $toform['secret'] = get_config('playlyfe', 'client_secret');
 $form->set_data($toform);
-$notification = get_config('playlyfe', 'notification');
-$leaderboards = get_config('playlyfe', 'leaderboards');
-$profile = get_config('playlyfe', 'profile');
-if(!$notification) {
-  set_config('notification', 'true', 'playlyfe');
-  set_config('leaderboards', 'true', 'playlyfe');
-  set_config('profile', 'true', 'playlyfe');
-}
 echo $OUTPUT->header();
 $form->display();
 echo $OUTPUT->footer();

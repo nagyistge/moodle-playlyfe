@@ -212,34 +212,6 @@ function set($key, $value = array()) {
   set_config($key, json_encode($value), 'playlyfe');
 }
 
-function create_reward_table($id, $var_id, $metrics, $action) {
-  global $PAGE;
-  $html = '<table id="treward_'.$id.'" class="generaltable">'; //admintable
-  $html .= '<thead>';
-  $html .= '<tr>';
-  $html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
-  $html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Value</th>';
-  $html .= '</tr>';
-  $html .= '</thead>';
-  $html .= '<tbody>';
-  $html .= '</tbody>';
-  $html .= '</table>';
-  $html .= '<p><button type="button" id="add_'.$id.'">Add Reward</button></p>';
-  $data = array(
-    'id' => $id,
-    'metrics' => $metrics,
-    'rewards' => array()
-  );
-  foreach($action['rules'] as $rule) {
-    if ($rule['requires']['context']['rhs'] == $var_id) {
-      $data['rewards'] = $rule['rewards'];
-    }
-  }
-  $PAGE->requires->js_init_call('init_table', array($data));
-  $PAGE->requires->js_init_call('add_handler', array($data));
-  return $html;
-}
-
 function create_reward($metrics, $values) {
   $i = 0;
   $rewards = array();
@@ -268,34 +240,40 @@ function create_reward($metrics, $values) {
   return $rewards;
 }
 
-
-function create_rule_table($rule, $metrics) {
-  global $PAGE;
-  $id = $rule['id'];
-  $html = '<table id="treward_'.$id.'" class="generaltable">'; //admintable
-  $html .= '<thead>';
-  $html .= '<tr>';
-  $html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
-  $html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Value</th>';
-  $html .= '</tr>';
-  $html .= '</thead>';
-  $html .= '<tbody>';
-  $html .= '</tbody>';
-  $html .= '</table>';
-  $html .= '<p><button type="button" id="add_'.$id.'">Add Reward</button></p>';
-  if(count($rule['rules']) > 0) {
-    $rewards = $rule['rules'][0]['rewards'];
-  } else {
-    $rewards = array();
+function create_requires($id, $post) {
+  $requires = array();
+  if(array_key_exists('condition_type', $post)) {
+    if(count($post['condition_type'][$id]) === 1) {
+      $requires = array(
+        'type' => 'var',
+        'context' => array (
+          'lhs' => '$vars.score',
+          'operator' => $post['condition_operator'][$id][0],
+          'rhs' => $post['condition_value'][$id][0]
+        )
+      );
+    }
+    else {
+      $expression = array();
+      $index = 0;
+      foreach ($post['condition_type'][$id] as $value) {
+        array_push($expression, array(
+          'type' => 'var',
+          'context' => array (
+            'lhs' => '$vars.score',
+            'operator' => $post['condition_operator'][$id][$index],
+            'rhs' => $post['condition_value'][$id][$index]
+          )
+        ));
+        $index++;
+      }
+      $requires = array(
+        'type' => 'and',
+        'expression' => $expression
+      );
+    }
   }
-  $data = array(
-    'id' => $id,
-    'metrics' => $metrics,
-    'rewards' => $rewards
-  );
-  $PAGE->requires->js_init_call('init_table', array($data));
-  $PAGE->requires->js_init_call('add_handler', array($data));
-  return $html;
+  return $requires;
 }
 
 function get_rule($id, $event, $context = '', $name) {
@@ -338,42 +316,6 @@ function get_rule($id, $event, $context = '', $name) {
       print_object($e);
     }
   }
-}
-
-function create_requires($id, $post) {
-  $requires = array();
-  if(array_key_exists('condition_type', $post)) {
-    if(count($post['condition_type'][$id]) === 1) {
-      $requires = array(
-        'type' => 'var',
-        'context' => array (
-          'lhs' => '$vars.score',
-          'operator' => $post['condition_operator'][$id][0],
-          'rhs' => $post['condition_value'][$id][0]
-        )
-      );
-    }
-    else {
-      $expression = array();
-      $index = 0;
-      foreach ($post['condition_type'][$id] as $value) {
-        array_push($expression, array(
-          'type' => 'var',
-          'context' => array (
-            'lhs' => '$vars.score',
-            'operator' => $post['condition_operator'][$id][$index],
-            'rhs' => $post['condition_value'][$id][$index]
-          )
-        ));
-        $index++;
-      }
-      $requires = array(
-        'type' => 'and',
-        'expression' => $expression
-      );
-    }
-  }
-  return $requires;
 }
 
 function patch_rule($rule, $post) {
@@ -420,12 +362,6 @@ function add_to_buffer($userid, $events) {
   array_push($buffer, $events);
   set_buffer($userid, $buffer);
 }
-// Activity Stream in a Course Level, Team Activity within course
-// Course Progress
-// Skill Level
-// Commenting
-// Forums
-// Grades
 
 function create_leaderboard($id, $scope_id) {
   global $USER, $DB, $OUTPUT;
@@ -511,10 +447,6 @@ function calculate_data($userid) {
   return $data;
 }
 
-function add_to_attempts() {
-
-}
-
 function has_finished_rule($userid, $id) {
   $data = get($userid.'_data');
   if(!in_array($id, $data)) {
@@ -524,6 +456,62 @@ function has_finished_rule($userid, $id) {
   }
   else {
     return true;
+  }
+}
+
+function display_change($change, $course_name) {
+  global $count;
+  $text = '';
+  $metric= $change['metric'];
+  $delta = $change['delta'];
+  $text .= '<div class="notification">';
+  $text .= '<div class="notification-index">'.$count.'</div>';
+  $text .= '<img src="image_def.php?metric='.$metric['id'].'&size=large"></img>';
+  if ($metric['type'] == 'point') {
+    $value = $delta['new'] - $delta['old'];
+  }
+  else {
+    foreach($delta as $key => $value) {
+      $value = ($value['new'] - $value['old']).' x '.$key;
+      $value .= '     <img src="image_def.php?metric='.$metric['id'].'&size=medium&item='.$key.'"></img>    ';
+    }
+  }
+  $text .= 'You have gained <b>'.$value.' '.$metric['name'].'</b> through <b>'.$course_name.'</b>';
+  $text .= '</div>';
+  $count++;
+  return $text;
+}
+
+function formatDateAgo($value) {
+  $time = strtotime($value);
+  $d = new \DateTime($value);
+
+  $weekDays = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+  $months = ['Janvier', 'Février', 'Mars', 'Avril',' Mai', 'Juin', 'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+  if ($time > strtotime('-2 minutes'))
+  {
+      return 'a few seconds ago';
+  }
+  elseif ($time > strtotime('-30 minutes'))
+  {
+      return floor((strtotime('now') - $time)/60) . ' minutes ago';
+  }
+  elseif ($time > strtotime('today'))
+  {
+      return $d->format('G:i');
+  }
+  elseif ($time > strtotime('yesterday'))
+  {
+      return 'Hier, ' . $d->format('G:i');
+  }
+  elseif ($time > strtotime('this week'))
+  {
+      return $weekDays[$d->format('N') - 1] . ', ' . $d->format('G:i');
+  }
+  else
+  {
+      return $d->format('j') . ' ' . $months[$d->format('n') - 1] . ', ' . $d->format('G:i');
   }
 }
 
