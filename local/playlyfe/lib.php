@@ -273,7 +273,7 @@
         }
         echo '<div id="dialog"></div>';
         $PAGE->requires->js_init_call('show_rewards', array($data));
-        //set_buffer($USER->id, array());
+        set_buffer($USER->id, array());
       }
       $setting = json_decode(get_config('playlyfe', 'setting'), true);
       $ssg = json_decode(get_config('playlyfe', 'settingasdasd'), true);

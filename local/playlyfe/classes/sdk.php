@@ -5,7 +5,7 @@ use Playlyfe\Sdk\Playlyfe;
 $client_id = get_config('playlyfe', 'client_id');
 $client_secret = get_config('playlyfe', 'client_secret');
 if (!$client_id or !$client_secret) {
-  throw new Exception('Please set your client_id and client_secret in the Playlyfe Plugin Settings Page');
+  echo('Please set your client_id and client_secret in the Playlyfe Plugin Settings Page');
 }
 
 try {
