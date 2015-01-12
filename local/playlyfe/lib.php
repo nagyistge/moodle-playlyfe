@@ -248,10 +248,17 @@
         'events' => array(),
         'leaderboards' => array()
       );
-      $leaderboads = array();
       $rule_id = '';
       if(count($buffer) > 0) {
         foreach($buffer as $events) {
+          $pl = get_pl();
+          $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'name,id,type'));
+          $metricsList = array();
+          foreach ($metrics as $metric) {
+            if($metric['type'] === 'point') {
+              array_push($metricsList, $metric['id']);
+            }
+          }
           if(count($events) > 0 and array_key_exists('0', $events['local'])) {
             $event = $events['local'][0];
             if($event['event'] == 'custom_rule') {
@@ -260,11 +267,8 @@
               $rule_id = explode('_', $rule_id);
               $text = '';
               if(in_array('course', $rule_id)) {
-                $leaderboard_ids = get_leaderboards('course'.$rule_id[1].'_leaderboard');
-                if(count($leaderboard_ids) > 0) {
-                  foreach($leaderboard_ids as $leaderboard_id) {
-                    $text .= create_leaderboard($leaderboard_id, 'course'.$rule_id[1]);
-                  }
+                foreach($metricsList as $metric_id) {
+                  $text .= create_leaderboard($metric_id, 'course'.$rule_id[1]);
                 }
               }
               array_push($data['leaderboards'], $text);

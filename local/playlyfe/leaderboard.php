@@ -85,10 +85,6 @@ if(array_key_exists('course', $_GET) and array_key_exists('metric', $_GET)) {
 }
 else {
   $metricsList = array();
-  $leaderboards = array();
-  if($PAGE->course) {
-    $leaderboards = get_leaderboards('course'.$PAGE->course->id.'_leaderboard');
-  }
   $arr = array();
   foreach ($courses as $course) {
     $arr[$course->shortname] = $course->id;

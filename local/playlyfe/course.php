@@ -29,7 +29,6 @@ if (array_key_exists('submit', $_POST)) {
   }
   redirect(new moodle_url('/local/playlyfe/course.php', array('id' => $id)));
 } else {
-  $leaderboards = array_merge(get_leaderboards('all_leaderboards'), get_leaderboards('course'.$id.'_leaderboard'));
   echo $OUTPUT->header();
   $form = new PForm($course->shortname, 'course.php?id='.$id);
   $form->create_separator('Rewards for Course Completion', 'Give rewards to users who complete this course');
