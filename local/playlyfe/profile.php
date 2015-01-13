@@ -886,7 +886,7 @@ $html .= '
 $html .= '
   <div class="page-section grid-12 full-width clearfix">
     <div class="profile-achievements col-6">
-      <h2 class="section-title">Your Recent Achievements</h2>';
+      <h2 class="section-title">Your Achievements</h2>';
     $item_count = 0;
 
     if(count($profile['scores']) != 0) {
