@@ -130,9 +130,12 @@
   function forum_viewed_handler($event) {
     $id = 'forum_'.$event->forum.'_viewed';
     $userid = $event->userid;
-    if(!has_finished_rule($id, $userid)) {
-      execute_rule($id, $event->userid);
-      show_reward($event->userid);
+    if(!has_finished_rule($id, $userid, false)) {
+      $response = execute_rule($id, $event->userid);
+      if($response) {
+        has_finished_rule($id, $userid, true);
+        show_reward($event->userid);
+      }
     }
   }
 
@@ -167,6 +170,7 @@
     if (isloggedin() || !isguestuser()) {
       $data = calculate_data($userid);
       if(count($data['events']) > 0) {
+        echo '<div id="dialog"></div>';
         $PAGE->requires->js_init_call('show_rewards', array($data));
       }
     }
