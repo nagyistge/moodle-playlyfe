@@ -30,196 +30,24 @@
  *
  * #e20000; /* alert *
  * #ffe2e2; /* alert-light *
+ *
+ * #95d905; /* $green *
+ * #1b5ddf; /* $blue *
+ * #259dff; /* $sky *
+ * #023c7c; /* $navy *
+ * #8100ad; /* $purple *
+ * #e20000; /* $red *
+ * #e85e07; /* $orange *
+ * #da9100; /* $gold *
+ * #ffcc00; /* $yellow *
 **/
 
-.text-center {
-  text-align: center;
+body {
+  height:100%;
 }
-.full-width {
-  width: 100%;
-}
-.full-height {
-  height: 100%;
-}
-.no-margin, .no-space, .ui-helper-reset {
-  margin: 0px !important;
-}
-.no-padding, .no-space {
-  padding: 0px !important;
-}
-.list-unstyled {
-  margin: 0;
-  padding: 0;
-  list-style: outside none none;
-}
-.remove-button {
-  float: right;
-  padding-left: 25px;
-}
-.underline {
-  text-decoration: underline;
-}
-.clearfix::before, .clearfix::after {
-  display: table;
-  line-height: 0;
-  content: "";
-}
-.clearfix::after {
-  clear: both;
-}
-
-/**
-//
-// Variable Grid System (Fluid Version).
-// Learn more ~ http://www.spry-soft.com/grids/
-// Based on 960 Grid System - http://960.gs/ & 960 Fluid - http://www.designinfluences.com/
-// Licensed under GPL and MIT.
-//
-*/
-.grid-12 {
-  width: 92%;
-  margin-left: 4%;
-  margin-right: 4%;
-}
-.grid-12.full-width {
-  width: 100%;
-  margin-left: 0;
-  margin-right: 0;
-}
-
-.col-1,  .col-2,  .col-3,  .col-4,
-.col-5,  .col-6,  .col-7,  .col-8,
-.col-9,  .col-10, .col-11, .col-12,
-.col-13, .col-14, .col-15, .col-16 {
-  display: inline;
-  position: relative;
-  float: left;
-  margin-left: 1%;
-  margin-right: 1%;
-}
-
-.grid-12 .col-3 { width: 23%; }
-.grid-12 .col-6 { width: 48%; }
-.grid-12 .col-9 { width: 73%; }
-.grid-12 .col-12 { width: 98%; }
-
-.alpha { margin-left: 0; }
-.omega { margin-right: 0; }
-
-.grid-12 .col-1  { width: 6.333%; }
-.grid-12 .col-2  { width: 14.666%; }
-.grid-12 .col-4  { width: 31.333%; }
-.grid-12 .col-5  { width: 39.666%; }
-.grid-12 .col-7  { width: 56.333%; }
-.grid-12 .col-8  { width: 64.666%; }
-.grid-12 .col-10 { width: 81.333%; }
-.grid-12 .col-11 { width: 89.666%; }
-
-
-.grid-12 .pfx-3 { padding-left: 25%; }
-.grid-12 .pfx-6 { padding-left: 50%; }
-.grid-12 .pfx-9 { padding-left: 75%; }
-
-.grid-12 .pfx-1  { padding-left: 8.333%; }
-.grid-12 .pfx-2  { padding-left: 16.666%; }
-.grid-12 .pfx-4  { padding-left: 33.333%; }
-.grid-12 .pfx-5  { padding-left: 41.666%; }
-.grid-12 .pfx-7  { padding-left: 58.333%; }
-.grid-12 .pfx-8  { padding-left: 66.666%; }
-.grid-12 .pfx-10 { padding-left: 83.333%; }
-.grid-12 .pfx-11 { padding-left: 91.666%; }
-
-
-.grid-12 .sfx-3 { padding-right: 25%; }
-.grid-12 .sfx-6 { padding-right: 50%; }
-.grid-12 .sfx-9 { padding-right: 75%; }
-
-.grid-12 .sfx-1 { padding-right: 8.333%; }
-.grid-12 .sfx-2 { padding-right: 16.666%; }
-.grid-12 .sfx-4 { padding-right: 33.333%; }
-.grid-12 .sfx-5 { padding-right: 41.666%; }
-.grid-12 .sfx-7 { padding-right: 58.333%; }
-.grid-12 .sfx-8 { padding-right: 66.666%; }
-.grid-12 .sfx-10 { padding-right: 83.333%; }
-.grid-12 .sfx-11 { padding-right: 91.666%; }
-
-.grid-12 .push-1  { left:8.333%;  }
-.grid-12 .push-2  { left:16.667%; }
-.grid-12 .push-3  { left:25.0%;   }
-.grid-12 .push-4  { left:33.333%; }
-.grid-12 .push-5  { left:41.667%; }
-.grid-12 .push-6  { left:50.0%;   }
-.grid-12 .push-7  { left:58.333%; }
-.grid-12 .push-8  { left:66.667%; }
-.grid-12 .push-9  { left:75.0%;   }
-.grid-12 .push-10 { left:83.333%; }
-.grid-12 .push-11 { left:91.667%; }
-
-.grid-12 .pull-1  { left:-8.333%;  }
-.grid-12 .pull-2  { left:-16.667%; }
-.grid-12 .pull-3  { left:-25.0%;   }
-.grid-12 .pull-4  { left:-33.333%; }
-.grid-12 .pull-5  { left:-41.667%; }
-.grid-12 .pull-6  { left:-50.0%;   }
-.grid-12 .pull-7  { left:-58.333%; }
-.grid-12 .pull-8  { left:-66.667%; }
-.grid-12 .pull-9  { left:-75.0%;   }
-.grid-12 .pull-10 { left:-83.333%; }
-.grid-12 .pull-11 { left:-91.667%; }
-
-
-
-/* The media object
-   (OOCSS / stubbornella.com) */
-.media {
-  margin: 10px;
-  overflow: hidden;
-  zoom: 1;
-}
-.media .content {
-  /* use overflow for clearing floats and
-   creating new layout context */
-  overflow: hidden;
-  zoom: 1;
-}
-.media .image {
-  /* you can float the image to either left or right */
-  float: left;
-  margin-right: 10px;
-}
-.media .image img {
-  display: block;
-}
-.media .image.right {
-  margin-right: 0;
-  margin-left: 10px;
-}
-
-.avatar {
-  position: relative;
-  background-color: transparent;
-  width: 40px;
-  height: 40px;
-}
-.avatar.large {  /* Playlyfe's Large image size */
-  width: 140px;
-  height: 140px;
-}
-.avatar img {
-  /* constrain the image dimensions to that of the parent block */
-  max-width: 100%;
-  max-height: 100%;
-  /* vertically and horizontally center the content in the parent block */
-  /* requires parent to have a non-static position and unfloated */
-  position: absolute;
-  top: 0; bottom: 0;
-  left: 0; right: 0;
-  margin: auto;
-}
-
 
 #closebutton {
-  margin-top:4px;
+  margin-top: 4px;
   margin-right: 4px;
 }
 
@@ -326,12 +154,6 @@
   color: #ffffff; /* gray-lighter */
   background-color: #dddddd; /* gray-lightest */
 }
-.placeholder-content {
-  padding: 0.5rem;
-  color: #bbbbbb; /* gray-lighter */
-  border: 1px dashed #dddddd; /* gray-lightest */
-}
-
 .hud-section-item {
   padding-left: 1.6rem;
   padding-right: 1.6rem;
@@ -370,48 +192,6 @@
   width: 72px;
   height: 72px;
 }
-
-/* Progress Bar */
-.progress-bar {
-  box-sizing: border-box;
-  width: 100%;
-  margin-bottom: 0.5em;
-  border: 1px solid #dddddd; /* gray-lightest */
-  padding: 2px;
-}
-.progress-bar .progress-meter {
-  overflow: hidden;
-  position: relative;
-  height: 10px;
-  background-color: #dddddd; /* gray-lightest */
-}
-.progress-bar .progress-value {
-  display:block;
-  position: absolute;
-  z-index: 1;
-  left:0;
-  top:0;
-  height: 100%;
-  background-color: #80b314; /* prime-dark */
-  background-image: linear-gradient(
-    135deg, transparent 30%, white 30%, white 60%, transparent 60%
-  );
-  background-size: 20px 10px;
-  transition:
-    width 0.4s cubic-bezier(0.60, -0.28, 0.74, 0.05),
-    background-color 0.2s ease 0.2s;
-}
-.progress-bar.animated .progress-value {
-  -webkit-animation: movingBg 1500ms linear infinite;
-  -moz-animation: movingBg 1500ms linear infinite;
-  -ms-animation: movingBg 1500ms linear infinite;
-  animation: movingBg 1500ms linear infinite;
-}
-
-
-
-
-
 
 
 .pl-leaderboard-checkbox {
@@ -465,52 +245,6 @@
   background-repeat: repeat-x;
   background-color: #E1E1DF;
   width: 85px;
-}
-
-
-
-.notification {
-  font-size: 14px;
-  color: black;
-}
-
-.notification-index {
-  float: left;
-  margin: 20px 20px 10px 10px;
-  font-size: 20px;
-  font-weight: 100;
-}
-
-.notification-text {
-  margin: 20px 20px 10px 10px;
-  font-size: 20px;
-}
-
-.fb-leaderboard-player {
-  font-size: 16px;
-  border: 1px solid black;
-  color: black;
-}
-
-.fb-leaderboard-player-rank {
-  float: left;
-  margin: 20px 10px 10px 10px;
-  font-size: 20px;
-  font-weight: 100;
-}
-
-.fb-leaderboard-player-alias {
-  float: right;
-  margin: 20px 20% 10px 10px;
-}
-
-.fb-leaderboard-player-score {
-  float: right;
-  margin: 20px 20px 10px 10px;
-}
-
-.fb-leaderboard-player-selected {
-  color: red;
 }
 
 
@@ -573,9 +307,7 @@
   color: #bbbbbb; /* gray-lighter */
   background-color: #f8f8f8; /* gray-ultralight */
 }
-body {
-  height:100%;
-}
+
 
 .leaderboard-header {
   font-size: 1rem;
@@ -592,20 +324,4 @@ body {
 .leadeboard-table td {
   border: 1px solid #DDD;
   vertical-align: middle;
-}
-
-
-
-/* Animation Keyframes */
-@-webkit-keyframes movingBg {
-  100% { background-position: -100px 0; }
-}
-@-moz-keyframes movingBg {
-  100% { background-position: -100px 0; }
-}
-@-ms-keyframes movingBg {
-  100% { background-position: -100px 0; }
-}
-@keyframes movingBg {
-  100% { background-position: -100px 0; }
 }

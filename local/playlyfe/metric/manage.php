@@ -25,7 +25,7 @@ $table = new html_table();
 $table->head  = array('Image', 'ID', 'Name', 'Description', '', '');
 $table->colclasses = array('leftalign', 'centeralign', 'rightalign', 'rightalign', 'rightalign');
 $table->data  = array();
-$table->attributes['class'] = 'admintable generaltable';
+$table->attributes['class'] = 'pl-table admin-table';
 $table->id = 'manage_metrics';
 
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name,type,description,image'));

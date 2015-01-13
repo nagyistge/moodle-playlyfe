@@ -622,8 +622,7 @@ class PForm {
   public function create_rule_table($rule, $metrics) {
     global $PAGE;
     $id = $rule['id'];
-    //$this->html .= '<div id="treward_'.$id.'" class="generaltable">';
-    $this->html .= '<table id="treward_'.$id.'" class="generaltable">'; //admintable
+    $this->html .= '<table id="treward_'.$id.'" class="pl-table">';
     $this->html .= '<thead>';
     $this->html .= '<tr>';
     $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
@@ -650,7 +649,7 @@ class PForm {
   }
 
   public function create_leaderboard_table($metrics, $leaderboards) {
-    $this->html .= '<table class="generaltable">';
+    $this->html .= '<table class="pl-table">';
     $this->html .= '<thead>';
     $this->html .= '<tr>';
     $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
@@ -678,7 +677,7 @@ class PForm {
 
   public function create_condition_table($rule) {
     global $PAGE;
-    $this->html .= '<table id="tcondition_'.$rule['id'].'" class="generaltable">';
+    $this->html .= '<table id="tcondition_'.$rule['id'].'" class="pl-table">';
     $this->html .= '<thead>';
     $this->html .= '<tr>';
     $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Type</th>';

@@ -24,7 +24,7 @@ $table = new html_table();
 $table->head  = array('Image', 'ID', 'Name',  'Description', 'Badges', '', '');
 $table->colclasses = array('centeralign', 'leftalign', 'leftalign', 'centeralign', 'rightalign');
 $table->data  = array();
-$table->attributes['class'] = 'admintable generaltable';
+$table->attributes['class'] = 'pl-table admin-table';
 $table->id = 'manage_sets';
 
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,name,type,description,image,constraints.items'));
@@ -37,7 +37,7 @@ foreach($metrics as $metric) {
     $table3->head  = array('Image', 'Name', 'Description', 'Max');
     $table3->colclasses = array('centeralign', 'leftalign', 'rightalign');
     $table3->data  = array();
-    $table3->attributes['class'] = 'admintable generaltable';
+    $table3->attributes['class'] = 'pl-table admin-table';
     foreach($metric['constraints']['items'] as $item){
       $item_image = '<img src="../image.php?image_id='.$item['image'].'"></img>';
       $table3->data[] = new html_table_row(array($item_image, $item['name'], $item['description'], $item['max']));

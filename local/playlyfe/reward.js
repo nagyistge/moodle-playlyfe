@@ -165,7 +165,7 @@ function add_course_group(version, data) {
   var rewards = data.rewards;
   var html = '<h3> Course Group '+groups_count+'</h3><hr></hr>';
   html += '<p> Please select the courses and add rewards to give when all of them have been completed </p>';
-  html += '<table class="generaltable">';
+  html += '<table class="pl-table">';
   html += '<thead>';
   html += '<tr>';
   html += '<th class="header c1 lastcol centeralign" style="" scope="col">Course</th>';
@@ -190,7 +190,7 @@ function add_course_group(version, data) {
   var id = 'course_group_'+groups_count+'_completed';
   html += '</tbody>';
   html += '</table>';
-  html += '<table id="treward_'+id+'" class="generaltable">';
+  html += '<table id="treward_'+id+'" class="pl-table">';
   html += '<thead>';
   html += '<tr>';
   html += '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
