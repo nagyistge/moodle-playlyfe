@@ -697,4 +697,10 @@ class PForm {
     $this->html .= '</div></fieldset></form>';
     echo $this->html;
   }
+  public function getFinalContents() {
+    $this->html .= '<div id="extra"></div>';
+    $this->html .= '<div class="fitem fitem_actionbuttons fitem_fgroup"><div class="felement fgroup"><input type="submit" name="submit" value="Submit" /></div></div>';
+    $this->html .= '</div></fieldset></form>';
+    return $this->html;
+  }
 }
