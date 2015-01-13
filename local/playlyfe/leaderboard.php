@@ -35,11 +35,18 @@ if(array_key_exists('course', $_GET) and array_key_exists('metric', $_GET)) {
     $leaderboard = $pl->get('/runtime/leaderboards/'.$metric, $query);
   }
   catch(Exception $e) {
+    $leaderboard = array('data' => array(), 'total' => 0);
   }
   echo $OUTPUT->header();
   $course = $DB->get_record('course', array('id' => $course));
-  $html .= '<h1> Leaderboards for '.$metric.' in course '.$course->fullname.' Page - '.($page+1).'</h1>';
-  $html .= '<hr></hr><ul class="leaderboard-list">';
+  $html .= '
+  <div id="pl-leaderboard" class="pl-page">
+    <h1 class="page-title">Leaderboard for '.$metric.' in '.$course->fullname.'</h1>
+    <h5 class="page-subtitle">Page: '.($page + 1).'</h5>
+    <div class="page-section">
+      <div class="section-content">
+        <ul class="leaderboard-list list-unstyled">';
+
   foreach($leaderboard['data'] as $player) {
     $score = $player['score'];
     $id = $player['player']['id'];
@@ -49,37 +56,36 @@ if(array_key_exists('course', $_GET) and array_key_exists('metric', $_GET)) {
     if($rank < 10) {
       $rank = '0'.$rank;
     }
-    $html .= "<li class='leaderboard-player'>";
-    $html .= '<div class="leaderboard-player-rank">'.$rank.'</div>';
     $user = $DB->get_record('user', array('id' => $list[1]));
     $html .= $OUTPUT->user_picture($user, array('size'=>100));
-    $html .= '<div class="leaderboard-player-score">'.$score.'</div>';
-    if($id == 'u'.$USER->id) {
-      $html .= '<div class="leaderboard-player-alias selected">'.$alias.'</div></li>';
-    }
-    else {
-      $html .= '<div class="leaderboard-player-alias">'.$alias.'</div></li>';
-    }
+
+    $html .= '
+          <li class="leaderboard-player">
+            <div class="leaderboard-player-rank">'.$rank.'</div>
+            <div class="leaderboard-player-score">'.$score.'</div>
+            <div class="leaderboard-player-alias '.($id == 'u'.$USER->id ? 'selected' : '').'">'.$alias.'</div>
+          </li>';
   }
-  $html .= '</ul>';
+  $html .= '
+        </ul>';
+
   if(count($leaderboard['data']) === 0) {
-    if($page > 0) {
-      $html .= '<h4>This Leaderboard Page is empty. Please Go back to a previous page</h4>';
-    }
-    else {
-      $html .= '<h4>The leaderboard is empty</h4>';
-    }
+    $html .= '<div class="placeholder-content">This leaderboard '.($page > 0 ? 'page ': '').'is empty.</div>';
   }
   if($page >= 0 and $page < intval($leaderboard['total']/10)) {
-    $_GET['page'] = $page+1;
+    $_GET['page'] = $page + 1;
     $url = new moodle_url('/local/playlyfe/leaderboard.php', $_GET);
-    $html .= '<div class="leaderboard-button">'.html_writer::link($url, 'Next Page').'</div class="leadeboard-button">';
+    $html .= '<div class="leaderboard-button">'.html_writer::link($url, 'Next Page').'</div>';
   }
   if($page > 0) {
-    $_GET['page'] = $page-1;
+    $_GET['page'] = $page - 1;
     $url = new moodle_url('/local/playlyfe/leaderboard.php', $_GET);
-    $html .= '<div class="leaderboard-button">'.html_writer::link($url, 'Previous Page').'</div class="leadeboard-button">';
+    $html .= '<div class="leaderboard-button">'.html_writer::link($url, 'Previous Page').'</div>';
   }
+  $html .= '
+      </div>
+    </div>
+  </div>';
   echo $html;
   echo $OUTPUT->footer();
 }
@@ -95,7 +101,12 @@ else {
     }
   }
   echo $OUTPUT->header();
-  $form = new PForm('Leaderboards', 'leaderboard.php', 'get');
+  $html .= '
+    <div id="pl-leaderboard" class="pl-page">
+      <h1 class="page-title">View Leaderboard</h1>
+      <div class="page-section">
+        <div class="section-content">';
+  $form = new PForm('Settings', 'leaderboard.php', 'get');
   $form->create_separator('Course','Please select the course in which you would like to see the leaderboards');
   $form->create_select('course', $arr);
   $form->create_separator('Metric','Please select the metric for which you would like to view the leaderboard within the course');
@@ -103,6 +114,11 @@ else {
   $form->create_separator('Options','Please select the options');
   $form->create_input('Page', 'page', '0', 'number', false);
   $form->create_checkbox('Find Me','find_me', true, false, false);
-  $form->end();
+  $html .= $form->getFinalContents();
+  $html .= '
+      </div>
+    </div>
+  </div>';
+  echo $html;
   echo $OUTPUT->footer();
 }
