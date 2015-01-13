@@ -227,6 +227,7 @@
 .pl-page {
   padding: 1rem;
   background-color: #ffffff; /* white */
+  border: 1px solid #dddddd; /* gray-lightest */
 }
 .pl-page .page-title {
   font-size: 1.8rem;
@@ -277,6 +278,7 @@
 }
 .achievement-count {
   position: absolute;
+  text-align: center;
   top: 0.5rem;
   right: 1rem;
   font-size: 0.85rem;
@@ -287,6 +289,10 @@
   background-color: #8fc717; /* prime */
   border: 2px solid #ffffff;
   box-shadow: 0 0 5px -2px #dddddd; /* gray-lightest */
+}
+.achievement-item.locked .achievement-count {
+  color: #ffffff; /* gray-lighter */
+  background-color: #dddddd; /* gray-lightest */
 }
 .placeholder-content {
   padding: 0.5rem;
@@ -300,7 +306,45 @@
 }
 
 
+/*.notification-timestamp {
+  position: absolute;
+  right: 1rem;
+  top: 0.5rem;
+  color: #bbbbbb; /* gray-lighter *
+  font-size: 1.2rem;
+}*/
+.log-item {
+  position: relative;
+  padding: 0.35rem 0.5rem;
+  margin: 0.25rem 0;
+  border-bottom: 1px solid #f8f8f8; /* gray-ultralight */
+  background-color: #ffffff; /* white */
+  color: #666666; /* gray-dark */
+  transition: color 200ms ease-in, background-color 200ms ease-in;
+}
+.log-item .log-actor,
+.log-item .log-target { font-weight: bold; }
 
+.log-item .log-footer {
+  position: absolute;
+  top: 0; right: 0;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.92rem;
+  color: #bbbbbb; /* gray-lighter */
+  background-color: #f8f8f8; /* gray-ultralight */
+}
+.log-item:hover {
+  background-color: #f8f8f8; /* gray-ultralight */
+  color: #444444; /* gray-darker */
+}
+.log-item:hover .log-footer {
+  background-color: #dddddd; /* gray-lightest */
+  color: #888888; /* gray */
+}
+#pl-notifications .log-item .avatar {
+  width: 72px;
+  height: 72px;
+}
 
 
 

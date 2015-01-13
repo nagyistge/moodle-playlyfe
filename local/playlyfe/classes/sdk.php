@@ -476,14 +476,11 @@ function has_finished_rule($userid, $id) {
   }
 }
 
-function display_change($change, $course_name) {
+function display_change($change, $course_name, $date) {
   global $count;
   $text = '';
   $metric= $change['metric'];
   $delta = $change['delta'];
-  $text .= '<div class="notification">';
-  $text .= '<div class="notification-index">'.$count.'</div>';
-  $text .= '<img style="float: left;" src="image_def.php?metric='.$metric['id'].'&size=large"></img>';
   if ($metric['type'] == 'point') {
     $value = $delta['new'] - $delta['old'];
   }
@@ -493,9 +490,22 @@ function display_change($change, $course_name) {
       $value .= '     <img src="image_def.php?metric='.$metric['id'].'&size=medium&item='.$key.'"></img>    ';
     }
   }
-  $text .= '<p class="notification-text">You have gained <b>'.$value.' '.$metric['name'].'</b> through <b>'.$course_name.'</b></p>';
-  $text .= '</div>';
-  $text .= '<div style="clear: both;"></div>';
+
+  $text .= '
+    <div class="log-item">
+      <div class="log-content media">
+        <div class="image avatar"><img src="image_def.php?metric='.$metric['id'].'&size=medium"></img></div>
+        <div class="content">
+          <span class="log-actor">You</span> have gained
+          <span class="score-value">'.$value.'</span>
+          <span class="score-metric">'.$metric['name'].'</span>
+          in the course <span class="log-target">'.$course_name.'</span>
+        </div>
+      </div>
+      <div class="log-footer" title="'.$date->format('Y-m-d H:i:s').'">
+        <time class="log-timestamp" datetime="'.$date->format('Y-m-d H:i:s').'">'.$date->format('D, jS M').'</time>
+      </div>
+    </div>';
   $count++;
   return $text;
 }

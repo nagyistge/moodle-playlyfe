@@ -9,7 +9,7 @@ $PAGE->set_title($SITE->fullname);
 $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->navigation->clear_cache();
-$html = '<h1> Your Notifications </h1><hr></hr>';
+$html = '';
 $count = 1;
 $ids = array();
 if($_GET) {
@@ -20,7 +20,14 @@ else {
 }
 $date = date('Y-m-d',  time() - ($page+1)*(24 * 60 * 60));
 print_object($date);
-//, 'start' => '2015-01-01'
+
+$html .= '
+<div id="pl-notifications" class="profile pl-page">
+  <h1 class="page-title">Your Notifications</h1>
+  <div class="page-section">
+    <div class="section-content">
+';
+
 $notifications = $pl->get('/runtime/notifications', array('player_id' => 'u'.$USER->id));
 if(!is_null($notifications)) {
   $notifications['data'] = array_reverse($notifications['data']);
@@ -32,14 +39,19 @@ if(!is_null($notifications)) {
       foreach($notification['changes'] as $change) {
         $title = $notification['rule']['name'];
         $date = new DateTime($notification['timestamp']);
-        $html .= display_change($change, $title).' on '.$date->format('Y-m-d H:i:s');
+        $html .= display_change($change, $title, $date);
       }
     }
   }
 }
 else {
-  $html .= '<h4>You have no new Notifications</h4>';
+  $html .= '<div class="placeholder-content empty-content">You have no new notifications.</div>';
 }
+
+$html .= '
+    </div>
+  </div>
+</div>'; // </#pl-notifications
 
 // if($notifications and $page >= 0 and $page < intval($notifications['total']/10)) {
 //   $url = new moodle_url('/local/playlyfe/notification.php', array('page' => $page+1));
