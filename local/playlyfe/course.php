@@ -20,6 +20,7 @@ $PAGE->navigation->clear_cache();
 $criteria = $DB->get_record('course_completion_criteria', array('course' => $id, 'criteriatype' => 2));
 $completed_rule = get_rule($id, 'completed', 'course', 'Course '.$course->shortname. ' Completed');
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'name,id,type,constraints'));
+$html = '';
 
 if (array_key_exists('submit', $_POST)) {
   patch_rule($completed_rule, $_POST);
@@ -30,15 +31,26 @@ if (array_key_exists('submit', $_POST)) {
   redirect(new moodle_url('/local/playlyfe/course.php', array('id' => $id)));
 } else {
   echo $OUTPUT->header();
-  $form = new PForm($course->shortname, 'course.php?id='.$id);
-  $form->create_separator('Rewards for Course Completion', 'Give rewards to users who complete this course');
+  $html .= '
+  <div id="pl-gamification-settings" class="pl-page">
+    <h1 class="page-title">Gamification Settings</h1>
+    <div class="page-section">
+      <div class="section-content">
+        <ul class="course-list list-unstyled">';
+  $form = new PForm($course->fullname, 'course.php?id='.$id);
+  $form->create_separator('Course Completion Rewards', 'Give rewards to users who complete this course');
   $form->create_rule_table($completed_rule, $metrics);
   // 2 for timeend criteria
   if($criteria and $criteria->timeend > 0) {
     $bonus_rule = get_rule($id, 'bonus', 'course', 'Course '.$course->shortname. ' Bonus');
-    $form->create_separator('Bonus for Early Completion', 'Give rewards to users who complete this course before the date'.date("D, d M Y H:i:s", $criteria->timeend));
+    $form->create_separator('Early Bird Bonus', 'Give rewards to users who complete this course before the deadline'.date("D, d M Y H:i:s", $criteria->timeend));
     $form->create_rule_table($bonus_rule, $metrics);
   }
-  $form->end();
+  $html .= $form->getFinalContents();
+  $html .= '
+      </div>
+    </div>
+  </div>';
+  echo $html;
   echo $OUTPUT->footer();
 }
