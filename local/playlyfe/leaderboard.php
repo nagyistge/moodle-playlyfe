@@ -41,7 +41,7 @@ if(array_key_exists('course', $_GET) and array_key_exists('metric', $_GET)) {
   $course = $DB->get_record('course', array('id' => $course));
   $html .= '
   <div id="pl-leaderboard" class="pl-page">
-    <h1 class="page-title">Leaderboard for '.$metric.' in '.$course->fullname.'</h1>
+    <h1 class="page-title"></h1>
     <h5 class="page-subtitle">Page: '.($page + 1).'</h5>
     <div class="page-section">
       <div class="section-content">
@@ -101,12 +101,7 @@ else {
     }
   }
   echo $OUTPUT->header();
-  $html .= '
-    <div id="pl-leaderboard" class="pl-page">
-      <h1 class="page-title">View Leaderboard</h1>
-      <div class="page-section">
-        <div class="section-content">';
-  $form = new PForm('Settings', 'leaderboard.php', 'get');
+  $form = new PForm('View Leaderboard', 'leaderboard.php', 'get', 'View Leaderboard');
   $form->create_separator('Course','Please select the course in which you would like to see the leaderboards');
   $form->create_select('course', $arr);
   $form->create_separator('Metric','Please select the metric for which you would like to view the leaderboard within the course');
@@ -114,11 +109,6 @@ else {
   $form->create_separator('Options','Please select the options');
   $form->create_input('Page', 'page', '0', 'number', false);
   $form->create_checkbox('Find Me','find_me', true, false, false);
-  $html .= $form->getFinalContents();
-  $html .= '
-      </div>
-    </div>
-  </div>';
-  echo $html;
+  $form->end();
   echo $OUTPUT->footer();
 }

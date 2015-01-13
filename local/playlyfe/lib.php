@@ -107,12 +107,14 @@
             array_push($arr, $item);
           }
         }
-        try {
-          $pl->post('/admin/players/u'.$userid.'/revert', array(), array('event_ids' => $arr));
-          $data = array();
-        }
-        catch(Exception $e) {
-          // echo(json_encode($e));
+        if(!empty($arr)) {
+          try {
+            $pl->post('/admin/players/u'.$userid.'/revert', array(), array('event_ids' => $arr));
+            $data = array();
+          }
+          catch(Exception $e) {
+            // echo(json_encode($e));
+          }
         }
         array_push($data, $response[0][0]['events']['local'][0]['id']);
         set($userid.'_attempts', $data);

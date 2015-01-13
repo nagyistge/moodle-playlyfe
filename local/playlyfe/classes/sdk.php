@@ -213,38 +213,36 @@ function create_reward($metrics, $values) {
   return $rewards;
 }
 
-function create_requires($id, $post) {
+function create_requires($types, $operators, $values) {
   $requires = array();
-  if(array_key_exists('condition_type', $post)) {
-    if(count($post['condition_type'][$id]) === 1) {
-      $requires = array(
+  if(count($types) == 1) {
+    $requires = array(
+      'type' => 'var',
+      'context' => array (
+        'lhs' => '$vars.score',
+        'operator' => $operators[0],
+        'rhs' => $values[0]
+      )
+    );
+  }
+  else if (count($types) > 1) {
+    $expression = array();
+    $index = 0;
+    foreach ($types as $type) {
+      array_push($expression, array(
         'type' => 'var',
         'context' => array (
           'lhs' => '$vars.score',
-          'operator' => $post['condition_operator'][$id][0],
-          'rhs' => $post['condition_value'][$id][0]
+          'operator' => $operators[$index],
+          'rhs' => $values[$index]
         )
-      );
+      ));
+      $index++;
     }
-    else {
-      $expression = array();
-      $index = 0;
-      foreach ($post['condition_type'][$id] as $value) {
-        array_push($expression, array(
-          'type' => 'var',
-          'context' => array (
-            'lhs' => '$vars.score',
-            'operator' => $post['condition_operator'][$id][$index],
-            'rhs' => $post['condition_value'][$id][$index]
-          )
-        ));
-        $index++;
-      }
-      $requires = array(
-        'type' => 'and',
-        'expression' => $expression
-      );
-    }
+    $requires = array(
+      'type' => 'and',
+      'expression' => $expression
+    );
   }
   return $requires;
 }
@@ -261,7 +259,9 @@ function get_rule($id, $event, $context = '', $name) {
     $name = $context.'_'.$id.'_'.$event;
   }
   try {
-    return $pl->get('/design/versions/latest/rules/'.$context.'_'.$id.'_'.$event);
+    $rule = $pl->get('/design/versions/latest/rules/'.$context.'_'.$id.'_'.$event);
+    $rule['name'] = $name;
+    return $rule;
   }
   catch(Exception $e) {
     if($e->name == 'rule_not_found') {
@@ -273,6 +273,16 @@ function get_rule($id, $event, $context = '', $name) {
         'variables' => array(
           array(
             'name' => 'score',
+            'type' => 'int',
+            'required' => false
+          ),
+          array(
+            'name' => 'timecompleted',
+            'type' => 'int',
+            'required' => false
+          ),
+          array(
+            'name' => 'timeenrolled',
             'type' => 'int',
             'required' => false
           )
@@ -295,12 +305,11 @@ function patch_rule($rule, $post) {
   global $pl;
   $id = $rule['id'];
   unset($rule['id']);
-  unset($rule['name']);
   if(array_key_exists('metrics', $post) and array_key_exists($id, $post['metrics'])) {
     $rule['rules'] = array(
       array(
         'rewards' => create_reward($post['metrics'][$id], $post['values'][$id]),
-        'requires' => (object) create_requires($id, $post)
+        'requires' => (object) create_requires(array(), array(), array())
       )
     );
     try {
@@ -319,6 +328,38 @@ function patch_rule($rule, $post) {
     catch(Exception $e) {
       print_object($e);
     }
+  }
+}
+
+function patch_rule_with_conditions($rule, $post) {
+  global $pl;
+  if(array_key_exists('metrics', $post)) {
+    $rules = array();
+    $length = count($post['metrics']);
+    for($i=0;$i<$length;$i++){
+      $key= $rule['id'].'_'.$i;
+      $metrics = $post['metrics'][$key];
+      $values = $post['values'][$key];
+      $condition_types = array();
+      if(array_key_exists('condition_types', $post) and array_key_exists($key, $post['condition_types'])) {
+          $condition_types = $post['condition_types'][$key];
+          $condition_operators = $post['condition_operators'][$key];
+          $condition_values = $post['condition_values'][$key];
+      }
+      array_push($rules, array(
+        'rewards' => create_reward($metrics, $values),
+        'requires' => (object)create_requires($condition_types, $condition_operators, $condition_values)
+      ));
+    }
+    $rule['rules'] = $rules;
+  }
+  $id = $rule['id'];
+  unset($rule['id']);
+  try {
+    $pl->patch('/design/versions/latest/rules/'.$id, array(), $rule);
+  }
+  catch(Exception $e) {
+    print_object($e);
   }
 }
 
@@ -360,58 +401,22 @@ function create_leaderboard($id, $name, $scope_id) {
     $html .= '</tr>';
     $html .= '</thead>';
     $html .= '<tbody>';
-    // foreach ($metrics as $metric) {
-    //   if($metric['type'] === 'point') {
-    //     $html .= '<tr>';
-    //     $html .= '<td>'.$metric['name'].'</td>';
-    //     $html .= '<td class="pl-leaderboard-checkbox">';
-    //     $check_text = '';
-    //     if(in_array($metric['id'], $leaderboards)){
-    //       $check_text = 'checked';
-    //     }
-    //     $html .= '<input value="'.$metric['id'].'" name="leaderboards[]" type="checkbox" '.$check_text.'>';
-    //     $html .= '</td>';
-    //     $html .= '</tr>';
-    //   }
-    // }
     foreach($leaderboard['data'] as $player) {
       $html .= '<tr>';
       $html .= '<td><b>'.$player['rank'].'</b></td>';
       $html .= '<td>';
-      $user = $DB->get_record('user', array('id' => '2'));
+      $list = explode('u', $player['player']['id']);
+      $user = $DB->get_record('user', array('id' => $list[1]));
       $html .= $OUTPUT->user_picture($user, array('size'=>50));
       $html .= '</td>';
       $html .= '<td><b>'.$player['player']['alias'].'</b></td>';
       $html .= '<td><b>'.$player['score'].'</b></td>';
-      // $score = $player['score'];
-      // $id = $player['player']['id'];
-      // $alias = $player['player']['alias'] or 'Null';
-      // $rank = $player['rank'];
-      // $list = explode('u', $id);
-      // if($rank < 10) {
-      //   $rank = '0'.$rank;
-      // }
-      // if($id === 'u'.$USER->id) {
-      //   $html .= "<li class='fb-leaderboard-player fb-leaderboard-player-selected'>";
-      //   $html .= '<div class="fb-leaderboard-player-rank">'.$rank.'</div>';
-      // }
-      // else {
-      //   $html .= "<li class='fb-leaderboard-player'>";
-      //   $html .= '<div class="fb-leaderboard-player-rank">'.$rank.'</div>';
-      // }
-      // $user = $DB->get_record('user', array('id' => '2'));
-      // $html .= $OUTPUT->user_picture($user, array('size'=>75));
-      // //$user = $DB->get_record('user', array('id' => $list[1]));
-      // //$html .= $OUTPUT->user_picture($user, array('size'=>100));
-      // $html .= '<div class="fb-leaderboard-player-score">'.$score.'</div>';
-      // $html .= '<div class="fb-leaderboard-player-alias">'.$alias.'</div></li>';
     }
     $html .= '</tbody>';
     $html .= '</table>';
     if(count($leaderboard['data']) === 0) {
       $html .= 'The leaderboard is empty';
     }
-    // $html .= '</ul>';
   }
   catch(Exception $e) {
     if($e->name === 'player_not_found') {
@@ -548,8 +553,17 @@ function formatDateAgo($value) {
 class PForm {
   public $html;
   public $requiredHtml = '<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req">';
+  public $list;
 
-  function __construct($title, $path='', $method='post') {
+  function __construct($title, $path='', $method='post', $page_title = 'Gamification Settings', $list=false) {
+    $this->html .= '<div id="pl-gamification-settings" class="pl-page">';
+    $this->html .= '<h1 class="page-title">'.$page_title.'</h1>';
+    $this->html .= '<div class="page-section">';
+    $this->html .= '<div class="section-content">';
+    $this->list = $list;
+    if($this->list) {
+      $this->html .= '<ul class="leaderboard-list list-unstyled">';
+    }
     $this->html .= '<form class="mform" enctype="multipart/form-data" action="'.$path.'" method="'.$method.'">';
     $this->html .= '<fieldset class="clearfix"><legend class="ftoggler">'.$title.'</legend><div class="advancedbutton"></div><div class="fcontainer clearfix">';
   }
@@ -622,7 +636,8 @@ class PForm {
   public function create_rule_table($rule, $metrics) {
     global $PAGE;
     $id = $rule['id'];
-    $this->html .= '<table id="treward_'.$id.'" class="pl-table">';
+    //$this->html .= '<div id="treward_'.$id.'" class="generaltable">';
+    $this->html .= '<table id="treward_'.$id.'" class="generaltable">';
     $this->html .= '<thead>';
     $this->html .= '<tr>';
     $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
@@ -649,7 +664,7 @@ class PForm {
   }
 
   public function create_leaderboard_table($metrics, $leaderboards) {
-    $this->html .= '<table class="pl-table">';
+    $this->html .= '<table class="generaltable">';
     $this->html .= '<thead>';
     $this->html .= '<tr>';
     $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
@@ -677,7 +692,7 @@ class PForm {
 
   public function create_condition_table($rule) {
     global $PAGE;
-    $this->html .= '<table id="tcondition_'.$rule['id'].'" class="pl-table">';
+    $this->html .= '<table id="tcondition_'.$rule['id'].'" class="generaltable">';
     $this->html .= '<thead>';
     $this->html .= '<tr>';
     $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Type</th>';
@@ -692,16 +707,27 @@ class PForm {
     $PAGE->requires->js_init_call('init_condition_table', array($rule));
   }
 
+  public function create_rule_with_condition_table($rule, $metrics) {
+    global $PAGE;
+    $this->html .= '<div id="rule_table"></div>';
+    $this->html .= '<br>';
+    $this->html .= '<button type="button" id="add_rule">Add Rule</button>';
+    $data = array(
+      'rule' => $rule,
+      'metrics' => $metrics
+    );
+    $PAGE->requires->js_init_call('create_rule_table', array($data));
+  }
+
+  public function end_list() {
+    $this->html .= '</ul>';
+  }
+
   public function end() {
     $this->html .= '<div id="extra"></div>';
     $this->html .= '<div class="fitem fitem_actionbuttons fitem_fgroup"><div class="felement fgroup"><input type="submit" name="submit" value="Submit" /></div></div>';
     $this->html .= '</div></fieldset></form>';
+    $this->html .= '</div></div></div>';
     echo $this->html;
-  }
-  public function getFinalContents() {
-    $this->html .= '<div id="extra"></div>';
-    $this->html .= '<div class="fitem fitem_actionbuttons fitem_fgroup"><div class="felement fgroup"><input type="submit" name="submit" value="Submit" /></div></div>';
-    $this->html .= '</div></fieldset></form>';
-    return $this->html;
   }
 }

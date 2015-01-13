@@ -64,7 +64,7 @@ function init_table(version, data) {
 function add_handler(version, data) {
   var id = data.id;
   var metrics = data.metrics;
-  (function () {
+  (function(){
     var index = 0;
     $('#add_'+id).click(function() {
       $('#treward_'+id+' tbody').append(addReward(id, metrics, index));
@@ -78,11 +78,27 @@ function add_handler(version, data) {
   })();
 }
 
-var dialog_open = false;
-function show_rewards(version, data) {
-  var event = data.events.pop();
-  var leaderboard = data.leaderboards.pop();
-  show_dailog(event, leaderboard, data);
+function render_reward(event) {
+  metric= event.metric;
+  delta = event.delta;
+  html = '<img style="float: left;"" src="/local/playlyfe/image_def.php?metric='+metric.id+'&size=medium"></img>';
+  if (metric.type === 'point') {
+    value = delta['new'] - delta.old;
+  }
+  else {
+    for(var key in delta) {
+      if(delta.old !== null) {
+        value = (delta[key]['new'] - delta[key].old)+' x '+key;
+      }
+      else {
+         value = (delta[key]['new'])+' x '+key;
+      }
+      value += '     <img src="/local/playlyfe/image_def.php?metric='+metric.id+'&size=medium&item='+key+'"></img>    ';
+    }
+  }
+  html += '<p><br>You have gained <b>'+value+'</b> '+metric.name + '</p>';
+  html += '<div style="clear: both;"></div>';
+  return html;
 }
 
 function show_dailog(event, leaderboard, data) {
@@ -128,33 +144,11 @@ function show_dailog(event, leaderboard, data) {
   $('.ui-dialog').css("top","20%");
 }
 
-function render_reward(event) {
-  metric= event.metric;
-  delta = event.delta;
-  html = '<img style="float: left;"" src="/local/playlyfe/image_def.php?metric='+metric.id+'&size=medium"></img>';
-  if (metric.type === 'point') {
-    value = delta['new'] - delta.old;
-  }
-  else {
-    for(key in delta) {
-      if(delta['old'] !== null) {
-        value = (delta[key]['new'] - delta[key]['old'])+' x '+key;
-      }
-      else {
-         value = (delta[key]['new'])+' x '+key;
-      }
-      value += '     <img src="/local/playlyfe/image_def.php?metric='+metric.id+'&size=medium&item='+key+'"></img>    ';
-    }
-  }
-  html += '<p><br>You have gained <b>'+value+'</b> '+metric.name + '</p>';
-  html += '<div style="clear: both;"></div>';
-  return html;
-}
-
-function handle_course_group_add(version, data) {
-  $('#add').click(function() {
-    add_course_group(version, data);
-  });
+var dialog_open = false;
+function show_rewards(version, data) {
+  var event = data.events.pop();
+  var leaderboard = data.leaderboards.pop();
+  show_dailog(event, leaderboard, data);
 }
 
 var groups_count = 0;
@@ -163,7 +157,9 @@ function add_course_group(version, data) {
   var courses = data.courses;
   var metrics = data.metrics;
   var rewards = data.rewards;
-  var html = '<h3> Course Group '+groups_count+'</h3><hr></hr>';
+  var html = '';
+  html += '<div id="cg_'+groups_count+'">';
+  html += '<h3> Course Group '+groups_count+'</h3><hr></hr>';
   html += '<p> Please select the courses and add rewards to give when all of them have been completed </p>';
   html += '<table class="pl-table">';
   html += '<thead>';
@@ -201,11 +197,25 @@ function add_course_group(version, data) {
   html += '</tbody>';
   html += '</table>';
   html += '<p><button type="button" id="add_'+id+'">Add Reward</button></p>';
+  html += '<p><button type="button" id="remove_'+groups_count+'">Remove Group</button></p>';
+  html += '</div>';
   $('#course_group').append(html);
+  (function(i) {
+    $('#remove_'+i).click(function() {
+      $('#cg_'+i).remove();
+      groups_count--;
+    });
+  })(groups_count);
   if(rewards !== null && typeof rewards !== 'undefined') {
-    init_table('', { id: id, metrics: metrics, rewards: rewards })
+    init_table('', { id: id, metrics: metrics, rewards: rewards });
   }
   add_handler('', { id: id, metrics: metrics });
+}
+
+function handle_course_group_add(version, data) {
+  $('#add').click(function() {
+    add_course_group(version, data);
+  });
 }
 
 var index = 0;
@@ -265,19 +275,6 @@ function add_item(version, item) {
   index++;
 }
 
-function init_conditions() {
-  $('#condition_type').change(function(event){
-    var value = $(this).find("option:selected").val();
-    //console.log('hello', value);
-    // if(value === 'none') {
-    //   $('#condition_type').hide();
-    // }
-    // else {
-    //   $('#condition_type').show();
-    // }
-  });
-}
-
 function create_select(name, options, selected) {
   selected = selected || '';
   var html = '<select name="'+name+'" id="'+name+'">';
@@ -295,12 +292,10 @@ function create_select(name, options, selected) {
 
 function create_condition_operator(id, condition) {
   var html = '';
-  html += '<select name="condition_operator['+id+'][]">';
+  html += '<select name="condition_operators['+id+'][]">';
+   var exists = false;
   if(condition !== null && typeof condition !== 'undefined') {
-    var exists = true;
-  }
-  else {
-    var exists = false;
+    exists = true;
   }
   if(exists && condition.operator === 'gt') {
     html += '<option value="gt" selected>></option>';
@@ -343,40 +338,113 @@ function create_condition_operator(id, condition) {
 }
 
 function create_condition(id, index, context) {
+  //{ score: 'score', timecompleted: 'timecompleted', timeenrolled: 'timeenrolled' }
   var html = '<tr id="row_condition_'+id+index+'" class="r'+index+' centeralign">';
-  html += '<td>'+create_select('condition_type['+id+'][]', {score: 'score' }, '')+'</td>';
+  html += '<td>'+create_select('condition_types['+id+'][]', { score: 'score' }, '')+'</td>';
   html += '<td>'+create_condition_operator(id, context)+'</td>';
   close_button = '<a class="remove-button" id="close_condition_'+id+index+'">remove</a>';
   var value = context.rhs || '1';
-  html += '<td><div id="col'+index+'"><input name="condition_value['+id+'][]" type="number" value="'+value+'" required />'+close_button+'</div></td>';
+  html += '<td><div id="col'+index+'"><input name="condition_values['+id+'][]" type="number" value="'+value+'" required />'+close_button+'</div></td>';
   html += '</tr>';
   return html;
 }
 
-function init_condition_table(version, rule) {
+function create_rule_table(version, data) {
+  var rules_count = 0;
+  var id = data.rule.id;
+  for(var i=0;i<data.rule.rules.length;i++) {
+    var rule_id = id+'_'+rules_count;
+    createRule(rules_count, rule_id , data.metrics, data.rule.rules[i].rewards, data.rule.rules[i].requires);
+    (function(rule_id) {
+      $('#remove_rule_'+rule_id).click(function() {
+        $('#rule_'+rule_id).remove();
+        //rules_count--;
+      });
+    })(rule_id);
+    rules_count++;
+  }
+  $('#add_rule').click(function() {
+    var rule_id = id+'_'+rules_count;
+    createRule(rules_count, rule_id, data.metrics, [], {});
+    rules_count++;
+    $('#remove_rule_'+rule_id).click(function() {
+      $('#rule_'+rule_id).remove();
+      //rules_count--;
+    });
+  });
+}
+
+function createRule(rule_index, id, metrics, rewards, requires) {
+  var html = '';
+  html += '<div id="rule_'+id+'">';
+  html += '<h3 class="underline">Rule '+(rule_index+1)+'</h3>';
+  html += '<table id="treward_'+id+'" class="generaltable" style="float: left;">';
+  html += '<thead>';
+  html += '<tr>';
+  html += '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
+  html += '<th class="header c1 lastcol centeralign" style="" scope="col">Value</th>';
+  html += '</tr>';
+  html += '</thead>';
+  html += '<tbody>';
+  html += '</tbody>';
+  html += '</table>';
+  //html += 'With Conditions';
+  html += '<table id="tcondition_'+id+'" class="generaltable">';
+  html += '<thead>';
+  html += '<tr>';
+  html += '<th class="header c1 lastcol centeralign" style="" scope="col">Type</th>';
+  html += '<th class="header c1 lastcol centeralign" style="" scope="col">Operator</th>';
+  html += '<th class="header c1 lastcol centeralign" style="" scope="col">Value</th>';
+  html += '</tr>';
+  html += '</thead>';
+  html += '<tbody>';
+  html += '</tbody>';
+  html += '</table>';
+  html += '<div style="clear: both;"></div>';
+  html += '<button type="button" id="add_'+id+'">Add Reward</button>';
+  html += '<button type="button" id="add_condition_'+id+'">Add Condition</button>';
+  html += '<button type="button" id="remove_rule_'+id+'">Remove Rule</button>';
+  html += '</div>';
+  $("#rule_table").append(html);
+  for(var j=0;j<rewards.length;j++) {
+    $('#treward_'+id+' tbody').append(addReward(id, metrics, j, rewards[j]));
+    (function(j) {
+      $('#close_'+id+j).click(function() {
+        $('#row_'+id+j).remove();
+      });
+    })(j);
+  }
+  (function () {
+    var index = j;
+    $('#add_'+id).click(function() {
+      $('#treward_'+id+' tbody').append(addReward(id, metrics, index));
+      (function(i) {
+        $('#close_'+id+i).click(function() {
+          $('#row_'+id+i).remove();
+        });
+      })(index);
+      index++;
+    });
+  })();
   var condition_index = 0;
-  var id = rule.id;
-  if(rule.rules.length > 0) {
-    var requires = rule.rules[0].requires;
-    if(requires.type === 'var') {
-      $('#tcondition_'+id+' tbody').append(create_condition(id, condition_index, requires.context));
+  if(requires.type === 'var') {
+    $('#tcondition_'+id+' tbody').append(create_condition(id, condition_index, requires.context));
+    (function(i) {
+      $('#close_condition_'+id+i).click(function() {
+        $('#row_condition_'+id+i).remove();
+      });
+    })(condition_index);
+    condition_index++;
+  }
+  else if(requires.type === 'and') {
+    for(var i=0;i<requires.expression.length;i++) {
+      $('#tcondition_'+id+' tbody').append(create_condition(id, condition_index, requires.expression[i].context));
       (function(i) {
         $('#close_condition_'+id+i).click(function() {
           $('#row_condition_'+id+i).remove();
         });
       })(condition_index);
       condition_index++;
-    }
-    else if(requires.type === 'and') {
-      for(var i=0;i<requires.expression.length;i++) {
-        $('#tcondition_'+id+' tbody').append(create_condition(id, condition_index, requires.expression[i].context));
-        (function(i) {
-          $('#close_condition_'+id+i).click(function() {
-            $('#row_condition_'+id+i).remove();
-          });
-        })(condition_index);
-        condition_index++;
-      }
     }
   }
   (function () {

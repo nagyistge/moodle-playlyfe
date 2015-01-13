@@ -861,7 +861,7 @@ foreach ($courses as $courseid => $course) {
     $index++;
   }
 }
-$progress = ($overall_progress/$index);
+$progress = round($overall_progress/$index, 2);
 
 $html .= '
 <div id="pl-profile" class="profile pl-page">
