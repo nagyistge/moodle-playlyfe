@@ -15,3 +15,8 @@
 !/mod/forum/view.php
 !/mod/forum/post.php
 !composer.json
+!composer.lock
+!/theme
+/theme/*
+!/theme/playlyfe
+
