@@ -13,72 +13,76 @@ class block_playlyfe extends block_base {
     $this->content = new stdClass;
     $html = '';
     $pl = get_pl();
-    $profile = $pl->get('/runtime/player', array('player_id' => 'u'.$USER->id));
-    $html .= '<h6>Username</h6>';
-    $html .= $profile['alias'];
-    $html .= '<h6>Scores</h6>';
-    if(count($profile['scores']) == 0){
-      $html .= 'You Have no scores';
-    }
-    else {
-      $html .= '<ul class="list-unstyled profile-score-list">';
-      $leaderboards = array();
-      if($PAGE->course) {
-        $leaderboards = get_leaderboards('course'.$PAGE->course->id.'_leaderboard');
+    try {
+      $profile = $pl->get('/runtime/player', array('player_id' => 'u'.$USER->id));
+      $html .= '<h6>Username</h6>';
+      $html .= $profile['alias'];
+      $html .= '<h6>Scores</h6>';
+      if(count($profile['scores']) == 0){
+        $html .= 'You Have no scores';
       }
-      foreach($profile['scores'] as $score) {
-        $score_name = $score['metric']['name'];
-        $score_id = $score['metric']['id'];
-        $score_type = $score['metric']['type'];
-        $score_value = $score['value'];
-        $html .= '<li class="score-list-item score-point">';
-        $html .= '<h5 class="score-name ellipsis ng-binding">'.$score_name.'</h5>';
-        $html .= '<div class="score-icon text-center"><img src="/local/playlyfe/image_def.php?metric='.$score_id.'&size=medium"></img></div>';
-        if($score_type === 'point') {
-          $leaderboard = null;
-          if(in_array($score_id, $leaderboards)) {
-            try {
-              $leaderboard = $pl->get('/runtime/leaderboards/'.$score_id, array(
-                'player_id' => 'u'.$USER->id,
-                'cycle' => 'alltime',
-                'scope_id' => 'course'.$PAGE->course->id,
-                'ranking' => 'relative',
-                'entity_id' => 'u'.$USER->id,
-                'radius' => 0
+      else {
+        $html .= '<ul class="list-unstyled profile-score-list">';
+        $leaderboards = array();
+        if($PAGE->course) {
+          $leaderboards = get_leaderboards('course'.$PAGE->course->id.'_leaderboard');
+        }
+        foreach($profile['scores'] as $score) {
+          $score_name = $score['metric']['name'];
+          $score_id = $score['metric']['id'];
+          $score_type = $score['metric']['type'];
+          $score_value = $score['value'];
+          $html .= '<li class="score-list-item score-point">';
+          $html .= '<h5 class="score-name ellipsis ng-binding">'.$score_name.'</h5>';
+          $html .= '<div class="score-icon text-center"><img src="/local/playlyfe/image_def.php?metric='.$score_id.'&size=medium"></img></div>';
+          if($score_type === 'point') {
+            $leaderboard = null;
+            if(in_array($score_id, $leaderboards)) {
+              try {
+                $leaderboard = $pl->get('/runtime/leaderboards/'.$score_id, array(
+                  'player_id' => 'u'.$USER->id,
+                  'cycle' => 'alltime',
+                  'scope_id' => 'course'.$PAGE->course->id,
+                  'ranking' => 'relative',
+                  'entity_id' => 'u'.$USER->id,
+                  'radius' => 0
+                ));
+                // mtrace(json_encode(($leaderboard)));
+              }
+              catch(Exception $e) {
+                if($e->name == 'player_not_found') {
+                }
+                else {
+                  //mtrace(json_encode(($e)));
+                }
+              }
+            }
+            $html .= '<div class="score-value large">'.$score_value.'</div>';
+            if(!is_null($leaderboard)) {
+              $url = new moodle_url('/local/playlyfe/leaderboard.php', array(
+                'course' => $PAGE->course->id,
+                'metric' => $score_id,
+                'page'=> 0,
+                'find_me' => true
               ));
-              // mtrace(json_encode(($leaderboard)));
+              $html .= '<div class="score-value small">'.html_writer::link($url, 'Rank'.$leaderboard['data'][0]['rank']).'</div>';
             }
-            catch(Exception $e) {
-              if($e->name == 'player_not_found') {
+            $html .= '</li>';
+          }
+          else {
+            foreach($score['value'] as $value) {
+              $html .= '<div class="score-icon text-center"><img src="image_def.php?metric='.$score_id.'&item='.$value['name'].'"></img></div>';
+              $html .= '<div class="score-value small">'.$value['name'].'</div>';
+              if($value['count'] > 0) {
+                $html .= 'x'.$value['count'];
               }
-              else {
-                //mtrace(json_encode(($e)));
-              }
             }
+            $html .= '</li>';
           }
-          $html .= '<div class="score-value large">'.$score_value.'</div>';
-          if(!is_null($leaderboard)) {
-            $url = new moodle_url('/local/playlyfe/leaderboard.php', array(
-              'course' => $PAGE->course->id,
-              'metric' => $score_id,
-              'page'=> 0,
-              'find_me' => true
-            ));
-            $html .= '<div class="score-value small">'.html_writer::link($url, 'Rank'.$leaderboard['data'][0]['rank']).'</div>';
-          }
-          $html .= '</li>';
-        }
-        else {
-          foreach($score['value'] as $value) {
-            $html .= '<div class="score-icon text-center"><img src="image_def.php?metric='.$score_id.'&item='.$value['name'].'"></img></div>';
-            $html .= '<div class="score-value small">'.$value['name'].'</div>';
-            if($value['count'] > 0) {
-              $html .= 'x'.$value['count'];
-            }
-          }
-          $html .= '</li>';
         }
       }
+    }
+    catch (Exception $e) {
     }
     $this->content->text = $html;
     $url = new moodle_url('/local/playlyfe/profile.php');
