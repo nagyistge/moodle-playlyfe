@@ -853,7 +853,9 @@ foreach ($courses as $courseid => $course) {
     $events = event_information($modules, $course->id);
     $attempts = progress_attempts($modules, $events, $USER->id, $course->id);
     $overall_progress += progress_percentage($events, $attempts);
-    // $html .= $course->id;
+    // $html .= 'course'.$course->id.'<br>';
+    // $html .= 'events'.count($events).'<br>';
+    // $html .= 'attempts'.count($attempts).'<br>';
     //$overall_progress += count($attempts)/count($events);
     //$html .= $course->shortname;
     $index++;
@@ -867,12 +869,13 @@ $html .= $OUTPUT->user_picture($USER, array('size'=>120));
 $html .= '</div>';
 $html .= '</div>';
 $html .= '</div>';
-if($index > 0) {
-  $progress = ($overall_progress/$index);
-  $html .= '<div class="progressbar">';
-  $html .= '<div style="width: '.$progress.'%;"><div class="progress-text">'.round($progress, 1).'%'.'</div></div>';
-  $html .= '</div>';
+if($index === 0) {
+  $index = 1;
 }
+$progress = ($overall_progress/$index);
+$html .= '<div class="progressbar">';
+$html .= '<div style="width: '.$progress.'%;"><div class="progress-text">'.round($progress, 1).'%'.'</div></div>';
+$html .= '</div>';
 $html .= $profile['alias'];
 $html .= '</div>';
 $html .= '<header class="text-center"><h5 class="hud-section-item no-margin score-header">My Scores</h5></header>';
