@@ -1,5 +1,6 @@
 /*
 !/.gitignore
+!/Readme.md
 !/vendor
 /vendor/*
 !/blocks
