@@ -1,4 +1,21 @@
+/*
+ Go to Admin->Appearance->Theme Settings and set Theme Designer Mode True to prevent caching of theme
+ */
 .some-class {
   border: 1px solid #DDD;
   vertical-align: middle;
 }
+
+@font-face { /* where FontName and fontname represents the name of the font you want to add */
+    /* url can be /theme/playlyfe/fonts/font1.eot  */
+   font-family: 'FontName';
+   src: url([[font:theme|fontname.eot]]);
+   src: url([[font:theme|fontname.eot]]) format('embedded-opentype'),
+        url([[font:theme|fontname.woff]]) format('woff'),
+        url([[font:theme|fontname.ttf]]) format('truetype'),
+        url([[font:theme|fontname.svg]]) format('svg');
+   font-weight: normal;
+   font-style: normal;
+ }
+
+#page-header h1 { font-family: FontName;}
