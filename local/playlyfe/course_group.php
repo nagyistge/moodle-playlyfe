@@ -63,10 +63,14 @@ if (array_key_exists('submit', $_POST)) {
           array_push($courses, $course);
         }
       }
+      $rewards = array();
+      if(!empty($rule['rules'])) {
+        $rewards = $rule['rules'][0]['rewards'];
+      }
       $data = array(
         'courses' => $courses,
         'metrics' => $metrics,
-        'rewards' => $rule['rules']['0']['rewards']
+        'rewards' => $rewards
       );
       $PAGE->requires->js_init_call('add_course_group', array($data));
     }
