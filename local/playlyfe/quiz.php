@@ -23,7 +23,35 @@ $submit_rule = get_rule($quiz->id, 'submitted', '', 'Quiz '.$quiz->name.' Submit
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
 
 if (array_key_exists('submit', $_POST)) {
-  patch_rule($submit_rule, $_POST);
+  $post = $_POST;
+  if(array_key_exists('metrics', $post)) {
+    $rules = array();
+    $length = count($post['metrics']);
+    for($i=0;$i<$length;$i++){
+      $key= $submit_rule['id'].'_'.$i;
+      $metrics = $post['metrics'][$key];
+      $values = $post['values'][$key];
+      $condition_types = array();
+      if(array_key_exists('condition_types', $post) and array_key_exists($key, $post['condition_types'])) {
+          $condition_types = $post['condition_types'][$key];
+          $condition_operators = $post['condition_operators'][$key];
+          $condition_values = $post['condition_values'][$key];
+      }
+      array_push($rules, array(
+        'rewards' => create_reward($metrics, $values),
+        'requires' => (object)create_requires($condition_types, $condition_operators, $condition_values)
+      ));
+    }
+    $submit_rule['rules'] = $rules;
+  }
+  $id = $submit_rule['id'];
+  unset($submit_rule['id']);
+  try {
+    $pl->patch('/design/versions/latest/rules/'.$id, array(), $submit_rule);
+  }
+  catch(Exception $e) {
+    print_object($e);
+  }
   if($quiz->timeclose > 0 or $quiz->timelimit > 0) {
     $bonus_rule = get_rule($quiz->id, 'bonus', '', 'Quiz Bonus');
     patch_rule($bonus_rule, $_POST);
@@ -33,15 +61,12 @@ if (array_key_exists('submit', $_POST)) {
   echo $OUTPUT->header();
   $form = new PForm($cm->name, 'quiz.php?cmid='.$cmid);
   $form->create_separator('Rewards on Quiz Completion', 'Give rewards when the user completes this quiz. Additionally add conditions to give the reward only when the user gets a particular score in the quiz');
-  $form->html .= '<h3 class="underline">Conditions</h3>';
-  $form->create_condition_table($submit_rule);
-  $form->html .= '<h3 class="underline">Rewards</h3>';
-  $form->create_rule_table($submit_rule, $metrics);
-  if($quiz->timeclose > 0 or $quiz->timelimit > 0) {
-    $bonus_rule = get_rule($quiz->id, 'bonus', '', 'Quiz Bonus');
-    $form->create_separator('Reward for Early Completion Before '.date("D, d M Y H:i:s", $quiz->timeclose));
-    $form->create_rule_table($bonus_rule, $metrics);
-  }
+  $form->create_rule_with_condition_table($submit_rule, $metrics);
+  // if($quiz->timeclose > 0 or $quiz->timelimit > 0) {
+  //   $bonus_rule = get_rule($quiz->id, 'bonus', '', 'Quiz Bonus');
+  //   $form->create_separator('Reward for Early Completion Before '.date("D, d M Y H:i:s", $quiz->timeclose));
+  //   $form->create_rule_table($bonus_rule, $metrics);
+  // }
   $form->end();
   echo $OUTPUT->footer();
 }

@@ -213,38 +213,36 @@ function create_reward($metrics, $values) {
   return $rewards;
 }
 
-function create_requires($id, $post) {
+function create_requires($types, $operators, $values) {
   $requires = array();
-  if(array_key_exists('condition_type', $post)) {
-    if(count($post['condition_type'][$id]) === 1) {
-      $requires = array(
+  if(count($types) == 1) {
+    $requires = array(
+      'type' => 'var',
+      'context' => array (
+        'lhs' => '$vars.score',
+        'operator' => $operators[0],
+        'rhs' => $values[0]
+      )
+    );
+  }
+  else if (count($types) > 1) {
+    $expression = array();
+    $index = 0;
+    foreach ($types as $type) {
+      array_push($expression, array(
         'type' => 'var',
         'context' => array (
           'lhs' => '$vars.score',
-          'operator' => $post['condition_operator'][$id][0],
-          'rhs' => $post['condition_value'][$id][0]
+          'operator' => $operators[$index],
+          'rhs' => $values[$index]
         )
-      );
+      ));
+      $index++;
     }
-    else {
-      $expression = array();
-      $index = 0;
-      foreach ($post['condition_type'][$id] as $value) {
-        array_push($expression, array(
-          'type' => 'var',
-          'context' => array (
-            'lhs' => '$vars.score',
-            'operator' => $post['condition_operator'][$id][$index],
-            'rhs' => $post['condition_value'][$id][$index]
-          )
-        ));
-        $index++;
-      }
-      $requires = array(
-        'type' => 'and',
-        'expression' => $expression
-      );
-    }
+    $requires = array(
+      'type' => 'and',
+      'expression' => $expression
+    );
   }
   return $requires;
 }
@@ -261,7 +259,9 @@ function get_rule($id, $event, $context = '', $name) {
     $name = $context.'_'.$id.'_'.$event;
   }
   try {
-    return $pl->get('/design/versions/latest/rules/'.$context.'_'.$id.'_'.$event);
+    $rule = $pl->get('/design/versions/latest/rules/'.$context.'_'.$id.'_'.$event);
+    $rule['name'] = $name;
+    return $rule;
   }
   catch(Exception $e) {
     if($e->name == 'rule_not_found') {
@@ -273,6 +273,11 @@ function get_rule($id, $event, $context = '', $name) {
         'variables' => array(
           array(
             'name' => 'score',
+            'type' => 'int',
+            'required' => false
+          ),
+          array(
+            'name' => 'time',
             'type' => 'int',
             'required' => false
           )
@@ -295,7 +300,6 @@ function patch_rule($rule, $post) {
   global $pl;
   $id = $rule['id'];
   unset($rule['id']);
-  unset($rule['name']);
   if(array_key_exists('metrics', $post) and array_key_exists($id, $post['metrics'])) {
     $rule['rules'] = array(
       array(
@@ -623,7 +627,7 @@ class PForm {
     global $PAGE;
     $id = $rule['id'];
     //$this->html .= '<div id="treward_'.$id.'" class="generaltable">';
-    $this->html .= '<table id="treward_'.$id.'" class="generaltable">'; //admintable
+    $this->html .= '<table id="treward_'.$id.'" class="generaltable">';
     $this->html .= '<thead>';
     $this->html .= '<tr>';
     $this->html .= '<th class="header c1 lastcol centeralign" style="" scope="col">Metric</th>';
@@ -691,6 +695,18 @@ class PForm {
     $this->html .= '</table>';
     $this->html .= '<button type="button" id="add_condition_'.$rule['id'].'">Add Condition</button>';
     $PAGE->requires->js_init_call('init_condition_table', array($rule));
+  }
+
+  public function create_rule_with_condition_table($rule, $metrics) {
+    global $PAGE;
+    $this->html .= '<div id="rule_table"></div>';
+    $this->html .= '<br>';
+    $this->html .= '<button type="button" id="add_rule">Add Rule</button>';
+    $data = array(
+      'rule' => $rule,
+      'metrics' => $metrics
+    );
+    $PAGE->requires->js_init_call('create_rule_table', array($data));
   }
 
   public function end() {
