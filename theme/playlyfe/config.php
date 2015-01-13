@@ -22,5 +22,6 @@ $THEME->sheets = array(
     'utils',
     'tables',
     'icons',
+    'leaderboard',
     'animations'
 );
