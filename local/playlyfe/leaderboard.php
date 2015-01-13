@@ -49,7 +49,7 @@ if(array_key_exists('course', $_GET) and array_key_exists('metric', $_GET)) {
   $course = $DB->get_record('course', array('id' => $course));
   $html .= '
   <div id="pl-leaderboard" class="pl-page">
-    <h1 class="page-title"></h1>
+    <h1 class="page-title">Leaderboard for '.$metric.' in '. $course->fullname.'</h1>
     <h5 class="page-subtitle">Page: '.($page + 1).'</h5>
     <div class="page-section">
       <div class="section-content">
@@ -64,7 +64,8 @@ if(array_key_exists('course', $_GET) and array_key_exists('metric', $_GET)) {
     if($rank < 10) {
       $rank = '0'.$rank;
     }
-    $user = $DB->get_record('user', array('id' => $list[1]));
+    $user = $DB->get_record('user', array('id' => 2));
+
     $hue = get_hue($leaderboard, $rank);
 
     $html .= '
