@@ -14,6 +14,14 @@ $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'name,i
 global $CFG, $USER;
 $html = '';
 
+function get_hue ($leaderboard, $rank) {
+  $sort = 'descending';
+  $hue = $sort === 'descending' ? 80 : 0;
+  $mult = $sort === 'descending' ? -1 : +1;
+  $diff = 80 / $leaderboard['total'];
+  return $hue + $mult * $diff * ($rank - 1);
+}
+
 if(array_key_exists('course', $_GET) and array_key_exists('metric', $_GET)) {
   $course = $_GET['course'];
   $metric = $_GET['metric'];
@@ -45,7 +53,7 @@ if(array_key_exists('course', $_GET) and array_key_exists('metric', $_GET)) {
     <h5 class="page-subtitle">Page: '.($page + 1).'</h5>
     <div class="page-section">
       <div class="section-content">
-        <ul class="leaderboard-list list-unstyled">';
+        <ol class="pl-leaderboard list-unstyled">';
 
   foreach($leaderboard['data'] as $player) {
     $score = $player['score'];
@@ -57,17 +65,33 @@ if(array_key_exists('course', $_GET) and array_key_exists('metric', $_GET)) {
       $rank = '0'.$rank;
     }
     $user = $DB->get_record('user', array('id' => $list[1]));
-    $html .= $OUTPUT->user_picture($user, array('size'=>100));
+    $hue = get_hue($leaderboard, $rank);
 
     $html .= '
-          <li class="leaderboard-player">
-            <div class="leaderboard-player-rank">'.$rank.'</div>
-            <div class="leaderboard-player-score">'.$score.'</div>
-            <div class="leaderboard-player-alias '.($id == 'u'.$USER->id ? 'selected' : '').'">'.$alias.'</div>
+          <li class="leaderboard-item">
+            <div class="leaderboard-item-content">
+              <div class="leaderboard-column markers">
+                '.($rank === 1 ? '<i class="ldr-mark mark-leader"></i>' : '').'
+                '.($USER->id === $id ? '<i class="ldr-mark mark-self" title="This is You!"></i>' : '').'
+                '.$rank.'
+              </div><!--
+            Players
+           --><div class="ldr-avatar leaderboard-column as-button" title="View '.$alias.'&#39;s Profile">
+                '.$OUTPUT->user_picture($user, array('size'=>100)).'
+                </div><!--
+            Player Name
+           --><div class="ldr-name leaderboard-column skew ellipsis as-button">
+                <div class="skew reverse">'.$alias.'</div>
+              </div><!--
+            Score
+           --><div class="ldr-score leaderboard-column skew" style="background-color: hsl('.$hue.', 60%, 55%)">
+                <div class="skew reverse">'.$score.'</div>
+              </div>
+            </div>
           </li>';
   }
   $html .= '
-        </ul>';
+        </ol>';
 
   if(count($leaderboard['data']) === 0) {
     $html .= '<div class="placeholder-content">This leaderboard '.($page > 0 ? 'page ': '').'is empty.</div>';
