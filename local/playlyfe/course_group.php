@@ -40,7 +40,9 @@ if (array_key_exists('submit', $_POST)) {
     }
   }
   if(count($arr) === 0) {
-    $html .= 'You dont have any courses with course completion enabled. Please add couse completion to your courses';
+    echo $OUTPUT->header();
+    echo 'You dont have any courses with course completion enabled. Please add couse completion to your courses';
+    echo $OUTPUT->footer();
   }
   else {
     $course_group = get('course_group');
@@ -69,10 +71,11 @@ if (array_key_exists('submit', $_POST)) {
       $PAGE->requires->js_init_call('add_course_group', array($data));
     }
     $PAGE->requires->js_init_call('handle_course_group_add', array(array('courses' => $arr, 'metrics' => $metrics)));
+
+    echo $OUTPUT->header();
+    $form->create_button('add', 'Add');
+    $form->end();
+    echo $html;
+    echo $OUTPUT->footer();
   }
-  echo $OUTPUT->header();
-  $form->create_button('add', 'Add');
-  $form->end();
-  echo $html;
-  echo $OUTPUT->footer();
 }
