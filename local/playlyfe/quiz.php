@@ -23,39 +23,11 @@ $submit_rule = get_rule($quiz->id, 'submitted', '', 'Quiz '.$quiz->name.' Submit
 $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'id,type,constraints'));
 
 if (array_key_exists('submit', $_POST)) {
-  $post = $_POST;
-  if(array_key_exists('metrics', $post)) {
-    $rules = array();
-    $length = count($post['metrics']);
-    for($i=0;$i<$length;$i++){
-      $key= $submit_rule['id'].'_'.$i;
-      $metrics = $post['metrics'][$key];
-      $values = $post['values'][$key];
-      $condition_types = array();
-      if(array_key_exists('condition_types', $post) and array_key_exists($key, $post['condition_types'])) {
-          $condition_types = $post['condition_types'][$key];
-          $condition_operators = $post['condition_operators'][$key];
-          $condition_values = $post['condition_values'][$key];
-      }
-      array_push($rules, array(
-        'rewards' => create_reward($metrics, $values),
-        'requires' => (object)create_requires($condition_types, $condition_operators, $condition_values)
-      ));
-    }
-    $submit_rule['rules'] = $rules;
-  }
-  $id = $submit_rule['id'];
-  unset($submit_rule['id']);
-  try {
-    $pl->patch('/design/versions/latest/rules/'.$id, array(), $submit_rule);
-  }
-  catch(Exception $e) {
-    print_object($e);
-  }
-  if($quiz->timeclose > 0 or $quiz->timelimit > 0) {
-    $bonus_rule = get_rule($quiz->id, 'bonus', '', 'Quiz Bonus');
-    patch_rule($bonus_rule, $_POST);
-  }
+  patch_rule_with_conditions($submit_rule, $_POST);
+  // if($quiz->timeclose > 0 or $quiz->timelimit > 0) {
+  //   $bonus_rule = get_rule($quiz->id, 'bonus', '', 'Quiz Bonus');
+  //   patch_rule($bonus_rule, $_POST);
+  // }
   redirect(new moodle_url('/local/playlyfe/quiz.php', array('cmid' => $cmid)));
 } else {
   echo $OUTPUT->header();

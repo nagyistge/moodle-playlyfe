@@ -277,7 +277,12 @@ function get_rule($id, $event, $context = '', $name) {
             'required' => false
           ),
           array(
-            'name' => 'time',
+            'name' => 'timecompleted',
+            'type' => 'int',
+            'required' => false
+          ),
+          array(
+            'name' => 'timeenrolled',
             'type' => 'int',
             'required' => false
           )
@@ -304,7 +309,7 @@ function patch_rule($rule, $post) {
     $rule['rules'] = array(
       array(
         'rewards' => create_reward($post['metrics'][$id], $post['values'][$id]),
-        'requires' => (object) create_requires($id, $post)
+        'requires' => (object) create_requires(array(), array(), array())
       )
     );
     try {
@@ -323,6 +328,38 @@ function patch_rule($rule, $post) {
     catch(Exception $e) {
       print_object($e);
     }
+  }
+}
+
+function patch_rule_with_conditions($rule, $post) {
+  global $pl;
+  if(array_key_exists('metrics', $post)) {
+    $rules = array();
+    $length = count($post['metrics']);
+    for($i=0;$i<$length;$i++){
+      $key= $rule['id'].'_'.$i;
+      $metrics = $post['metrics'][$key];
+      $values = $post['values'][$key];
+      $condition_types = array();
+      if(array_key_exists('condition_types', $post) and array_key_exists($key, $post['condition_types'])) {
+          $condition_types = $post['condition_types'][$key];
+          $condition_operators = $post['condition_operators'][$key];
+          $condition_values = $post['condition_values'][$key];
+      }
+      array_push($rules, array(
+        'rewards' => create_reward($metrics, $values),
+        'requires' => (object)create_requires($condition_types, $condition_operators, $condition_values)
+      ));
+    }
+    $rule['rules'] = $rules;
+  }
+  $id = $rule['id'];
+  unset($rule['id']);
+  try {
+    $pl->patch('/design/versions/latest/rules/'.$id, array(), $rule);
+  }
+  catch(Exception $e) {
+    print_object($e);
   }
 }
 

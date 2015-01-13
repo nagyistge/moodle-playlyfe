@@ -163,7 +163,9 @@ function add_course_group(version, data) {
   var courses = data.courses;
   var metrics = data.metrics;
   var rewards = data.rewards;
-  var html = '<h3> Course Group '+groups_count+'</h3><hr></hr>';
+  var html = '';
+  html += '<div id="cg_'+groups_count+'">';
+  html += '<h3> Course Group '+groups_count+'</h3><hr></hr>';
   html += '<p> Please select the courses and add rewards to give when all of them have been completed </p>';
   html += '<table class="generaltable">';
   html += '<thead>';
@@ -201,7 +203,15 @@ function add_course_group(version, data) {
   html += '</tbody>';
   html += '</table>';
   html += '<p><button type="button" id="add_'+id+'">Add Reward</button></p>';
+  html += '<p><button type="button" id="remove_'+groups_count+'">Remove Group</button></p>';
+  html += '</div>';
   $('#course_group').append(html);
+  (function(i) {
+    $('#remove_'+i).click(function() {
+      $('#cg_'+i).remove();
+      groups_count--;
+    });
+  })(groups_count);
   if(rewards !== null && typeof rewards !== 'undefined') {
     init_table('', { id: id, metrics: metrics, rewards: rewards })
   }
@@ -330,6 +340,7 @@ function create_condition_operator(id, condition) {
 }
 
 function create_condition(id, index, context) {
+  //{ score: 'score', timecompleted: 'timecompleted', timeenrolled: 'timeenrolled' }
   var html = '<tr id="row_condition_'+id+index+'" class="r'+index+' centeralign">';
   html += '<td>'+create_select('condition_types['+id+'][]', { score: 'score' }, '')+'</td>';
   html += '<td>'+create_condition_operator(id, context)+'</td>';
@@ -351,7 +362,9 @@ function create_rule_table(version, data) {
 }
 
 function createRule(rule_index, id, metrics, rewards, requires) {
-  var html = '<h3 class="underline">Rule '+(rule_index+1)+'</h3>';
+  var html = '';
+  html += '<div id="rule_'+id+'">';
+  html += '<h3 class="underline">Rule '+(rule_index+1)+'</h3>';
   html += '<table id="treward_'+id+'" class="generaltable" style="float: left;">';
   html += '<thead>';
   html += '<tr>';
@@ -377,7 +390,12 @@ function createRule(rule_index, id, metrics, rewards, requires) {
   html += '<div style="clear: both;"></div>';
   html += '<button type="button" id="add_'+id+'">Add Reward</button>';
   html += '<button type="button" id="add_condition_'+id+'">Add Condition</button>';
+  html += '<button type="button" id="remove_rule_'+id+'">Remove Rule</button>';
+  html += '</div>';
   $("#rule_table").append(html);
+  $('#remove_rule_'+id).click(function() {
+    $('#rule_'+id).remove();
+  });
   for(var j=0;j<rewards.length;j++) {
     $('#treward_'+id+' tbody').append(addReward(id, metrics, j, rewards[j]));
     (function(j) {

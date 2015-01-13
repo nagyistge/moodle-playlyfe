@@ -73,7 +73,7 @@ if (array_key_exists('submit', $_POST)) {
     $PAGE->requires->js_init_call('handle_course_group_add', array(array('courses' => $arr, 'metrics' => $metrics)));
 
     echo $OUTPUT->header();
-    $form->create_button('add', 'Add');
+    $form->create_button('add', 'Add Group');
     $form->end();
     echo $html;
     echo $OUTPUT->footer();
