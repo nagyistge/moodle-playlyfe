@@ -14,7 +14,7 @@ $PAGE->set_cm($cm);
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('admin');
 $PAGE->set_url('/local/playlyfe/forum.php');
-$PAGE->set_title($SITE->shortname);
+$PAGE->set_title($SITE->fullname);
 $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->set_pagetype('admin-' . $PAGE->pagetype);

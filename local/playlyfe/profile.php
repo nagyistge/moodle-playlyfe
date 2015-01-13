@@ -6,7 +6,7 @@ $PAGE->set_context(null);
 $PAGE->set_pagelayout('admin');
 require_login();
 $PAGE->set_url('/local/playlyfe/profile.php');
-$PAGE->set_title($SITE->shortname);
+$PAGE->set_title($SITE->fullname);
 $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->navigation->clear_cache();
