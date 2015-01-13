@@ -16,6 +16,7 @@ if (!has_capability('moodle/site:config', context_system::instance())) {
 $PAGE->settingsnav->get('root')->get('playlyfe')->get('publish')->make_active();
 $html = '';
 $simulated = false;
+
 if (array_key_exists('submit', $_POST)) {
   try {
     $pl->post('/design/versions/latest/simulate');
@@ -25,6 +26,7 @@ if (array_key_exists('submit', $_POST)) {
     print_object($e);
   }
 }
+
 $issues = $pl->get('/design/issues', array('type' => 'metric'));
 $unresolved_issues = array();
 foreach ($issues as $value) {
@@ -32,32 +34,70 @@ foreach ($issues as $value) {
     array_push($unresolved_issues, $value);
   }
 }
+
+$html .= '
+<div id="pl-publish" class="pl-page">';
+
 if(count($unresolved_issues) > 0) {
-  $html .= '<h1> You have Issues in your Game Design Please Fix Them?  Now! </h1>';
+  $html .= '
+    <h1 class="page-title">Issues in Design!</h1>
+    <div class="page-section">
+      <div class="section-content">
+        <div class="quote alert media no-margin">
+          <div class="image"><i class="icon-warning icon-4x hl-alert no-space"></i></div>
+          <div class="content">
+            <p>Your game cannot be published as there are some issues in
+            the design of your game. Fix those issues before
+            publishing the game</p>';
+
   $table = new html_table();
   $table->head = array('Reason', 'Metric', 'Apply Fix');
   $table->colclasses = array('leftalign', 'leftalign', 'centeralign');
   $table->data = array();
-  $table->attributes['class'] = 'admintable generaltable';
+  $table->attributes['class'] = 'pl-table admin-table full-width';
   $table->id = 'manage_sets';
   foreach ($issues as $unresolved_issues) {
     $fix = '<a href="fix.php?id='.$value['id'].'">Fix</a>';
     $table->data[] = new html_table_row(array($value['code'], $value['vars']['metric_design']['name'], $fix));
   }
   $html .= html_writer::table($table);
+  $html .= '
+          </div>
+        </div>
+      </div>
+    </div>';
 }
 else {
   if($simulated) {
-    $html .= '<h1>All Clear!</h2>';
-    $html .= '<h2>The Game has been successfully put into Simulation mode!</h2>';
+    $html .= '
+    <h1 class="page-title hl-prime">All Clear!</h1>
+    <div class="page-section">
+      <div class="section-content">
+        <div class="quote prime">
+          <p>Your game has been successfully published</p>
+        </div>
+      </div>
+    </div>';
   }
   else {
-    $html .= '<h1> Are you Sure you Want to publish all your changes? </h1>';
-    $html .= '<form action="publish.php" method="post">';
-    $html .= '<input id="submit" type="submit" name="submit" value="Submit" />';
-    $html .= '</form>';
+    $html .= '
+    <h1 class="page-title hl-prime">Publishing Changes</h1>
+    <div class="page-section">
+      <div class="section-content">
+        <div class="quote info">
+          <p>You are about to publish all changes to your courses. Do you want
+          to go ahead with it?</p>
+          <form action="publish.php" method="post">
+            <button class="button" id="submit" type="submit" name="submit">Publish Game</button>
+          </form>
+        </div>
+      </div>
+    </div>';
   }
 }
+
+$html .= '
+</div>';
 
 echo $OUTPUT->header();
 echo $html;

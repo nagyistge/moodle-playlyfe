@@ -45,7 +45,7 @@ if(!is_null($notifications)) {
   }
 }
 else {
-  $html .= '<div class="placeholder-content empty-content">You have no new notifications.</div>';
+  $html .= '<div class="placeholder-content empty">You have no new notifications.</div>';
 }
 
 $html .= '

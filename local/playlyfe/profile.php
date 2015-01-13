@@ -873,7 +873,7 @@ $html .= '
         <div class="player-details content">
           <h2 class="player-alias">'.$profile['alias'].'</h2>
           <div class="progress-bar" id="profile-progress">
-            <div class="progress-meter" title="'.round($progress, 1).'%">
+            <div class="progress-meter" title="You have completed '.round($progress, 1).'% of your total coursework">
               <div class="progress-value" style="width: '.$progress.'%"></div>
               <div class="progress-label">'.$progress.'% Completed</div>
             </div>
@@ -911,7 +911,7 @@ $html .= '
     }
     else if(count($profile['scores']) == 0 || $item_count == 0) {
       $html .= '
-      <div class="placeholder-content empty-content">You\'ve not earned any achievements yet.</div>';
+      <div class="placeholder-content empty">You\'ve not earned any achievements yet.</div>';
     }
 $html .= '
     </div>
@@ -937,7 +937,7 @@ $html .= '
     }
     else if(count($profile['scores']) == 0 || $score_count == 0) {
       $html .= '
-        <li class="placeholder-content empty-content">You don\'t have any scores yet.</li>';
+        <li class="placeholder-content empty">You don\'t have any scores yet.</li>';
     }
     $html .= '
       </ul>

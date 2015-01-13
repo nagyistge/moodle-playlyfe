@@ -12,6 +12,7 @@ $PAGE->set_heading($SITE->fullname);
 $PAGE->set_cacheable(false);
 $PAGE->set_pagetype('admin-' . $PAGE->pagetype);
 $PAGE->navigation->clear_cache();
+$html = '';
 if (!has_capability('moodle/site:config', context_system::instance())) {
   print_error('accessdenied', 'admin');
 }
@@ -25,7 +26,6 @@ class client_form extends moodleform {
     function definition() {
 
         $mform =& $this->_form;
-        $mform->addElement('header','displayinfo', 'Client');
         $mform->addElement('text', 'id', 'Client ID');
         $mform->addRule('id', null, 'required', null, 'client');
         $mform->setType('id', PARAM_RAW);
@@ -78,5 +78,15 @@ $toform['id'] = get_config('playlyfe', 'client_id');
 $toform['secret'] = get_config('playlyfe', 'client_secret');
 $form->set_data($toform);
 echo $OUTPUT->header();
+echo '
+<div id="pl-client-config" class="pl-page">
+  <h1 class="page-title">Playlyfe Client Settings</h1>
+  <div class="page-section">
+    <div class="section-content">';
 $form->display();
+echo '
+    </div>
+  </div>
+</div>';
+
 echo $OUTPUT->footer();
