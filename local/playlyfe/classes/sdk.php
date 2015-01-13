@@ -433,27 +433,31 @@ function calculate_data($userid) {
   $rule_id = '';
   foreach($buffer as $events) {
     $pl = get_pl();
-    $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'name,id,type'));
-    $metricsList = array();
-    foreach ($metrics as $metric) {
-      if($metric['type'] === 'point') {
-        array_push($metricsList, $metric);
+    try {
+      $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'name,id,type'));
+      $metricsList = array();
+      foreach ($metrics as $metric) {
+        if($metric['type'] === 'point') {
+          array_push($metricsList, $metric);
+        }
+      }
+      if(count($events) > 0 and array_key_exists('0', $events['local'])) {
+        $event = $events['local'][0];
+        if($event['event'] == 'custom_rule') {
+          array_push($data['events'], $event);
+          $rule_id = $event['rule']['id'];
+          $rule_id = explode('_', $rule_id);
+          $text = '';
+          if(in_array('course', $rule_id)) {
+            foreach($metricsList as $metric) {
+              $text .= create_leaderboard($metric['id'], $metric['name'], 'course'.$rule_id[1]);
+            }
+          }
+          array_push($data['leaderboards'], $text);
+        }
       }
     }
-    if(count($events) > 0 and array_key_exists('0', $events['local'])) {
-      $event = $events['local'][0];
-      if($event['event'] == 'custom_rule') {
-        array_push($data['events'], $event);
-        $rule_id = $event['rule']['id'];
-        $rule_id = explode('_', $rule_id);
-        $text = '';
-        if(in_array('course', $rule_id)) {
-          foreach($metricsList as $metric) {
-            $text .= create_leaderboard($metric['id'], $metric['name'], 'course'.$rule_id[1]);
-          }
-        }
-        array_push($data['leaderboards'], $text);
-      }
+    catch (Exception $e) {
     }
   }
   set_buffer($userid, array());
