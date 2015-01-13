@@ -100,18 +100,19 @@
     if(array_key_exists('local', $response[0][0]['events'])) {
       if(count($response[0][0]['events']['local']) > 0) {
         $data = get($userid.'_attempts');
-        for($i=0;$i<count($data);$i++) {
-          if(!$data[$i]) {
-            unset($data[$i]);
+        $pl = get_pl();
+        $arr = array();
+        foreach ($data as $item) {
+          if($item) {
+            array_push($arr, $item);
           }
         }
-        $pl = get_pl();
         try {
-          $pl->post('/admin/players/u'.$userid.'/revert', array(), array('event_ids' => array($data)));
+          $pl->post('/admin/players/u'.$userid.'/revert', array(), array('event_ids' => $arr));
           $data = array();
         }
         catch(Exception $e) {
-          //print_object($e);
+          // echo(json_encode($e));
         }
         array_push($data, $response[0][0]['events']['local'][0]['id']);
         set($userid.'_attempts', $data);
