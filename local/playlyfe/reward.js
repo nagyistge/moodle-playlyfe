@@ -64,7 +64,7 @@ function init_table(version, data) {
 function add_handler(version, data) {
   var id = data.id;
   var metrics = data.metrics;
-  (function () {
+  (function(){
     var index = 0;
     $('#add_'+id).click(function() {
       $('#treward_'+id+' tbody').append(addReward(id, metrics, index));
@@ -78,11 +78,27 @@ function add_handler(version, data) {
   })();
 }
 
-var dialog_open = false;
-function show_rewards(version, data) {
-  var event = data.events.pop();
-  var leaderboard = data.leaderboards.pop();
-  show_dailog(event, leaderboard, data);
+function render_reward(event) {
+  metric= event.metric;
+  delta = event.delta;
+  html = '<img style="float: left;"" src="/local/playlyfe/image_def.php?metric='+metric.id+'&size=medium"></img>';
+  if (metric.type === 'point') {
+    value = delta['new'] - delta.old;
+  }
+  else {
+    for(var key in delta) {
+      if(delta.old !== null) {
+        value = (delta[key]['new'] - delta[key].old)+' x '+key;
+      }
+      else {
+         value = (delta[key]['new'])+' x '+key;
+      }
+      value += '     <img src="/local/playlyfe/image_def.php?metric='+metric.id+'&size=medium&item='+key+'"></img>    ';
+    }
+  }
+  html += '<p><br>You have gained <b>'+value+'</b> '+metric.name + '</p>';
+  html += '<div style="clear: both;"></div>';
+  return html;
 }
 
 function show_dailog(event, leaderboard, data) {
@@ -128,33 +144,11 @@ function show_dailog(event, leaderboard, data) {
   $('.ui-dialog').css("top","20%");
 }
 
-function render_reward(event) {
-  metric= event.metric;
-  delta = event.delta;
-  html = '<img style="float: left;"" src="/local/playlyfe/image_def.php?metric='+metric.id+'&size=medium"></img>';
-  if (metric.type === 'point') {
-    value = delta['new'] - delta.old;
-  }
-  else {
-    for(key in delta) {
-      if(delta['old'] !== null) {
-        value = (delta[key]['new'] - delta[key]['old'])+' x '+key;
-      }
-      else {
-         value = (delta[key]['new'])+' x '+key;
-      }
-      value += '     <img src="/local/playlyfe/image_def.php?metric='+metric.id+'&size=medium&item='+key+'"></img>    ';
-    }
-  }
-  html += '<p><br>You have gained <b>'+value+'</b> '+metric.name + '</p>';
-  html += '<div style="clear: both;"></div>';
-  return html;
-}
-
-function handle_course_group_add(version, data) {
-  $('#add').click(function() {
-    add_course_group(version, data);
-  });
+var dialog_open = false;
+function show_rewards(version, data) {
+  var event = data.events.pop();
+  var leaderboard = data.leaderboards.pop();
+  show_dailog(event, leaderboard, data);
 }
 
 var groups_count = 0;
@@ -213,9 +207,15 @@ function add_course_group(version, data) {
     });
   })(groups_count);
   if(rewards !== null && typeof rewards !== 'undefined') {
-    init_table('', { id: id, metrics: metrics, rewards: rewards })
+    init_table('', { id: id, metrics: metrics, rewards: rewards });
   }
   add_handler('', { id: id, metrics: metrics });
+}
+
+function handle_course_group_add(version, data) {
+  $('#add').click(function() {
+    add_course_group(version, data);
+  });
 }
 
 var index = 0;
@@ -293,11 +293,9 @@ function create_select(name, options, selected) {
 function create_condition_operator(id, condition) {
   var html = '';
   html += '<select name="condition_operators['+id+'][]">';
+   var exists = false;
   if(condition !== null && typeof condition !== 'undefined') {
-    var exists = true;
-  }
-  else {
-    var exists = false;
+    exists = true;
   }
   if(exists && condition.operator === 'gt') {
     html += '<option value="gt" selected>></option>';
