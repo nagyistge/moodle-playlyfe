@@ -352,12 +352,27 @@ function create_condition(id, index, context) {
 }
 
 function create_rule_table(version, data) {
+  var rules_count = 0;
+  var id = data.rule.id;
   for(var i=0;i<data.rule.rules.length;i++) {
-    createRule(i ,data.rule.id+'_'+i, data.metrics, data.rule.rules[i].rewards, data.rule.rules[i].requires);
+    var rule_id = id+'_'+rules_count;
+    createRule(rules_count, rule_id , data.metrics, data.rule.rules[i].rewards, data.rule.rules[i].requires);
+    (function(rule_id) {
+      $('#remove_rule_'+rule_id).click(function() {
+        $('#rule_'+rule_id).remove();
+        //rules_count--;
+      });
+    })(rule_id);
+    rules_count++;
   }
   $('#add_rule').click(function() {
-    createRule(i, data.rule.id+'_'+i, data.metrics, [], {});
-    i++;
+    var rule_id = id+'_'+rules_count;
+    createRule(rules_count, rule_id, data.metrics, [], {});
+    rules_count++;
+    $('#remove_rule_'+rule_id).click(function() {
+      $('#rule_'+rule_id).remove();
+      //rules_count--;
+    });
   });
 }
 
@@ -393,9 +408,6 @@ function createRule(rule_index, id, metrics, rewards, requires) {
   html += '<button type="button" id="remove_rule_'+id+'">Remove Rule</button>';
   html += '</div>';
   $("#rule_table").append(html);
-  $('#remove_rule_'+id).click(function() {
-    $('#rule_'+id).remove();
-  });
   for(var j=0;j<rewards.length;j++) {
     $('#treward_'+id+' tbody').append(addReward(id, metrics, j, rewards[j]));
     (function(j) {

@@ -401,58 +401,22 @@ function create_leaderboard($id, $name, $scope_id) {
     $html .= '</tr>';
     $html .= '</thead>';
     $html .= '<tbody>';
-    // foreach ($metrics as $metric) {
-    //   if($metric['type'] === 'point') {
-    //     $html .= '<tr>';
-    //     $html .= '<td>'.$metric['name'].'</td>';
-    //     $html .= '<td class="pl-leaderboard-checkbox">';
-    //     $check_text = '';
-    //     if(in_array($metric['id'], $leaderboards)){
-    //       $check_text = 'checked';
-    //     }
-    //     $html .= '<input value="'.$metric['id'].'" name="leaderboards[]" type="checkbox" '.$check_text.'>';
-    //     $html .= '</td>';
-    //     $html .= '</tr>';
-    //   }
-    // }
     foreach($leaderboard['data'] as $player) {
       $html .= '<tr>';
       $html .= '<td><b>'.$player['rank'].'</b></td>';
       $html .= '<td>';
-      $user = $DB->get_record('user', array('id' => '2'));
+      $list = explode('u', $player['player']['id']);
+      $user = $DB->get_record('user', array('id' => $list[1]));
       $html .= $OUTPUT->user_picture($user, array('size'=>50));
       $html .= '</td>';
       $html .= '<td><b>'.$player['player']['alias'].'</b></td>';
       $html .= '<td><b>'.$player['score'].'</b></td>';
-      // $score = $player['score'];
-      // $id = $player['player']['id'];
-      // $alias = $player['player']['alias'] or 'Null';
-      // $rank = $player['rank'];
-      // $list = explode('u', $id);
-      // if($rank < 10) {
-      //   $rank = '0'.$rank;
-      // }
-      // if($id === 'u'.$USER->id) {
-      //   $html .= "<li class='fb-leaderboard-player fb-leaderboard-player-selected'>";
-      //   $html .= '<div class="fb-leaderboard-player-rank">'.$rank.'</div>';
-      // }
-      // else {
-      //   $html .= "<li class='fb-leaderboard-player'>";
-      //   $html .= '<div class="fb-leaderboard-player-rank">'.$rank.'</div>';
-      // }
-      // $user = $DB->get_record('user', array('id' => '2'));
-      // $html .= $OUTPUT->user_picture($user, array('size'=>75));
-      // //$user = $DB->get_record('user', array('id' => $list[1]));
-      // //$html .= $OUTPUT->user_picture($user, array('size'=>100));
-      // $html .= '<div class="fb-leaderboard-player-score">'.$score.'</div>';
-      // $html .= '<div class="fb-leaderboard-player-alias">'.$alias.'</div></li>';
     }
     $html .= '</tbody>';
     $html .= '</table>';
     if(count($leaderboard['data']) === 0) {
       $html .= 'The leaderboard is empty';
     }
-    // $html .= '</ul>';
   }
   catch(Exception $e) {
     if($e->name === 'player_not_found') {
