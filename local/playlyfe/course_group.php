@@ -43,10 +43,12 @@ if (array_key_exists('submit', $_POST)) {
     $html .= 'You dont have any courses with course completion enabled. Please add couse completion to your courses';
   }
   else {
-    $form = new PForm('Course Group Completion');
-    $form->create_separator('Please Select the courses you would like to group together to reward the user for completion of them');
-    $form->html .= '<div id="course_group"></div>';
     $course_group = get('course_group');
+    $form = new PForm('Course Group Completion');
+    if(empty($course_group)) {
+      $form->html .= 'Please Select the courses you would like to group together to reward the user for completion of them';
+    }
+    $form->html .= '<div id="course_group"></div>';
     foreach($course_group as $index => $cg) {
       $rule = get_rule($index, 'completed', 'course_group', 'Course Group '.$index.' Completed');
       $courses = array();

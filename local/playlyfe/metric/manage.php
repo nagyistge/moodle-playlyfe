@@ -39,6 +39,6 @@ foreach($metrics as $metric) {
 }
 $html .= html_writer::table($table);
 echo $OUTPUT->header();
-echo '<h1>Metrics</h1>';
+echo '<b>Metrics</b><hr></hr>';
 echo $html;
 echo $OUTPUT->footer();

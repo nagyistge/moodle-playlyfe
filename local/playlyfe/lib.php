@@ -100,18 +100,19 @@
     if(array_key_exists('local', $response[0][0]['events'])) {
       if(count($response[0][0]['events']['local']) > 0) {
         $data = get($userid.'_attempts');
-        for($i=0;$i<count($data);$i++) {
-          if(!$data[$i]) {
-            unset($data[$i]);
+        $pl = get_pl();
+        $arr = array();
+        foreach ($data as $item) {
+          if($item) {
+            array_push($arr, $item);
           }
         }
-        $pl = get_pl();
         try {
-          $pl->post('/admin/players/u'.$userid.'/revert', array(), array('event_ids' => array($data)));
+          $pl->post('/admin/players/u'.$userid.'/revert', array(), array('event_ids' => $arr));
           $data = array();
         }
         catch(Exception $e) {
-          //print_object($e);
+          // echo(json_encode($e));
         }
         array_push($data, $response[0][0]['events']['local'][0]['id']);
         set($userid.'_attempts', $data);
@@ -130,9 +131,12 @@
   function forum_viewed_handler($event) {
     $id = 'forum_'.$event->forum.'_viewed';
     $userid = $event->userid;
-    if(!has_finished_rule($id, $userid)) {
-      execute_rule($id, $event->userid);
-      show_reward($event->userid);
+    if(!has_finished_rule($id, $userid, false)) {
+      $response = execute_rule($id, $event->userid);
+      if($response) {
+        has_finished_rule($id, $userid, true);
+        show_reward($event->userid);
+      }
     }
   }
 
@@ -167,6 +171,7 @@
     if (isloggedin() || !isguestuser()) {
       $data = calculate_data($userid);
       if(count($data['events']) > 0) {
+        echo '<div id="dialog"></div>';
         $PAGE->requires->js_init_call('show_rewards', array($data));
       }
     }

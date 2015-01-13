@@ -464,11 +464,13 @@ function calculate_data($userid) {
   return $data;
 }
 
-function has_finished_rule($userid, $id) {
+function has_finished_rule($userid, $id, $set=true) {
   $data = get($userid.'_data');
   if(!in_array($id, $data)) {
-    array_push($data, $id);
-    set($userid.'_data', $data);
+    if($set) {
+      array_push($data, $id);
+      set($userid.'_data', $data);
+    }
     return false;
   }
   else {
