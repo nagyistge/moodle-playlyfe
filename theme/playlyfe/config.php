@@ -17,5 +17,5 @@
 $THEME->name = 'playlyfe';
 $THEME->parents = array('base', 'standard');
 $THEME->sheets = array(
-    'start'
+    'core'
 );

@@ -553,8 +553,17 @@ function formatDateAgo($value) {
 class PForm {
   public $html;
   public $requiredHtml = '<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req">';
+  public $list;
 
-  function __construct($title, $path='', $method='post') {
+  function __construct($title, $path='', $method='post', $page_title = 'Gamification Settings', $list=false) {
+    $this->html .= '<div id="pl-gamification-settings" class="pl-page">';
+    $this->html .= '<h1 class="page-title">'.$page_title.'</h1>';
+    $this->html .= '<div class="page-section">';
+    $this->html .= '<div class="section-content">';
+    $this->list = $list;
+    if($this->list) {
+      $this->html .= '<ul class="leaderboard-list list-unstyled">';
+    }
     $this->html .= '<form class="mform" enctype="multipart/form-data" action="'.$path.'" method="'.$method.'">';
     $this->html .= '<fieldset class="clearfix"><legend class="ftoggler">'.$title.'</legend><div class="advancedbutton"></div><div class="fcontainer clearfix">';
   }
@@ -710,16 +719,15 @@ class PForm {
     $PAGE->requires->js_init_call('create_rule_table', array($data));
   }
 
+  public function end_list() {
+    $this->html .= '</ul>';
+  }
+
   public function end() {
     $this->html .= '<div id="extra"></div>';
     $this->html .= '<div class="fitem fitem_actionbuttons fitem_fgroup"><div class="felement fgroup"><input type="submit" name="submit" value="Submit" /></div></div>';
     $this->html .= '</div></fieldset></form>';
+    $this->html .= '</div></div></div>';
     echo $this->html;
-  }
-  public function getFinalContents() {
-    $this->html .= '<div id="extra"></div>';
-    $this->html .= '<div class="fitem fitem_actionbuttons fitem_fgroup"><div class="felement fgroup"><input type="submit" name="submit" value="Submit" /></div></div>';
-    $this->html .= '</div></fieldset></form>';
-    return $this->html;
   }
 }
