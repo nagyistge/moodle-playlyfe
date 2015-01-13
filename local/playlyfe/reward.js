@@ -241,21 +241,13 @@ function create_checkbox(title, name) {
   return html;
 }
 
-function create_(title, name) {
-  var html = '';
-  html += '<div class="fitem required fitem_ftext">';
-  html += '<div class="fitemtitle"><label>'+title+'<img class="req" title="Required field" alt="Required field" src="http://127.0.0.1:3000/theme/image.php/standard/core/1420616075/req"></label></div>';
-  html += '<div class="felement ftext"><input name="'+name+'" type="checkbox" checked></div></div>';
-  return html;
-}
-
 function add_item(version, item) {
   item = item || {};
   item.name = item.name || '';
   item.description = item.description || '';
   item.max = item.max || '1';
   $('#extra').append(
-    '<div id="item_'+index+'" class="generalbox authsui" style="display: inline-block;">'
+    '<div id="item_'+index+'" class="generalbox authsui">'
     + create_input('Name', 'items_names['+index+']', item.name)
     + create_input('Description', 'items_desc['+index+']', item.description)
     + create_input('Max', 'items_max['+index+']', item.max, 'number')
