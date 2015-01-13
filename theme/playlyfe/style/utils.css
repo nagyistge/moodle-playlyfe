@@ -1,0 +1,107 @@
+.as-button {
+  -webkit-touch-callout: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  text-decoration: none !important;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Utility Classes */
+.hl-prime { color: #8fc717; /* prime */ }
+.hl-info { color: #259dff; /* accent */ }
+.hl-alert { color: #e20000; /* alert */ }
+.hl-purple { color: #8100ad; /* $purple */; }
+.hl-orange { color: #e85e07; /* $orange */; }
+.hl-yellow { color: #ffcc00; /* $yellow */; }
+
+.text-center { text-align: center; }
+.full-width { width: 100%; }
+.full-height { height: 100%; }
+.no-margin, .no-space, .ui-helper-reset {
+  margin: 0px !important;
+}
+.no-padding, .no-space {
+  padding: 0px !important;
+}
+.list-unstyled {
+  margin: 0;
+  padding: 0;
+  list-style: outside none none;
+}
+.underline {
+  text-decoration: underline;
+}
+.clearfix::before, .clearfix::after {
+  display: table;
+  line-height: 0;
+  content: "";
+}
+.clearfix::after {
+  clear: both;
+}
+
+/* The media object
+   (OOCSS / stubbornella.com) */
+.media {
+  margin: 10px;
+  overflow: hidden;
+  zoom: 1;
+}
+.media .content {
+  /* use overflow for clearing floats and
+   creating new layout context */
+  overflow: hidden;
+  zoom: 1;
+}
+.media .image {
+  /* you can float the image to either left or right */
+  float: left;
+  margin-right: 10px;
+}
+.media .image img {
+  display: block;
+}
+.media .image.right {
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+.placeholder-content {
+  padding: 0.5rem;
+  color: #bbbbbb; /* gray-lighter */
+  border: 1px dashed #dddddd; /* gray-lightest */
+}
+.placeholder-content.primary {
+  color: #80b314; /* prime-dark */
+  border-color: #ddeeb9; /* prime-lighter */
+}
+.placeholder-content.info {
+  color: #0085f1; /* accent-dark */
+  border-color: #a5d6ff; /* accent-lighter */
+}
+.placeholder-content.alert {
+  color: #e20000; /* alert */
+  border-color: #ffe2e2; /* alert-light */
+}
+
+.quote {
+  font-style: italic;
+  color: #888888; /* gray */
+  border-left: 0.3125em solid #f8f8f8; /* $gray-ultralight */
+  padding: 0.5rem 1rem;
+}
+.quote.primary {
+  color: #80b314; /* prime-dark */
+  border-left-color: #ddeeb9; /* prime-lighter */
+}
+.quote.info {
+  color: #0085f1; /* accent-dark */
+  border-left-color: #a5d6ff; /* accent-lighter */
+}
+.quote.alert {
+  color: #e20000; /* alert */
+  border-left-color: #ffe2e2; /* alert-light */
+}

@@ -1,0 +1,97 @@
+/** Table Styles */
+/* AEGIS UI */
+.pl-table {
+  border-collapse: collapse;
+  margin: 2em 0;
+  width: 100%;
+}
+/* cell sizes for table cells */
+.pl-table .cell-1 { width: 10%; }
+.pl-table .cell-2 { width: 20%; }
+.pl-table .cell-3 { width: 30%; }
+.pl-table .cell-4 { width: 40%; }
+.pl-table .cell-5 { width: 50%; }
+.pl-table .cell-6 { width: 60%; }
+.pl-table .cell-7 { width: 70%; }
+.pl-table .cell-8 { width: 80%; }
+.pl-table .cell-9 { width: 90%; }
+.pl-table .cell-10 { width: 100%; }
+.pl-table thead { background-color: white; }
+.pl-table th {
+  color: #999999;
+  font-size: 14px;
+  border: 1px solid #dddddd;
+  padding: 6px 8px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  text-align: left;
+}
+.pl-table tbody {
+  background-color: white;
+}
+.pl-table td {
+  vertical-align: top;
+  padding: 4px 8px;
+  border: 1px solid #dddddd;
+}
+.pl-table .constraint {
+  max-width: 100%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.pl-table .list-unstyled > li,
+.pl-table .form-errors > li,
+.pl-table .field-errors > li {
+  padding-bottom: 0em;
+}
+/* table types */
+.pl-table tfoot {
+  background-color: white;
+}
+.pl-table tfoot td {
+  text-align: center;
+}
+.pl-table.condensed th,
+.pl-table.condensed td {
+  padding: 2px 4px;
+}
+.pl-table.expanded th,
+.pl-table.expanded td {
+  padding: 10.5px 21px;
+}
+.pl-table.listing > thead > tr > th {
+  border: none;
+  font-size: 16px;
+}
+.pl-table.listing > tbody > tr {
+  border-bottom: 1px solid #dddddd;
+}
+.pl-table.listing > tbody > tr > td {
+  border: none;
+}
+.pl-table.striped > tbody > tr:nth-child(2n+1) {
+  background-color: #eeeeee;
+}
+.pl-table.highlight > tbody > tr:hover {
+  background-color: #f1f9ff;
+  color: #004d8b;
+  border-bottom: 1px solid #259dff;
+}
+.pl-table.borderless th {
+  font-size: 1.23077em;
+}
+.pl-table.borderless td,
+.pl-table.borderless th {
+  border: none;
+}
+.pl-table.fixed {
+  table-layout: fixed;
+}
+.pl-table.shrunk {
+  width: auto;
+}
+.pl-table table[class*='col-'] {
+  display: table;
+}

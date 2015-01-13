@@ -1,0 +1,112 @@
+/** PALETTE
+ *
+ * Grays
+ * #ffffff; /* white *
+ * #f8f8f8; /* gray-ultralight *
+ * #dddddd; /* gray-lightest *
+ * #bbbbbb; /* gray-lighter *
+ * #aaaaaa; /* gray-light *
+ * #888888; /* gray *
+ * #666666; /* gray-dark *
+ * #444444; /* gray-darker *
+ * #222222; /* gray-darkest *
+ * #000000; /* black *
+ *
+ * #eef6dc; /* prime-lightest *
+ * #ddeeb9; /* prime-lighter *
+ * #a9d44d; /* prime-light *
+ * #8fc717; /* prime *
+ * #80b314; /* prime-dark *
+ * #648b10; /* prime-darker *
+ * #364c08; /* prime-darkest *
+ *
+ * #f1f9ff; /* accent-lightest *
+ * #a5d6ff; /* accent-lighter *
+ * #58b4ff; /* accent-light *
+ * #259dff; /* accent *
+ * #0085f1; /* accent-dark *
+ * #004d8b; /* accent-darker *
+ * #001425; /* accent-darkest *
+ *
+ * #e20000; /* alert *
+ * #ffe2e2; /* alert-light *
+ *
+ * #95d905; /* $green *
+ * #1b5ddf; /* $blue *
+ * #259dff; /* $sky *
+ * #023c7c; /* $navy *
+ * #8100ad; /* $purple *
+ * #e20000; /* $red *
+ * #e85e07; /* $orange *
+ * #da9100; /* $gold *
+ * #ffcc00; /* $yellow *
+**/
+
+
+/*
+ Go to Admin->Appearance->Theme Settings and set Theme Designer Mode True to prevent caching of theme
+ */
+.avatar {
+  position: relative;
+  background-color: transparent;
+  width: 40px;
+  height: 40px;
+}
+.avatar.large {  /* Playlyfe's Large image size */
+  width: 140px;
+  height: 140px;
+}
+.avatar img {
+  /* constrain the image dimensions to that of the parent block */
+  max-width: 100%;
+  max-height: 100%;
+  /* vertically and horizontally center the content in the parent block */
+  /* requires parent to have a non-static position and unfloated */
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 0; right: 0;
+  margin: auto;
+}
+
+
+
+
+
+/* Progress Bar */
+.progress-bar {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 0.5em;
+  border: 1px solid #dddddd; /* gray-lightest */
+  padding: 2px;
+}
+.progress-bar .progress-meter {
+  overflow: hidden;
+  position: relative;
+  height: 10px;
+  background-color: #dddddd; /* gray-lightest */
+}
+.progress-bar .progress-value {
+  display:block;
+  position: absolute;
+  z-index: 1;
+  left:0;
+  top:0;
+  height: 100%;
+  background-color: #80b314; /* prime-dark */
+  background-image: linear-gradient(
+    135deg, transparent 30%, white 30%, white 60%, transparent 60%
+  );
+  background-size: 20px 10px;
+  transition:
+    width 0.4s cubic-bezier(0.60, -0.28, 0.74, 0.05),
+    background-color 0.2s ease 0.2s;
+}
+.progress-bar.animated .progress-value {
+  -webkit-animation: movingBg 1500ms linear infinite;
+  -moz-animation: movingBg 1500ms linear infinite;
+  -ms-animation: movingBg 1500ms linear infinite;
+  animation: movingBg 1500ms linear infinite;
+}

@@ -1,0 +1,14 @@
+/** ANIMATION KEYFRAMES */
+/** AEGIS UI */
+@-webkit-keyframes movingBg {
+  100% { background-position: -100px 0; }
+}
+@-moz-keyframes movingBg {
+  100% { background-position: -100px 0; }
+}
+@-ms-keyframes movingBg {
+  100% { background-position: -100px 0; }
+}
+@keyframes movingBg {
+  100% { background-position: -100px 0; }
+}
