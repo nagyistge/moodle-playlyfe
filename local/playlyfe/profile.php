@@ -902,7 +902,7 @@ $html .= '
             $html .= '
           <li class="achievement-item '.($value['count'] == 0 ? 'locked' : 'achieved').'">
             <div class="achievement-icon avatar image"><img src="image_def.php?metric='.$score_id.'&item='.$value['name'].'&size=medium"></img></div>
-            <div class="achievement-count" title="'.($value['count'] == 0 ? 'This achievement is locked' : '').'">'.($value['count'] == 0 ? 'L' : $value['count']).'</div>
+            <div class="achievement-count" title="'.($value['count'] == 0 ? 'This achievement is locked' : '').'">'.($value['count'] == 0 ? '<i class="icon-lock no-space"></i>' : $value['count']).'</div>
             <div class="achievement-name small content">'.$value['name'].'</div>
           </li>';
           }
