@@ -23,9 +23,12 @@ class block_playlyfe extends block_base {
       }
       else {
         $html .= '<ul class="list-unstyled profile-score-list">';
-        $leaderboards = array();
-        if($PAGE->course) {
-          $leaderboards = get_leaderboards('course'.$PAGE->course->id.'_leaderboard');
+        $metrics = $pl->get('/design/versions/latest/metrics', array('fields' => 'name,id,type'));
+        $metricsList = array();
+        foreach ($metrics as $metric) {
+          if($metric['type'] === 'point') {
+            array_push($metricsList, $metric);
+          }
         }
         foreach($profile['scores'] as $score) {
           $score_name = $score['metric']['name'];
@@ -37,7 +40,7 @@ class block_playlyfe extends block_base {
           $html .= '<div class="score-icon text-center"><img src="/local/playlyfe/image_def.php?metric='.$score_id.'&size=medium"></img></div>';
           if($score_type === 'point') {
             $leaderboard = null;
-            if(in_array($score_id, $leaderboards)) {
+            if(in_array($score_id, $metricsList)) {
               try {
                 $leaderboard = $pl->get('/runtime/leaderboards/'.$score_id, array(
                   'player_id' => 'u'.$USER->id,
@@ -58,7 +61,7 @@ class block_playlyfe extends block_base {
               }
             }
             $html .= '<div class="score-value large">'.$score_value.'</div>';
-            if(!is_null($leaderboard)) {
+            if(!is_null($leaderboard) and !empty($leaderboard['data'])) {
               $url = new moodle_url('/local/playlyfe/leaderboard.php', array(
                 'course' => $PAGE->course->id,
                 'metric' => $score_id,
