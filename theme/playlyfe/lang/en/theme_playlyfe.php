@@ -18,4 +18,4 @@
 $string['pluginname'] = 'Playlyfe';
 $string['region-side-post'] = 'Right';
 $string['region-side-pre'] = 'Left';
-$string['choosereadme'] = 'This is the Playlyfe Moodle Theme';
+$string['choosereadme'] = 'This is the Playlyfe Moodle Theme. It supplies the Playlyfe icons and styles.';

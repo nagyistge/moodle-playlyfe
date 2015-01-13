@@ -16,7 +16,7 @@
 //
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2013050100; // The current module version (Date: YYYYMMDDXX)
+$plugin->version   = 2015011200; // The current module version (Date: YYYYMMDDXX)
 $plugin->requires  = 2012120304.04; // Requires this Moodle version
 $plugin->component = 'theme_playlyfe'; // Full name of the plugin (used for diagnostics)
 $plugin->dependencies = array(
