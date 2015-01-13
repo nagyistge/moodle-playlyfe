@@ -869,13 +869,14 @@ $html .= '
       <div class="player-card media">
         <div class="player-avatar avatar large image">'.$OUTPUT->user_picture($USER, array('size'=>140)).'</div>
         <div class="player-details content">
-          <h3 class="player-alias">'.$profile['alias'].'</h3>';
+          <h2 class="player-alias">'.$profile['alias'].'</h2>';
 if($index > 0) {
   $progress = ($overall_progress/$index);
   $html .= '
-          <div class="progressbar">
-            <div style="width: '.$progress.'%;">
-              <div class="progress-text">'.round($progress, 1).'%'.'</div>
+          <div class="progress-bar" id="profile-progress">
+            <div class="progress-meter" title="'.round($progress, 1).'%">
+              <div class="progress-value" style="width: '.$progress.'%"></div>
+              <div class="progress-label">'.$progress.'% Completed</div>
             </div>
           </div>';
 }

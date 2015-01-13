@@ -240,6 +240,9 @@
   padding: 0.5rem 0 1rem;
   border-bottom: 1px solid #dddddd; /* gray-lightest */
 }
+.page-section:last-child, .page-section.no-separator {
+  border-bottom-color: transparent;
+}
 .page-section .section-title {
   font-size: 1.4rem;
   margin: 0.35rem 0;
@@ -247,6 +250,37 @@
   color: #888888; /* gray */
 }
 
+#pl-profile .player-alias {
+  font-size: 1.6rem;
+  margin-top: 0;
+}
+
+#profile-progress .progress-meter {
+  height: 30px;
+}
+.progress-bar .progress-label {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  color: #ffffff;
+  text-shadow:
+    0px 0px 3px #ffffff,
+    0px 0px 2px #000000,
+    0px 0px 10px #ffffff;
+  font-size: 0.9rem;
+  line-height: 20px;
+  top: 0; bottom: 0; left: 0;
+  padding-left: 5px;
+  height: 20px;
+  margin: auto;
+}
+#profile-progress .progress-value {
+  background-color: #8fc717; /* prime */
+  background-image: linear-gradient(
+    135deg, transparent 30%, #80b314 30%, #80b314 60%, transparent 60%
+  );
+  background-size: 60px 30px;
+}
 .score-widget {
   border: 1px solid #dddddd; /* gray-lightest */
   width: 400px;
@@ -258,9 +292,7 @@
   font-weight: normal;
   color: #888888; /* gray */
 }
-.achievement-list {
 
-}
 .achievement-item {
   float: left;
   padding: 0.5rem 1rem;
@@ -306,13 +338,6 @@
 }
 
 
-/*.notification-timestamp {
-  position: absolute;
-  right: 1rem;
-  top: 0.5rem;
-  color: #bbbbbb; /* gray-lighter *
-  font-size: 1.2rem;
-}*/
 .log-item {
   position: relative;
   padding: 0.35rem 0.5rem;
@@ -346,6 +371,43 @@
   height: 72px;
 }
 
+/* Progress Bar */
+.progress-bar {
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 0.5em;
+  border: 1px solid #dddddd; /* gray-lightest */
+  padding: 2px;
+}
+.progress-bar .progress-meter {
+  overflow: hidden;
+  position: relative;
+  height: 10px;
+  background-color: #dddddd; /* gray-lightest */
+}
+.progress-bar .progress-value {
+  display:block;
+  position: absolute;
+  z-index: 1;
+  left:0;
+  top:0;
+  height: 100%;
+  background-color: #80b314; /* prime-dark */
+  background-image: linear-gradient(
+    135deg, transparent 30%, white 30%, white 60%, transparent 60%
+  );
+  background-size: 20px 10px;
+  transition:
+    width 0.4s cubic-bezier(0.60, -0.28, 0.74, 0.05),
+    background-color 0.2s ease 0.2s;
+}
+.progress-bar.animated .progress-value {
+  -webkit-animation: movingBg 1500ms linear infinite;
+  -moz-animation: movingBg 1500ms linear infinite;
+  -ms-animation: movingBg 1500ms linear infinite;
+  animation: movingBg 1500ms linear infinite;
+}
+
 
 
 
@@ -354,23 +416,6 @@
 
 .pl-leaderboard-checkbox {
   text-align: center;
-}
-
-.progressbar {
-  background-color: #ddd;
-  width: 120px;
-  font-size: 14px;
-  text-align: center;
-}
-
-.progressbar > div {
-  background-color: orange;
-  height: 20px;
-}
-
-.progress-text {
-  padding-left: 50px;
-  padding-top: 2px;
 }
 
 .leaderboard-list {
@@ -547,4 +592,20 @@ body {
 .leadeboard-table td {
   border: 1px solid #DDD;
   vertical-align: middle;
+}
+
+
+
+/* Animation Keyframes */
+@-webkit-keyframes movingBg {
+  100% { background-position: -100px 0; }
+}
+@-moz-keyframes movingBg {
+  100% { background-position: -100px 0; }
+}
+@-ms-keyframes movingBg {
+  100% { background-position: -100px 0; }
+}
+@keyframes movingBg {
+  100% { background-position: -100px 0; }
 }
