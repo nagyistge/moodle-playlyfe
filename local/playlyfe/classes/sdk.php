@@ -483,6 +483,25 @@ function has_finished_rule($userid, $id, $set=true) {
   }
 }
 
+function get_notifications($userid, $page) {
+  $pl = get_pl();
+  $date = date('Y-m-d',  time() - ($page+1)*(24 * 60 * 60));
+  $notifications = $pl->get('/runtime/notifications', array('player_id' => 'u'.$userid,
+    'start' => $date,
+    'end' => date('Y-m-d',  time() + (24 * 60 * 60))
+  ));
+  // if($page == 5) {
+  //   return array();
+  // }
+  // if(empty($notifications)) {
+  //   $notifications = get_notifications($userid, $page+1);
+  // }
+  // if(!$notifications) {
+  //   return array();
+  // }
+  return $notifications;
+}
+
 function display_change($change, $course_name, $date) {
   global $count;
   $text = '';

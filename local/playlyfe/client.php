@@ -64,6 +64,7 @@ if($form->is_cancelled()) {
   // optimize this
   try {
     $data = array('id' => 'u'.$USER->id, 'alias' => 'admin');
+    $pl->post('/design/versions/latest/simulate');
     $pl->post('/admin/players', array(), $data);
     set_config('u'.$USER->id.'_buffer', json_encode(array()), 'playlyfe');
   }

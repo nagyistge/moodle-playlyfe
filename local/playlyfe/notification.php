@@ -18,8 +18,6 @@ if($_GET) {
 else {
   $page = 0;
 }
-$date = date('Y-m-d',  time() - ($page+1)*(24 * 60 * 60));
-print_object($date);
 
 $html .= '
 <div id="pl-notifications" class="profile pl-page">
@@ -27,8 +25,7 @@ $html .= '
   <div class="page-section">
     <div class="section-content">
 ';
-
-$notifications = $pl->get('/runtime/notifications', array('player_id' => 'u'.$USER->id));
+$notifications = get_notifications($USER->id, $page);
 if(!is_null($notifications)) {
   $notifications['data'] = array_reverse($notifications['data']);
   foreach($notifications['data'] as $notification) {
