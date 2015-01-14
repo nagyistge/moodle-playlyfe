@@ -64,6 +64,7 @@ if(array_key_exists('course', $_GET) and array_key_exists('metric', $_GET)) {
     if($rank < 10) {
       $rank = '0'.$rank;
     }
+    //$user = $DB->get_record('user', array('id' => $list[1]));
     $user = $DB->get_record('user', array('id' => 2));
 
     $hue = get_hue($leaderboard, $rank);

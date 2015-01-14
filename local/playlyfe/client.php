@@ -2,7 +2,7 @@
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir . '/formslib.php');
-require_once('/var/www/html/vendor/autoload.php');
+require_once(dirname(dirname(dirname(__FILE__))).'/vendor/autoload.php');
 $PAGE->set_context(null);
 $PAGE->set_pagelayout('admin');
 require_login();
