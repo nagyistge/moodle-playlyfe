@@ -1,4 +1,6 @@
-# Moodle(2.4.4) Playlyfe Plugin
+# (Deprecated) Moodle(2.4.4) Playlyfe Plugin
+
+Use this instead [moodle integration](https://github.com/pyros2097/moodle-integration)
 
 ## Installation
 Copy all the files and folders from this repo into your moodle directory. Make sure you run ```composer install --no-dev``` inside your moodle directory as it is required to install the playlyfe-php-sdk.
